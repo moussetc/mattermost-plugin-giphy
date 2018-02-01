@@ -1,0 +1,6 @@
+plugin
+plugin.exe
+debug
+debug.test*
+plugin.tar.gz
+mattermost-plugin-giphy.exe
