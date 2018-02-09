@@ -27,6 +27,7 @@ type GiphyPluginConfiguration struct {
 	Rating    string
 	Language  string
 	Rendition string
+	APIKey    string
 }
 
 // OnActivate register the plugin command
