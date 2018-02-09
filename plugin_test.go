@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/mattermost/mattermost-server/model"
@@ -11,19 +13,7 @@ import (
 	"github.com/mattermost/mattermost-server/plugin/plugintest/mock"
 )
 
-func TestGetGifUrl(t *testing.T) {
-	p := &GiphyPlugin{}
-	p.configuration.Store(&GiphyPluginConfiguration{Language: "fr", Rating: "", Rendition: "fixed_height_small"})
-	text, err := p.getGifURL("cat")
-	if err != nil {
-		t.Errorf("Error while retrieving gif %v", err)
-	}
-	if text == "" {
-		t.Errorf("Text is empty, it should be a GIF URL")
-	}
-}
-
-func TestPlugin(t *testing.T) {
+func initMockAPI() *plugintest.API {
 
 	configuration := GiphyPluginConfiguration{
 		Language:  "fr",
@@ -39,15 +29,74 @@ func TestPlugin(t *testing.T) {
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
 
+	return api
+}
+
+func TestExecuteCommandToReturnCommandResponse(t *testing.T) {
+	api := initMockAPI()
+
 	p := GiphyPlugin{}
 	assert.Nil(t, p.OnActivate(api))
 
-	command := &model.CommandArgs{
+	url := "http://fakeURL"
+	p.gifProvider = &mockGifProvider{url}
+
+	command := model.CommandArgs{
 		Command: "/gif cute doggo",
+		UserId:  "userid",
 	}
-	response, err := p.ExecuteCommand(command)
+
+	response, err := p.ExecuteCommand(&command)
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
+	assert.True(t, strings.Contains(response.Text, url))
+	assert.Equal(t, "in_channel", response.ResponseType)
+}
+
+func TestExecuteCommandToReturDisabledPluginError(t *testing.T) {
+	api := initMockAPI()
+
+	p := GiphyPlugin{}
+	p.api = api
+	p.gifProvider = &giphyProvider{}
+
+	response, err := p.ExecuteCommand(&model.CommandArgs{Command: "/gif cute doggo"})
+	assert.NotNil(t, err)
+	assert.Nil(t, response)
+	assert.True(t, strings.Contains(err.Error(), "disabled"))
 
 	assert.Nil(t, p.OnDeactivate())
+}
+
+func TestExecuteCommandToReturUnableToGetGIFError(t *testing.T) {
+	api := initMockAPI()
+
+	p := GiphyPlugin{}
+	assert.Nil(t, p.OnActivate(api))
+
+	errorMessage := "ARGHHHH"
+	p.gifProvider = &mockGifProviderFail{errorMessage}
+
+	response, err := p.ExecuteCommand(&model.CommandArgs{Command: "/gif cute doggo"})
+	assert.NotNil(t, err)
+	assert.Empty(t, response)
+	assert.True(t, strings.Contains(err.DetailedError, errorMessage))
+}
+
+// mockGifProviderFail always fail to provide a GIF URL
+type mockGifProviderFail struct {
+	errorMessage string
+}
+
+func (m *mockGifProviderFail) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
+	return "", errors.New(m.errorMessage)
+}
+
+// mockGifProvider always provides the same fake GIF URL
+type mockGifProvider struct {
+	mockURL string
+}
+
+func (m *mockGifProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
+	return m.mockURL, nil
 }
