@@ -7,7 +7,7 @@
 TARGET_OS=linux
 TARGET_ARCH=amd64
 
-SRC=plugin.go
+SRC=plugin.go gifProvider.go
 EXEC=plugin
 CONF=plugin.yaml
 PACKAGE=plugin.tar.gz
@@ -25,6 +25,6 @@ dist: $(EXEC) $(CONF)
 	chmod a+x $(EXEC) && tar -czvf $(PACKAGE) $(EXEC) $(CONF)
 
 test: $(SRC) $(TEST)
-	go test
+	go test .
 clean:
 	rm -rf $(PACKAGE) $(EXEC)
