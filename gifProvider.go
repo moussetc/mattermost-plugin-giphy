@@ -1,11 +1,10 @@
 package main
 
 import (
+	"errors"
+
 	"github.com/sanzaru/go-giphy"
 )
-
-// API key used to retrieve Giphy GIF
-const giphyAPIKey = "dc6zaTOxFJmzC"
 
 // gifProvider exposes methods to get GIF URLs
 type gifProvider interface {
@@ -17,7 +16,11 @@ type giphyProvider struct{}
 
 // getGifURL return the URL of a small Giphy GIF that more or less correspond to requested keywords
 func (*giphyProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
-	giphy := libgiphy.NewGiphy(giphyAPIKey)
+	if config.APIKey == "" {
+		return "", errors.New("Giphy API key is empty")
+	}
+
+	giphy := libgiphy.NewGiphy(config.APIKey)
 
 	data, err := giphy.GetTranslate(request, config.Rating, config.Language, false)
 	if err != nil {

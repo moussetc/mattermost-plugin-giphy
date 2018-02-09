@@ -13,11 +13,12 @@ If your Mattermost server is a `linux amd64`, you can download the [release pack
 
 ## Setup
 1. Use the `System Console > Plugins Management > Management` page to upload the `.tar.gz`
-2. Once the plugin is successfully installed, go to the new `System Console > Plugins > Giphy` page, which contains settings for
+2. Once the plugin is successfully installed, go to the new `System Console > Plugins > Giphy` configuration page, and  configure the Giphy API key. The default key is the [public beta key, which is 'subject to rate limit constraints'](https://developers.giphy.com/docs/).
+4. You can also configure the following settings :
     - rating
     - language
     - display size
-3. Activate the plugin in the `System Console > Plugins Management > Management` page
+4. Activate the plugin in the `System Console > Plugins Management > Management` page
 
 ## Usage
 The `/gif cute doggo` command will make a post with a GIF from Giphy that matches the 'cute doggo' query. The GIF will be posted using the user's avatar and name.
