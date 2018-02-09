@@ -6,6 +6,11 @@ backend:
     executable: plugin
 settings_schema:
     settings:
+        - key: APIKey
+          type: text
+          display_name: Giphy API Key
+          help_text: Configure your Giphy API Key (the default key is the beta public key, which is subject to rate limit constraints).
+          default: dc6zaTOxFJmzC
         - key: Rating
           type: text
           display_name: GIF Rating
@@ -115,6 +120,10 @@ settings_schema:
             - display_name: Українська
               value: uk
     footer: |
-        For more information on the rendering styles, see the [Giphy API guide](https://developers.giphy.com/docs/#rendition-guide).
+        Powered by Giphy.
+        
+        * To get your own Giphy API key, follow the instructions in the [developers documentation](https://developers.giphy.com/docs).
 
-        To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).
+        * For more information on the rendering styles, see the [Giphy API guide](https://developers.giphy.com/docs/#rendition-guide).
+
+        * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).
