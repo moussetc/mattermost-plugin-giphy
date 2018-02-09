@@ -31,7 +31,7 @@ dist: $(EXEC) $(CONF)
 	chmod a+x $(EXEC) && tar -czvf dist/$(PACKAGE) $(EXEC) $(CONF)
 
 test: $(SRC) $(TEST)
-	go test .
+	go test -v .
 
 vendor: Gopkg.lock
 	curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
