@@ -4,3 +4,7 @@ debug
 debug.test*
 plugin.tar.gz
 mattermost-plugin-giphy.exe
+vendor/
+dist/
+.vscode/
+convoluted-build.sh
