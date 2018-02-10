@@ -15,7 +15,7 @@ CONF=plugin.yaml
 PACKAGE=plugin.tar.gz
 TEST=plugin_test.go gifProvider.go
 
-all: test dist
+all: test-coverage dist
 
 $(EXEC): $(SRC)
 	GOOS=$(TARGET_OS) GOARCH=$(TARGET_ARCH) go build -o $(EXEC) $(SRC)
@@ -32,6 +32,9 @@ dist: $(EXEC) $(CONF)
 
 test: $(SRC) $(TEST)
 	go test -v .
+
+test-coverage: $(SRC) $(TEST)
+	go test -race -coverprofile=coverage.txt -covermode=atomic
 
 vendor: Gopkg.lock
 	curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
