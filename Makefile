@@ -10,9 +10,9 @@ TARGET_ARCH=amd64
 DEP_VERSION=0.4.1
 
 SRC=plugin.go gifProvider.go
-EXEC=plugin
+EXEC=plugin.exe
 CONF=plugin.yaml
-PACKAGE=plugin.tar.gz
+PACKAGE_BASENAME=mattermost-giphy-plugin
 TEST=plugin_test.go gifProvider.go
 
 all: test-coverage dist
@@ -24,11 +24,19 @@ build: $(EXEC)
 
 rebuild: clean build
 
-dist: $(EXEC) $(CONF)
+TAR_PLUGIN_EXE_TRANSFORM = --transform 'flags=r;s|dist/intermediate/plugin_.*|plugin.exe|'
+ifneq (,$(findstring bsdtar,$(shell tar --version)))
+	TAR_PLUGIN_EXE_TRANSFORM = -s '|dist/intermediate/plugin_.*|plugin.exe|'
+endif
+
+dist: vendor $(EXEC) $(CONF)
 	rm -rf ./dist
-	mkdir ./dist
-	@echo "BEWARE, if this command is executed on Windows, the executable bit of the plugin executable will NOT be set correctly..."
-	chmod a+x $(EXEC) && tar -czvf dist/$(PACKAGE) $(EXEC) $(CONF)
+	go get github.com/mitchellh/gox
+	$(shell go env GOPATH)/bin/gox -osarch='darwin/amd64 linux/amd64 windows/amd64' -output 'dist/intermediate/plugin_{{.OS}}_{{.Arch}}'
+	tar -czvf dist/$(PACKAGE_BASENAME)-darwin-amd64.tar.gz $(TAR_PLUGIN_EXE_TRANSFORM) dist/intermediate/plugin_darwin_amd64 plugin.yaml
+	tar -czvf dist/$(PACKAGE_BASENAME)-linux-amd64.tar.gz $(TAR_PLUGIN_EXE_TRANSFORM) dist/intermediate/plugin_linux_amd64 plugin.yaml
+	tar -czvf dist/$(PACKAGE_BASENAME)-windows-amd64.tar.gz $(TAR_PLUGIN_EXE_TRANSFORM) dist/intermediate/plugin_windows_amd64.exe plugin.yaml
+	rm -rf dist/intermediate
 
 test: $(SRC) $(TEST)
 	go test -v .
@@ -42,4 +50,4 @@ vendor: Gopkg.lock
 	dep ensure
 
 clean:
-	rm -rf $(PACKAGE) $(EXEC)
+	rm -rf ./dist $(EXEC)
