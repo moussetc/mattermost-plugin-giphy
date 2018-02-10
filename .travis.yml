@@ -2,24 +2,24 @@ dist: trusty
 sudo: false
 language: go
 go:
-  - 1.x
+- 1.x
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)
 env:
-  - DEP_VERSION="0.4.1"
+- DEP_VERSION="0.4.1"
 before_install:
-  # Download the binary to bin folder in $GOPATH
-  - curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 -o $GOPATH/bin/dep
-  # Make the binary executable
-  - chmod +x $GOPATH/bin/dep
+- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64
+  -o $GOPATH/bin/dep
+- chmod +x $GOPATH/bin/dep
 install:
-  - dep ensure
-  - make all
+- dep ensure
+- make all
 deploy:
   provider: releases
-  api_key:
-    secure:
+  api-key:
+    secure: Y4ky8nu1OaM/TVsZut2PvgmbfKgGLX+SNPLQ7vCRgzUOgyH11RyfZmpjRp3H9aHMTF2PGbk86PkPrNQ6COgN/9JA3Q4FJ1UomlWazwqpznG0+KrqOVUfqqdTdpUt5ZsVzBrO+/CI5eOESe4W/O1BTmmKqc11d4IZP1OiTR+ktI9MFD4D2gQKCE5KYBhcew8eNgduBjI7dmIqTvCWbTDhjqdtx+TTP+IB/lOdRon4PqeF18Q3DCg4X26V3btho5ZiSEuvE7ra/yuYqsufhrmxyf4ItbB6i5o6PGLm3PZj7A5dmQh71+/VMkLxLHlNTzTpdX601TTMdkdjO2j1JchgeIkN12kjARIaR8h1zRRjP5PocbsJohnznv408zo/lwdKnClXsexxB3yUceh+YucU6rkk53FazfJAh6ghiQcUQOs0a/3ZNPIZQuJqDVWsDIyq32bs8jHMI3DLB/ToLSPKKtR7antVyflSatu4dGkSF9TeSPkHPFRejA7rBihCsZ28y2MJv+Vk+PCz82rQPLYIWIlzSRMSGQvZQjXfyoLzGRRJKMrjJeXnWW0/MqEybApq0ghZlzqv6Djui96YjznDNoR0nGFSezQdQekMiudLBFNxqDzEAZ0nH5cSJUfUgkelMOwv/yocGTyTu0qTeaaSExoteXyxWDKihS03Z2283Z4=
   file: dist/*
   file_glob: true
   skip_cleanup: true
-  on:
+  on: 
+  
