@@ -70,7 +70,7 @@
   branch = "master"
   name = "github.com/sanzaru/go-giphy"
   packages = ["."]
-  revision = "cb77f670e543da4eb6ceacfb4e055dd4833c9f9b"
+  revision = "c353d5ec6ee815960a31c3579497a08ec1738040"
 
 [[projects]]
   name = "github.com/stretchr/objx"
@@ -105,6 +105,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c45b268572d1fadf445714b665163c2929f9c5e9745a3f8228ead51f06502d3a"
+  inputs-digest = "858c72f5178483e778a5632f4f97978c3b36bc1ba413d2b4d425fd23efe2249e"
   solver-name = "gps-cdcl"
   solver-version = 1

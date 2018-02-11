@@ -33,3 +33,28 @@ func TestGiphyProviderGetGIFURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotEmpty(t, url)
 }
+
+func TestGiphyProviderGetMultipleGIFURLs(t *testing.T) {
+	yamlFile, err := ioutil.ReadFile("plugin.yaml")
+	if err != nil {
+		t.Errorf("Could not open plugin configuration which is necessary for this test.")
+		return
+	}
+	var conf *model.Manifest
+	err = yaml.Unmarshal(yamlFile, &conf)
+	if err != nil {
+		t.Errorf("Could not load plugin configuration which is necessary for this test.")
+		return
+	}
+
+	p := &giphyProvider{}
+	config := &GiphyPluginConfiguration{
+		Language:  "fr",
+		Rating:    "",
+		Rendition: "fixed_height_small",
+		APIKey:    conf.SettingsSchema.Settings[0].Default.(string),
+	}
+	urls, err := p.getMultipleGifsURL(config, "cat")
+	assert.Nil(t, err)
+	assert.NotEmpty(t, urls)
+}
