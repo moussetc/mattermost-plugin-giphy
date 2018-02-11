@@ -92,6 +92,10 @@ func (m *mockGifProviderFail) getGifURL(config *GiphyPluginConfiguration, reques
 	return "", errors.New(m.errorMessage)
 }
 
+func (m *mockGifProviderFail) getMultipleGifsURL(config *GiphyPluginConfiguration, request string) ([]string, error) {
+	return nil, errors.New(m.errorMessage)
+}
+
 // mockGifProvider always provides the same fake GIF URL
 type mockGifProvider struct {
 	mockURL string
@@ -99,4 +103,8 @@ type mockGifProvider struct {
 
 func (m *mockGifProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
 	return m.mockURL, nil
+}
+
+func (m *mockGifProvider) getMultipleGifsURL(config *GiphyPluginConfiguration, request string) ([]string, error) {
+	return []string{m.mockURL, m.mockURL, m.mockURL}, nil
 }
