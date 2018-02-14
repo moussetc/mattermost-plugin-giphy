@@ -27,7 +27,6 @@ func initMockAPI() *plugintest.API {
 		return nil
 	})
 	api.On("RegisterCommand", mock.Anything).Return(nil)
-	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
 
 	return api
 }
