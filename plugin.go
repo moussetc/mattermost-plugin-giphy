@@ -70,7 +70,7 @@ func (p *GiphyPlugin) OnDeactivate() error {
 func (p *GiphyPlugin) ExecuteCommand(args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cmd := "/" + trigger
 	if strings.HasPrefix(args.Command, cmd) {
-		keywords := strings.TrimLeft(args.Command, cmd+" ")
+		keywords := strings.TrimPrefix(args.Command, cmd+" ")
 
 		gifURL, err := p.getGifURL(keywords)
 		if err != nil {
