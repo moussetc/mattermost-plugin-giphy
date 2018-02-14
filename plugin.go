@@ -22,7 +22,6 @@ const (
 type GiphyPlugin struct {
 	api           plugin.API
 	configuration atomic.Value
-	TeamId        string
 	gifProvider   gifProvider
 	enabled       bool
 }
@@ -40,7 +39,6 @@ func (p *GiphyPlugin) OnActivate(api plugin.API) error {
 	p.enabled = true
 	err := api.RegisterCommand(&model.Command{
 		Trigger:          triggerGif,
-		TeamId:           p.TeamId,
 		Description:      "Posts a Giphy GIF that matches the keyword(s)",
 		DisplayName:      "Giphy command",
 		AutoComplete:     true,
@@ -53,7 +51,6 @@ func (p *GiphyPlugin) OnActivate(api plugin.API) error {
 
 	err = api.RegisterCommand(&model.Command{
 		Trigger:          triggerGifs,
-		TeamId:           p.TeamId,
 		Description:      "Shows a preview of 10 GIFS matching the keyword(s)",
 		DisplayName:      "Giphy preview command",
 		AutoComplete:     true,
@@ -78,14 +75,10 @@ func (p *GiphyPlugin) OnConfigurationChange() error {
 	return err
 }
 
-// OnDeactivate unregisters the plugin commands
+// OnDeactivate handles plugin deactivation
 func (p *GiphyPlugin) OnDeactivate() error {
 	p.enabled = false
-	err := p.api.UnregisterCommand(p.TeamId, triggerGif)
-	if err != nil {
-		return err
-	}
-	return p.api.UnregisterCommand(p.TeamId, triggerGifs)
+	return nil
 }
 
 // ExecuteCommand returns a post that displays a GIF choosen using Giphy
