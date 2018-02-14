@@ -43,7 +43,7 @@ func TestPlugin(t *testing.T) {
 	assert.Nil(t, p.OnActivate(api))
 
 	command := &model.CommandArgs{
-		Command: "/gif cute doggo",
+		Command: "/giphy cute doggo",
 	}
 	response, err := p.ExecuteCommand(command)
 	assert.Nil(t, err)
