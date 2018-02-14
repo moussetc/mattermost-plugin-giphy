@@ -15,7 +15,7 @@ const (
 	// API key used to retrieve Giphy GIF
 	giphyAPIKey = "dc6zaTOxFJmzC"
 	// Trigger used to define the slash command
-	trigger = "gif"
+	trigger = "giphy"
 )
 
 // GiphyPlugin is a Mattermost plugin that adds a /gif slash command
@@ -70,14 +70,14 @@ func (p *GiphyPlugin) OnDeactivate() error {
 func (p *GiphyPlugin) ExecuteCommand(args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cmd := "/" + trigger
 	if strings.HasPrefix(args.Command, cmd) {
-		keywords := strings.Replace(args.Command, cmd, "", 1)
+		keywords := strings.TrimPrefix(args.Command, cmd+" ")
 
 		gifURL, err := p.getGifURL(keywords)
 		if err != nil {
 			return nil, model.NewAppError("Giphy Plugin ExecuteCommand", "Could not get GIF", nil, "", http.StatusBadRequest)
 		}
 
-		text := " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
+		text := "I searched for [" + keywords + "](" + gifURL + ") and found this:\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
 		return &model.CommandResponse{ResponseType: "in_channel", Text: text, Username: args.UserId}, nil
 	}
 

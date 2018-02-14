@@ -1,5 +1,5 @@
 # mattermost-plugin-giphy
-This Mattermost plugin adds Giphy Integration by creating a `/gif` slash command (no webhooks required).
+This Mattermost plugin adds Giphy Integration by creating a `/giphy` slash command (no webhooks required).
 
 ## Requirements
 - Mattermost 4.6 (to allow plugins to create slash commands) 
@@ -20,7 +20,7 @@ If your Mattermost server is a `linux amd64`, you can download the [release pack
 3. Activate the plugin in the `System Console > Plugins Management > Management` page
 
 ## Usage
-The `/gif cute doggo` command will make a post with a GIF from Giphy that matches the 'cute doggo' query. The GIF will be posted using the user's avatar and name.
+The `/giphy cute doggo` command will make a post with a GIF from Giphy that matches the 'cute doggo' query. The GIF will be posted using the user's avatar and name.
 
 ## What's next?
 - Adding a preview mode to mimick the Slack Giphy integration
