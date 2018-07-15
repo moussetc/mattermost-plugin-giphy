@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"html"
 	"net/http"
 	"net/url"
 	"strings"
@@ -58,10 +57,10 @@ func (p *GiphyPlugin) OnActivate(api plugin.API) error {
 
 	err = api.RegisterCommand(&model.Command{
 		Trigger:          triggerGifs,
-		Description:      "Shows a preview of 10 GIFS matching the keyword(s)",
+		Description:      "Shows a preview of several GIFS matching the keyword(s)",
 		DisplayName:      "Giphy preview command",
 		AutoComplete:     true,
-		AutoCompleteDesc: "Shows a preview of 10 GIFS matching the keyword(s)",
+		AutoCompleteDesc: "Shows a preview of several GIFS matching the keyword(s)",
 		AutoCompleteHint: "happy kitty",
 	})
 	if err != nil {
@@ -88,10 +87,10 @@ func (p *GiphyPlugin) handleAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if _, err := p.api.CreatePost(post); err != nil {
-		fmt.Fprintf(w, "Error: "+err.Message)
+		fmt.Fprint(w, "Error: "+err.Message)
 		return
 	}
-	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+	fmt.Fprint(w, "The GIF was posted publicly, you can close this tab now (Ctrl+W). Have a good day!")
 }
 
 func (p *GiphyPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
