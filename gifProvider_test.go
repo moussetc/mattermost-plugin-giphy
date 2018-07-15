@@ -57,4 +57,5 @@ func TestGiphyProviderGetMultipleGIFURLs(t *testing.T) {
 	urls, err := p.getMultipleGifsURL(config, "cat")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, urls)
+	assert.Len(t, urls, 5)
 }

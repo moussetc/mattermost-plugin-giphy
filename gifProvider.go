@@ -59,7 +59,7 @@ func (p *giphyProvider) getMultipleGifsURL(config *GiphyPluginConfiguration, req
 	if err != nil {
 		return nil, err
 	}
-	urls := make([]string, len(response.Data))
+	urls := []string{}
 	for _, data := range response.Data {
 		data := giphyData{
 			FixedHeight:            gif{URL: data.Images.Fixed_height.Url},
