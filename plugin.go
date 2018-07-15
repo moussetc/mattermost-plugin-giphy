@@ -75,11 +75,12 @@ func (p *GiphyPlugin) OnActivate(api plugin.API) error {
 }
 
 func (p *GiphyPlugin) handleAction(w http.ResponseWriter, r *http.Request) {
-	userID := r.URL.Query().Get("userId")
-	channelID := r.URL.Query().Get("channelId")
-	gifURL := r.URL.Query().Get("gifUrl")
-	keywords := r.URL.Query().Get("keyword")
+	userID, channelID, gifURL, keywords, err := p.securityCheck(w, r)
+	if err != nil {
+		return
+	}
 
+	// Post choosen GIF publicly
 	post := &model.Post{
 		Message:   " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")",
 		ChannelId: channelID,
@@ -91,6 +92,31 @@ func (p *GiphyPlugin) handleAction(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Fprint(w, "The GIF was posted publicly, you can close this tab now (Ctrl+W). Have a good day!")
+}
+
+func (p *GiphyPlugin) readActionParameters(r *http.Request) (userID string, channelID string, gifURL string, keyword string) {
+	userID = r.URL.Query().Get("userId")
+	channelID = r.URL.Query().Get("channelId")
+	gifURL = r.URL.Query().Get("gifUrl")
+	keyword = r.URL.Query().Get("keyword")
+	return
+}
+
+func (p *GiphyPlugin) securityCheck(w http.ResponseWriter, r *http.Request) (userID string, channelID string, gifURL string, keyword string, err error) {
+	userID, channelID, gifURL, keywords := p.readActionParameters(r)
+	if r.Header.Get("Mattermost-User-Id") != userID {
+		securityAlertPost := &model.Post{
+			Message:   ":warning: **From Giphy plugin: Someone tried to post a message as user " + userID + "but the poster identity could not be verified. Please contact the admins.** :warning:",
+			ChannelId: channelID,
+			UserId:    userID,
+		}
+		p.api.CreatePost(securityAlertPost)
+
+		http.Error(w, "please log in", http.StatusForbidden)
+
+		return "", "", "", "", appError("Insecure action detected", nil)
+	}
+	return userID, channelID, gifURL, keywords, nil
 }
 
 func (p *GiphyPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
