@@ -2,10 +2,13 @@ package main
 
 import (
 	"fmt"
+	"html"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync/atomic"
 
+	"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
 	"github.com/mattermost/mattermost-server/plugin/rpcplugin"
@@ -13,8 +16,11 @@ import (
 
 const (
 	// Triggers used to define slash commands
-	triggerGif  = "gif"
-	triggerGifs = "gifs"
+	triggerGif         = "gif"
+	triggerGifs        = "gifs"
+	pluginPath  string = "/plugins/com.github.moussetc.mattermost.plugin.giphy"
+	actionURL   string = "/action"
+	rootURL     string = "http://localhost:8065"
 )
 
 // GiphyPlugin is a Mattermost plugin that adds a /gif slash command
@@ -23,6 +29,7 @@ type GiphyPlugin struct {
 	api           plugin.API
 	configuration atomic.Value
 	gifProvider   gifProvider
+	router        *mux.Router
 	enabled       bool
 }
 
@@ -61,7 +68,39 @@ func (p *GiphyPlugin) OnActivate(api plugin.API) error {
 		return err
 	}
 
+	// Serve URL for TODO???
+	p.router = mux.NewRouter()
+	p.router.HandleFunc(actionURL, p.handleAction)
+
 	return p.OnConfigurationChange()
+}
+
+func (p *GiphyPlugin) handleAction(w http.ResponseWriter, r *http.Request) {
+	userID := r.URL.Query().Get("userId")
+	channelID := r.URL.Query().Get("channelId")
+	gifURL := r.URL.Query().Get("gifUrl")
+	keywords := r.URL.Query().Get("keyword")
+
+	post := &model.Post{
+		Message:   " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")",
+		ChannelId: channelID,
+		UserId:    userID,
+	}
+
+	if _, err := p.api.CreatePost(post); err != nil {
+		fmt.Fprintf(w, "Error: "+err.Message)
+		return
+	}
+	fmt.Fprintf(w, "Hello, %q", html.EscapeString(r.URL.Path))
+}
+
+func (p *GiphyPlugin) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Mattermost-User-Id") == "" {
+		http.Error(w, "please log in", http.StatusForbidden)
+		return
+	}
+
+	p.router.ServeHTTP(w, r)
 }
 
 func (p *GiphyPlugin) config() *GiphyPluginConfiguration {
@@ -90,7 +129,7 @@ func (p *GiphyPlugin) ExecuteCommand(args *model.CommandArgs) (*model.CommandRes
 		return nil, appError("Cannot access the plugin API.", nil)
 	}
 	if strings.HasPrefix(args.Command, "/"+triggerGifs) {
-		return p.executeCommandGifs(args.Command)
+		return p.executeCommandGifs(args)
 	}
 	if strings.HasPrefix(args.Command, "/"+triggerGif) {
 		return p.executeCommandGif(args.Command)
@@ -112,20 +151,34 @@ func (p *GiphyPlugin) executeCommandGif(command string) (*model.CommandResponse,
 }
 
 // executeCommandGif returns a private post containing a list of matching GIFs
-func (p *GiphyPlugin) executeCommandGifs(command string) (*model.CommandResponse, *model.AppError) {
-	keywords := getCommandKeywords(command, triggerGifs)
+func (p *GiphyPlugin) executeCommandGifs(args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+	keywords := getCommandKeywords(args.Command, triggerGifs)
 	gifURLs, err := p.gifProvider.getMultipleGifsURL(p.config(), keywords)
 	if err != nil {
 		return nil, appError("Unable to get GIF URL", err)
 	}
 
-	text := fmt.Sprintf(" *Suggestions for '%s':*", keywords)
-	for i, url := range gifURLs {
-		if i > 0 {
-			text += "\t"
+	tableHeader := "|"
+	tableSeparator := "|"
+	tableRow := "|"
+	for _, gifURL := range gifURLs {
+		tableSeparator += ":----:|"
+		tableRow += fmt.Sprintf("[![GIF for '%s'](%s)](%s)", keywords, gifURL, gifURL) + "|"
+
+		actionURL, err := url.Parse(rootURL + pluginPath + actionURL)
+		if err != nil {
+			return nil, appError("Unable to build action URL, make sure the server root URL is configured", err)
 		}
-		text += fmt.Sprintf("[![GIF for '%s'](%s)](%s)", keywords, url, url)
+
+		params := url.Values{}
+		params.Add("channelId", args.ChannelId)
+		params.Add("userId", args.UserId)
+		params.Add("keyword", keywords)
+		params.Add("gifUrl", gifURL)
+		actionURL.RawQuery = params.Encode()
+		tableHeader += "[Chose me](" + actionURL.String() + ")|"
 	}
+	text := fmt.Sprintf("%s\n%s\n%s\n *Suggestions for '%s'*", tableHeader, tableSeparator, tableRow, keywords)
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text}, nil
 }
 
