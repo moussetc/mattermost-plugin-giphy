@@ -1,11 +1,11 @@
 #
 # Makefile for Mattermost Giphy Plugin
 #
-SRC=plugin.go gifProvider.go
+SRC=plugin.go gifProvider.go security.go
 EXEC=plugin
 CONF=plugin.yaml
 PACKAGE_BASENAME=mattermost-plugin-giphy
-TEST=plugin_test.go
+TEST=plugin_test.go gifProvider_test.go security_test.go
 
 all: test-coverage dist-all
 

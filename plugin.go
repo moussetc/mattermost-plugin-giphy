@@ -33,10 +33,11 @@ type GiphyPlugin struct {
 }
 
 type GiphyPluginConfiguration struct {
-	Rating    string
-	Language  string
-	Rendition string
-	APIKey    string
+	Rating        string
+	Language      string
+	Rendition     string
+	APIKey        string
+	EncryptionKey string
 }
 
 // OnActivate register the plugin commands
@@ -94,16 +95,11 @@ func (p *GiphyPlugin) handleAction(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "The GIF was posted publicly, you can close this tab now (Ctrl+W). Have a good day!")
 }
 
-func (p *GiphyPlugin) readActionParameters(r *http.Request) (userID string, channelID string, gifURL string, keyword string) {
-	userID = r.URL.Query().Get("userId")
-	channelID = r.URL.Query().Get("channelId")
-	gifURL = r.URL.Query().Get("gifUrl")
-	keyword = r.URL.Query().Get("keyword")
-	return
-}
-
 func (p *GiphyPlugin) securityCheck(w http.ResponseWriter, r *http.Request) (userID string, channelID string, gifURL string, keyword string, err error) {
-	userID, channelID, gifURL, keywords := p.readActionParameters(r)
+	userID, channelID, gifURL, keywords, err := decryptParameters(p.config().EncryptionKey, r.URL.Query())
+	if err != nil {
+		return "", "", "", "", appError("Insecure action detected", err)
+	}
 	if r.Header.Get("Mattermost-User-Id") != userID {
 		securityAlertPost := &model.Post{
 			Message:   ":warning: **From Giphy plugin: Someone tried to post a message as user " + userID + "but the poster identity could not be verified. Please contact the admins.** :warning:",
@@ -112,7 +108,7 @@ func (p *GiphyPlugin) securityCheck(w http.ResponseWriter, r *http.Request) (use
 		}
 		p.api.CreatePost(securityAlertPost)
 
-		http.Error(w, "please log in", http.StatusForbidden)
+		http.Error(w, "please log in userId="+userID, http.StatusForbidden)
 
 		return "", "", "", "", appError("Insecure action detected", nil)
 	}
@@ -195,15 +191,11 @@ func (p *GiphyPlugin) executeCommandGifs(args *model.CommandArgs) (*model.Comman
 			return nil, appError("Unable to build action URL, make sure the server root URL is configured", err)
 		}
 
-		params := url.Values{}
-		params.Add("channelId", args.ChannelId)
-		params.Add("userId", args.UserId)
-		params.Add("keyword", keywords)
-		params.Add("gifUrl", gifURL)
+		params, _ := encryptParameters(p.config().EncryptionKey, args.UserId, args.ChannelId, gifURL, keywords)
 		actionURL.RawQuery = params.Encode()
 		tableHeader += "[Chose me](" + actionURL.String() + ")|"
 	}
-	text := fmt.Sprintf("%s\n%s\n%s\n *Suggestions for '%s'*", tableHeader, tableSeparator, tableRow, keywords)
+	text := fmt.Sprintf("%s\n%s\n%s\n *Suggestions for '%s'* userID="+args.UserId, tableHeader, tableSeparator, tableRow, keywords)
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text}, nil
 }
 
