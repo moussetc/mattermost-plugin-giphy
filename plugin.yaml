@@ -3,7 +3,7 @@ name: Giphy
 description: Add Giphy features to Mattermost
 version: '0.1.0'
 backend:
-    executable: plugin.exe
+    executable: plugin
 settings_schema:
     settings:
         - key: APIKey
