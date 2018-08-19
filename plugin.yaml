@@ -1,7 +1,7 @@
 id: com.github.moussetc.mattermost.plugin.giphy
 name: Giphy
 description: Add Giphy features to Mattermost
-version: '0.1.0'
+version: '0.2.0'
 backend:
     executable: plugin
 settings_schema:

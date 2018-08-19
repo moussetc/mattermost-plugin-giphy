@@ -9,11 +9,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mattermost/mattermost-server/plugin"
 	"github.com/mattermost/mattermost-server/plugin/plugintest"
 	"github.com/mattermost/mattermost-server/plugin/plugintest/mock"
 )
 
-func initMockAPI() *plugintest.API {
+func initMockAPI() *GiphyPlugin {
 
 	configuration := GiphyPluginConfiguration{
 		Language:  "fr",
@@ -22,20 +23,23 @@ func initMockAPI() *plugintest.API {
 	}
 
 	api := &plugintest.API{}
+
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.GiphyPluginConfiguration")).Return(func(dest interface{}) error {
 		*dest.(*GiphyPluginConfiguration) = configuration
 		return nil
 	})
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 
-	return api
+	p := GiphyPlugin{}
+	p.SetAPI(api)
+
+	return &p
 }
 
 func TestExecuteCommandToReturnCommandResponse(t *testing.T) {
-	api := initMockAPI()
+	p := initMockAPI()
 
-	p := GiphyPlugin{}
-	assert.Nil(t, p.OnActivate(api))
+	assert.Nil(t, p.OnActivate())
 
 	url := "http://fakeURL"
 	p.gifProvider = &mockGifProvider{url}
@@ -45,7 +49,7 @@ func TestExecuteCommandToReturnCommandResponse(t *testing.T) {
 		UserId:  "userid",
 	}
 
-	response, err := p.ExecuteCommand(&command)
+	response, err := p.ExecuteCommand(&plugin.Context{}, &command)
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
 	assert.True(t, strings.Contains(response.Text, url))
@@ -53,13 +57,11 @@ func TestExecuteCommandToReturnCommandResponse(t *testing.T) {
 }
 
 func TestExecuteCommandToReturDisabledPluginError(t *testing.T) {
-	api := initMockAPI()
 
-	p := GiphyPlugin{}
-	p.api = api
+	p := initMockAPI()
 	p.gifProvider = &giphyProvider{}
 
-	response, err := p.ExecuteCommand(&model.CommandArgs{Command: "/gif cute doggo"})
+	response, err := p.ExecuteCommand(&plugin.Context{}, &model.CommandArgs{Command: "/gif cute doggo"})
 	assert.NotNil(t, err)
 	assert.Nil(t, response)
 	assert.True(t, strings.Contains(err.Error(), "disabled"))
@@ -68,15 +70,14 @@ func TestExecuteCommandToReturDisabledPluginError(t *testing.T) {
 }
 
 func TestExecuteCommandToReturUnableToGetGIFError(t *testing.T) {
-	api := initMockAPI()
 
-	p := GiphyPlugin{}
-	assert.Nil(t, p.OnActivate(api))
+	p := initMockAPI()
+	assert.Nil(t, p.OnActivate())
 
 	errorMessage := "ARGHHHH"
 	p.gifProvider = &mockGifProviderFail{errorMessage}
 
-	response, err := p.ExecuteCommand(&model.CommandArgs{Command: "/gif cute doggo"})
+	response, err := p.ExecuteCommand(&plugin.Context{}, &model.CommandArgs{Command: "/gif cute doggo"})
 	assert.NotNil(t, err)
 	assert.Empty(t, response)
 	assert.True(t, strings.Contains(err.DetailedError, errorMessage))

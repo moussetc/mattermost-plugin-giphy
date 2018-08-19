@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"testing"
 
@@ -10,24 +11,10 @@ import (
 )
 
 func TestGiphyProviderGetGIFURL(t *testing.T) {
-	yamlFile, err := ioutil.ReadFile("plugin.yaml")
-	if err != nil {
-		t.Errorf("Could not open plugin configuration which is necessary for this test.")
-		return
-	}
-	var conf *model.Manifest
-	err = yaml.Unmarshal(yamlFile, &conf)
-	if err != nil {
-		t.Errorf("Could not load plugin configuration which is necessary for this test.")
-		return
-	}
-
 	p := &giphyProvider{}
-	config := &GiphyPluginConfiguration{
-		Language:  "fr",
-		Rating:    "",
-		Rendition: "fixed_height_small",
-		APIKey:    conf.SettingsSchema.Settings[0].Default.(string),
+	config, err := getDefaultConfig(t)
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 	url, err := p.getGifURL(config, "cat")
 	assert.Nil(t, err)
@@ -35,27 +22,34 @@ func TestGiphyProviderGetGIFURL(t *testing.T) {
 }
 
 func TestGiphyProviderGetMultipleGIFURLs(t *testing.T) {
-	yamlFile, err := ioutil.ReadFile("plugin.yaml")
-	if err != nil {
-		t.Errorf("Could not open plugin configuration which is necessary for this test.")
-		return
-	}
-	var conf *model.Manifest
-	err = yaml.Unmarshal(yamlFile, &conf)
-	if err != nil {
-		t.Errorf("Could not load plugin configuration which is necessary for this test.")
-		return
-	}
-
 	p := &giphyProvider{}
-	config := &GiphyPluginConfiguration{
-		Language:  "fr",
-		Rating:    "",
-		Rendition: "fixed_height_small",
-		APIKey:    conf.SettingsSchema.Settings[0].Default.(string),
+	config, err := getDefaultConfig(t)
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 	urls, err := p.getMultipleGifsURL(config, "cat")
 	assert.Nil(t, err)
 	assert.NotEmpty(t, urls)
 	assert.Len(t, urls, 5)
+}
+
+func getDefaultConfig(t *testing.T) (*GiphyPluginConfiguration, error) {
+	yamlFile, err := ioutil.ReadFile("plugin.yaml")
+	if err != nil {
+		return nil, errors.New("could not open plugin configuration which is necessary for this test")
+	}
+	var conf *model.Manifest
+	err = yaml.Unmarshal(yamlFile, &conf)
+	if err != nil {
+		return nil, errors.New("could not load plugin configuration which is necessary for this test")
+	}
+
+	config := &GiphyPluginConfiguration{
+		Language:  "fr",
+		Rating:    "",
+		Rendition: "fixed_height_small",
+		APIKey:    conf.SettingsSchema.Settings[1].Default.(string),
+	}
+
+	return config, nil
 }
