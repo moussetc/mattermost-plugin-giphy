@@ -2,7 +2,9 @@
 This Mattermost plugin adds Giphy Integration by creating a `/gif` slash command (no webhooks or additional installation required).
 
 ## Requirements
-- Mattermost 4.6 (to allow plugins to create slash commands) 
+- for Mattermost 5.2 or higher: use v0.2.0 release
+- for Mattermost 4.6 to 5.1: use v0.1.x release
+- for Mattermost below: unsupported versions (plugins can't create slash commands)
 
 ## Installation and configuration
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the package for your OS and architecture.
