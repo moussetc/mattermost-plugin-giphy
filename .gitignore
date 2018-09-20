@@ -8,5 +8,4 @@ mattermost-plugin-giphy.tar.gz
 vendor/
 dist/
 .vscode/
-convoluted-build.sh
 coverage.txt

@@ -15,7 +15,7 @@ type gifProvider interface {
 // giphyProvider get GIF URLs from the Giphy API
 type giphyProvider struct{}
 
-// getGifURL return the URL of a small Giphy GIF that more or less correspond to requested keywords
+// getGifURL return the URL of a small Giphy GIF that matches the requested keywords
 func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
 	if config.APIKey == "" {
 		return "", errors.New("Giphy API key is empty")
@@ -48,7 +48,7 @@ func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request stri
 	return p.getGifForRendition(config.Rendition, &data).URL, nil
 }
 
-// getGifURL return the URL of a small Giphy GIF that more or less correspond to requested keywords
+// getGifURL return the URL of a small Giphy GIF that matches the requested keywords
 func (p *giphyProvider) getMultipleGifsURL(config *GiphyPluginConfiguration, request string) ([]string, error) {
 	if config.APIKey == "" {
 		return nil, errors.New("Giphy API key is empty")
@@ -105,7 +105,7 @@ type giphyData struct {
 	OriginalStill          gif
 }
 
-// getGifURL return the URL of a small Giphy GIF that more or less correspond to requested keywords
+// getGifURL return the URL of a small Giphy GIF that matches to requested keywords
 func (*giphyProvider) getGifForRendition(renditionStyle string, data *giphyData) gif {
 	var gif gif
 	switch renditionStyle {
