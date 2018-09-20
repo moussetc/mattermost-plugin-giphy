@@ -1,7 +1,7 @@
 # mattermost-plugin-giphy
 This Mattermost plugin adds Giphy Integration by creating a `/gif` slash command (no webhooks or additional installation required).
 
-## Requirements
+## COMPATIBILITY
 - for Mattermost 5.2 or higher: use v0.2.0 release
 - for Mattermost 4.6 to 5.1: use v0.1.x release
 - for Mattermost below: unsupported versions (plugins can't create slash commands)
@@ -44,8 +44,8 @@ The `/gif cute doggo` command will make a post with a GIF from Giphy that matche
 ## Development
 Run make vendor to install dependencies, then develop like any other Go project, using go test, go build, etc.
 
-If you want to create a fully bundled plugin that will run on a local server, you can use make `mattermost-jira-plugin.tar.gz`.
+If you want to create a fully bundled plugin that will run on a local server, you can use make `mattermost-plugin-giphy.tar.gz`.
 
 ## What's next?
 - Adding a preview mode to mimick the Slack Giphy integration
-- Better testing
+- Allow customization of the trigger command
