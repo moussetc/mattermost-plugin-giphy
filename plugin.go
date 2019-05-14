@@ -16,6 +16,8 @@ const (
 	triggerGif  = "gif"
 	triggerGifs = "gifs"
 	pluginID = "com.github.moussetc.mattermost.plugin.giphy" // TODO get that from manifest
+	contextKeywords = "keywords"
+	contextGifURL = "gifURL"
 )
 
 // GiphyPlugin is a Mattermost plugin that adds a /gif slash command
@@ -128,12 +130,28 @@ func (p *GiphyPlugin) executeCommandGifShuffle(command string, args *model.Comma
 		return nil, appError("Unable to get GIF URL", err)
 	}
 
+	text := p.generateShufflePostText(keywords, gifURL)
+	attachments := p.generateShufflePostAttachments(keywords, gifURL)
+
+	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
+}
+func (p *GiphyPlugin) generateShufflePostText(keywords string, gifURL string) string {
+	return " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
+}
+
+func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL string) []*model.SlackAttachment {
+	actionContext := map[string]interface{}{
+		contextKeywords: keywords,
+		contextGifURL: gifURL,
+	}
+
 	actions := []*model.PostAction{}
 	actions = append(actions, &model.PostAction{
 		Name: "Cancel",
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
 			URL: fmt.Sprintf("%s/plugins/%s/cancel", p.siteURL, pluginID),
+			Context: actionContext,
 		},
 	})
 	actions = append(actions, &model.PostAction{
@@ -141,6 +159,7 @@ func (p *GiphyPlugin) executeCommandGifShuffle(command string, args *model.Comma
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
 			URL: fmt.Sprintf("%s/plugins/%s/shuffle", p.siteURL, pluginID),
+			Context: actionContext,
 		},
 	})
 	actions = append(actions, &model.PostAction{
@@ -148,17 +167,18 @@ func (p *GiphyPlugin) executeCommandGifShuffle(command string, args *model.Comma
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
 			URL: fmt.Sprintf("%s/plugins/%s/post", p.siteURL, pluginID),
+			Context: actionContext,
 		},
 	})
 
 
 	attachments := []*model.SlackAttachment{}
 	attachments = append(attachments, &model.SlackAttachment{
-		Text : " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")",
+		//Text : " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")",
 		Actions: actions,
 	})
 
-	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Attachments: attachments}, nil
+	return attachments
 }
 
 
@@ -174,7 +194,7 @@ func appError(message string, err error) *model.AppError {
 	return model.NewAppError("Giphy Plugin", message, nil, errorMessage, http.StatusBadRequest)
 }
 
-type HandlerFunc func(request *model.PostActionIntegrationRequest) int
+type HandlerFunc func(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int
 
 // ServeHTTP serve the post action to display an ephemeral spoiler
 func (p *GiphyPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
@@ -198,7 +218,18 @@ func (p *GiphyPlugin) handleHTTPAction(action HandlerFunc, c *plugin.Context, w 
 		return
 	}
 
-	httpStatus := action(request)
+	gifURL, ok := request.Context[contextGifURL]
+	if !ok {
+		p.API.LogError("Giphy Plugin: missing " + contextGifURL + " from action request context")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+	keywords, ok := request.Context[contextKeywords]
+	if !ok {
+		p.API.LogError("Giphy Plugin: missing " + contextKeywords +" from action request context")
+		w.WriteHeader(http.StatusBadRequest)
+	}
+
+	httpStatus := action(request, keywords.(string), gifURL.(string))
 	w.WriteHeader(httpStatus)
 
 	if httpStatus == http.StatusOK {
@@ -210,7 +241,7 @@ func (p *GiphyPlugin) handleHTTPAction(action HandlerFunc, c *plugin.Context, w 
 }
 
 // handleCancel delete the ephemeral shuffle post
-func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest) int {
+func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
 	post := &model.Post{
 		Id: request.PostId,
 	}
@@ -220,11 +251,14 @@ func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest) 
 }
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
-func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest) int {
-	// TODO put the keywords into action context, then do another giphy search and set message accordingly
+func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
+		// TODO : here we can't seem to update the actions correctly (they bear the context, which includes the gifURL, so they *must* be updated). Either wer're doing it wrong, either there's a bug, which should be notified in Contributors channel. In the meanwhile, there's the ugly possiblity to delete previous ephemeral message and create a new one /shrug/
 	post := &model.Post{
 		Id: request.PostId,
-		Message: "YOLOOOOO",
+		Message: p.generateShufflePostText(keywords, gifURL),
+		/*Props: map[string]interface{}{
+			"attachments": p.generateShufflePostAttachments(keywords.(string), gifURL.(string)),
+		},*/
 	}
 	p.API.UpdateEphemeralPost(request.UserId, post)
 
@@ -232,14 +266,13 @@ func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest)
 }
 
 // handlePost post the actual GIF and delete the obsolete ephemeral post
-func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest) int {
+func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
 	ephemeralPost := &model.Post{
 		Id: request.PostId,
 	}
 	p.API.DeleteEphemeralPost(request.UserId, ephemeralPost)
-	// TODO get context data and recreate content from that
 	post := &model.Post{
-		Message: "TODOOOOOOOOOO",
+		Message: p.generateShufflePostText(keywords, gifURL),
 		UserId: request.UserId,
 		ChannelId: request.ChannelId,
 	}
