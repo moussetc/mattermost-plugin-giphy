@@ -174,49 +174,53 @@ func appError(message string, err error) *model.AppError {
 	return model.NewAppError("Giphy Plugin", message, nil, errorMessage, http.StatusBadRequest)
 }
 
+type HandlerFunc func(request *model.PostActionIntegrationRequest) int
+
 // ServeHTTP serve the post action to display an ephemeral spoiler
 func (p *GiphyPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	p.API.LogWarn("URL = "+r.URL.Path)
-	p.API.LogWarn("Context = "+ fmt.Sprintf("%+v\n", c))
-	p.API.LogWarn("Request = "+ fmt.Sprintf("%+v\n", r))
 	switch r.URL.Path {
 	case "/shuffle":
-		p.handleShuffle(w, r)
+		p.handleHTTPAction(p.handleShuffle, c, w, r)
 	case "/post":
-		p.handlePost(w, r)
+		p.handleHTTPAction(p.handlePost, c, w, r)
 	case "/cancel":
-		p.handleCancel(w, r)
+		p.handleHTTPAction(p.handleCancel, c, w, r)
 	default:
 		http.NotFound(w, r)
 	}
 }
 
-// handleCancel delete the ephemeral shuffle post
-func (p *GiphyPlugin) handleCancel(w http.ResponseWriter, r *http.Request) {
+func (p *GiphyPlugin) handleHTTPAction(action HandlerFunc, c *plugin.Context, w http.ResponseWriter, r *http.Request) {
+	// Read data added by default for a button action
 	request := model.PostActionIntegrationRequestFromJson(r.Body)
 	if request == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	httpStatus := action(request)
+	w.WriteHeader(httpStatus)
+
+	if httpStatus == http.StatusOK {
+		// Return the object the MM server expects in case of 200 status
+		response := &model.PostActionIntegrationResponse{}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(response.ToJson())
+	}
+}
+
+// handleCancel delete the ephemeral shuffle post
+func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest) int {
 	post := &model.Post{
 		Id: request.PostId,
 	}
 	p.API.DeleteEphemeralPost(request.UserId, post)
 
-	/*response := &model.PostActionIntegrationResponse{}
-	response.Update = post
-	w.Header().Set("Content-Type", "application/json")*/
-	w.WriteHeader(http.StatusOK)
-	//_, _ = w.Write(response.ToJson())
+	return http.StatusOK
 }
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
-func (p *GiphyPlugin) handleShuffle(w http.ResponseWriter, r *http.Request) {
-	request := model.PostActionIntegrationRequestFromJson(r.Body)
-	if request == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest) int {
 	// TODO put the keywords into action context, then do another giphy search and set message accordingly
 	post := &model.Post{
 		Id: request.PostId,
@@ -224,16 +228,11 @@ func (p *GiphyPlugin) handleShuffle(w http.ResponseWriter, r *http.Request) {
 	}
 	p.API.UpdateEphemeralPost(request.UserId, post)
 
-	w.WriteHeader(http.StatusOK)
+	return http.StatusOK
 }
 
 // handlePost post the actual GIF and delete the obsolete ephemeral post
-func (p *GiphyPlugin) handlePost(w http.ResponseWriter, r *http.Request) {
-	request := model.PostActionIntegrationRequestFromJson(r.Body)
-	if request == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest) int {
 	ephemeralPost := &model.Post{
 		Id: request.PostId,
 	}
@@ -247,12 +246,9 @@ func (p *GiphyPlugin) handlePost(w http.ResponseWriter, r *http.Request) {
 	_, err := p.API.CreatePost(post)
 	if err != nil {
 		p.API.LogError("Could not create post", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return http.StatusInternalServerError
 	}
-	w.WriteHeader(http.StatusOK)
-	// TODO : prevent those freaking error messages in the logs "Action integration error err=EOF"
-	// even if they don't actually prevent the plugin from working...
+	return http.StatusOK
 }
 
 // Install the RCP plugin
