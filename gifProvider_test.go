@@ -21,18 +21,6 @@ func TestGiphyProviderGetGIFURL(t *testing.T) {
 	assert.NotEmpty(t, url)
 }
 
-func TestGiphyProviderGetMultipleGIFURLs(t *testing.T) {
-	p := &giphyProvider{}
-	config, err := getDefaultConfig(t)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-	urls, err := p.getMultipleGifsURL(config, "cat")
-	assert.Nil(t, err)
-	assert.NotEmpty(t, urls)
-	assert.Len(t, urls, 5)
-}
-
 func getDefaultConfig(t *testing.T) (*GiphyPluginConfiguration, error) {
 	yamlFile, err := ioutil.ReadFile("plugin.yaml")
 	if err != nil {

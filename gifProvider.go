@@ -1,142 +1,84 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
-
-	"github.com/sanzaru/go-giphy"
+	"io/ioutil"
+	"net/http"
 )
 
 // gifProvider exposes methods to get GIF URLs
 type gifProvider interface {
 	getGifURL(config *GiphyPluginConfiguration, request string) (string, error)
-	getMultipleGifsURL(config *GiphyPluginConfiguration, request string) ([]string, error)
 }
 
-// giphyProvider get GIF URLs from the Giphy API
+// giphyProvider get GIF URLs from the Giphy API without any external, out-of-date library
 type giphyProvider struct{}
 
-// getGifURL return the URL of a small Giphy GIF that matches the requested keywords
+const (
+	BASE_URL = "http://api.giphy.com/v1/gifs"
+)
+
+// getGifURL return the URL of a GIF that matches the requested keywords
 func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
 	if config.APIKey == "" {
 		return "", errors.New("Giphy API key is empty")
 	}
-
-	giphy := libgiphy.NewGiphy(config.APIKey)
-
-	response, err := giphy.GetTranslate(request, config.Rating, config.Language, false)
+	req, err := http.NewRequest("GET", BASE_URL+"/translate", nil)
 	if err != nil {
-		return "", err
+		return "", appError("Could not generate URL", err)
 	}
 
-	data := giphyData{
-		FixedHeight:            gif{URL: response.Data.Images.Fixed_height.Url},
-		FixedHeightStill:       gif{URL: response.Data.Images.Fixed_height_still.Url},
-		FixedHeightDownsampled: gif{URL: response.Data.Images.Fixed_height_downsampled.Url},
-		FixedWidth:             gif{URL: response.Data.Images.Fixed_width.Url},
-		FixedWidthStill:        gif{URL: response.Data.Images.Fixed_width_still.Url},
-		FixedWidthDownsampled:  gif{URL: response.Data.Images.Fixed_width_downsampled.Url},
-		FixedHeightSmall:       gif{URL: response.Data.Images.Fixed_height_small.Url},
-		FixedHeightSmallStill:  gif{URL: response.Data.Images.Fixed_height_small_still.Url},
-		FixedWidthSmall:        gif{URL: response.Data.Images.Fixed_width_small.Url},
-		FixedWidthSmallStill:   gif{URL: response.Data.Images.Fixed_width_small_still.Url},
-		Downsized:              gif{URL: response.Data.Images.Downsized.Url},
-		DownsizedStill:         gif{URL: response.Data.Images.Downsized_still.Url},
-		DownsizedLarge:         gif{URL: response.Data.Images.Downsized_large.Url},
-		Original:               gif{URL: response.Data.Images.Original.Url},
-		OriginalStill:          gif{URL: response.Data.Images.Original_still.Url},
-	}
-	return p.getGifForRendition(config.Rendition, &data).URL, nil
-}
+	q := req.URL.Query()
+	q.Add("api_key", config.APIKey)
+	q.Add("s", request)
+	q.Add("weirdness", "0")
 
-// getGifURL return the URL of a small Giphy GIF that matches the requested keywords
-func (p *giphyProvider) getMultipleGifsURL(config *GiphyPluginConfiguration, request string) ([]string, error) {
-	if config.APIKey == "" {
-		return nil, errors.New("Giphy API key is empty")
-	}
+	req.URL.RawQuery = q.Encode()
+	requestURL := req.URL.String()
 
-	giphy := libgiphy.NewGiphy(config.APIKey)
-	response, err := giphy.GetSearch(request, 5, 0, config.Rating, config.Language, false)
+	r, err := http.DefaultClient.Get(requestURL)
 	if err != nil {
-		return nil, err
+		return "", appError("Error calling the Giphy API", err)
 	}
-	urls := []string{}
-	for _, data := range response.Data {
-		data := giphyData{
-			FixedHeight:            gif{URL: data.Images.Fixed_height.Url},
-			FixedHeightStill:       gif{URL: data.Images.Fixed_height_still.Url},
-			FixedHeightDownsampled: gif{URL: data.Images.Fixed_height_downsampled.Url},
-			FixedWidth:             gif{URL: data.Images.Fixed_width.Url},
-			FixedWidthStill:        gif{URL: data.Images.Fixed_width_still.Url},
-			FixedWidthDownsampled:  gif{URL: data.Images.Fixed_width_downsampled.Url},
-			FixedHeightSmall:       gif{URL: data.Images.Fixed_height_small.Url},
-			FixedHeightSmallStill:  gif{URL: data.Images.Fixed_height_small_still.Url},
-			FixedWidthSmall:        gif{URL: data.Images.Fixed_width_small.Url},
-			FixedWidthSmallStill:   gif{URL: data.Images.Fixed_width_small_still.Url},
-			Downsized:              gif{URL: data.Images.Downsized.Url},
-			DownsizedStill:         gif{URL: data.Images.Downsized_still.Url},
-			DownsizedLarge:         gif{URL: data.Images.Downsized_large.Url},
-			Original:               gif{URL: data.Images.Original.Url},
-			OriginalStill:          gif{URL: data.Images.Original_still.Url},
-		}
-		urls = append(urls, p.getGifForRendition(config.Rendition, &data).URL)
+
+	if r.StatusCode != http.StatusOK {
+		return "", appError("Error calling the Giphy API (HTTP Status: "+string(r.StatusCode)+")", nil)
 	}
-	return urls, nil
-}
 
-type gif struct {
-	URL string
-}
-
-type giphyData struct {
-	FixedHeight            gif
-	FixedHeightStill       gif
-	FixedHeightDownsampled gif
-	FixedWidth             gif
-	FixedWidthStill        gif
-	FixedWidthDownsampled  gif
-	FixedHeightSmall       gif
-	FixedHeightSmallStill  gif
-	FixedWidthSmall        gif
-	FixedWidthSmallStill   gif
-	Downsized              gif
-	DownsizedStill         gif
-	DownsizedLarge         gif
-	Original               gif
-	OriginalStill          gif
-}
-
-// getGifURL return the URL of a small Giphy GIF that matches to requested keywords
-func (*giphyProvider) getGifForRendition(renditionStyle string, data *giphyData) gif {
-	var gif gif
-	switch renditionStyle {
-	case "fixed_height":
-		gif = data.FixedHeight
-	case "fixed_height_still":
-		gif = data.FixedHeightStill
-	case "fixed_height_small":
-		gif = data.FixedHeightSmall
-	case "fixed_height_small_still":
-		gif = data.FixedHeightSmallStill
-	case "fixed_width":
-		gif = data.FixedWidth
-	case "fixed_width_still":
-		gif = data.FixedWidthStill
-	case "fixed_width_small":
-		gif = data.FixedWidthSmall
-	case "fixed_width_small_still":
-		gif = data.FixedWidthSmallStill
-	case "downsized":
-		gif = data.Downsized
-	case "downsized_large":
-		gif = data.DownsizedLarge
-	case "downsized_still":
-		gif = data.DownsizedStill
-	case "original":
-		gif = data.Original
-	case "original_still":
-		gif = data.OriginalStill
-	default:
-		gif = data.FixedHeightSmall
+	defer r.Body.Close()
+	data, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		return "", appError("Error reading the Giphy API response", err)
 	}
-	return gif
+
+	var rootNode map[string]*json.RawMessage
+	err = json.Unmarshal(data, &rootNode)
+	if err != nil {
+		return "", appError("Error unmarshalling JSON", err)
+	}
+	var dataNode map[string]*json.RawMessage
+	err = json.Unmarshal(*rootNode["data"], &dataNode)
+	if err != nil {
+		return "", appError("Error unmarshalling JSON", err)
+	}
+
+	var imagesNode map[string]*json.RawMessage
+	err = json.Unmarshal(*dataNode["images"], &imagesNode)
+	if err != nil {
+		return "", appError("Error unmarshalling JSON", err)
+	}
+
+	var imageNode map[string]*json.RawMessage
+	err = json.Unmarshal(*imagesNode[config.Rendition], &imageNode)
+	if err != nil {
+		return "", appError("Error unmarshalling JSON", err)
+	}
+
+	var urlNode string
+	err = json.Unmarshal(*imageNode["url"], &urlNode)
+	if err != nil {
+		return "", appError("Error unmarshalling JSON", err)
+	}
+	return urlNode, nil
 }
