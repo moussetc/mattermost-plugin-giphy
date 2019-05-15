@@ -13,18 +13,18 @@ import (
 
 const (
 	// Triggers used to define slash commands
-	triggerGif  = "gif"
-	triggerGifs = "gifs"
-	pluginID = "com.github.moussetc.mattermost.plugin.giphy" // TODO get that from manifest
+	triggerGif      = "gif"
+	triggerGifs     = "gifs"
+	pluginID        = "com.github.moussetc.mattermost.plugin.giphy" // TODO get that from manifest
 	contextKeywords = "keywords"
-	contextGifURL = "gifURL"
+	contextGifURL   = "gifURL"
 )
 
 // GiphyPlugin is a Mattermost plugin that adds a /gif slash command
 // to display a GIF based on user keywords.
 type GiphyPlugin struct {
 	plugin.MattermostPlugin
-	siteURL       string
+	siteURL string
 
 	configuration atomic.Value
 	gifProvider   gifProvider
@@ -62,7 +62,7 @@ func (p *GiphyPlugin) OnActivate() error {
 	}
 	err = p.API.RegisterCommand(&model.Command{
 		Trigger:          triggerGifs,
-		Description:      "TODO shuffle",// TODO update that and also update the README!!
+		Description:      "TODO shuffle", // TODO update that and also update the README!!
 		DisplayName:      "Giphy command, shuffle mode",
 		AutoComplete:     true,
 		AutoCompleteDesc: "Posts a Giphy GIF that matches the keyword(s)",
@@ -142,7 +142,7 @@ func (p *GiphyPlugin) generateShufflePostText(keywords string, gifURL string) st
 func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL string) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
 		contextKeywords: keywords,
-		contextGifURL: gifURL,
+		contextGifURL:   gifURL,
 	}
 
 	actions := []*model.PostAction{}
@@ -150,7 +150,7 @@ func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL str
 		Name: "Cancel",
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
-			URL: fmt.Sprintf("%s/plugins/%s/cancel", p.siteURL, pluginID),
+			URL:     fmt.Sprintf("%s/plugins/%s/cancel", p.siteURL, pluginID),
 			Context: actionContext,
 		},
 	})
@@ -158,7 +158,7 @@ func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL str
 		Name: "Shuffle",
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
-			URL: fmt.Sprintf("%s/plugins/%s/shuffle", p.siteURL, pluginID),
+			URL:     fmt.Sprintf("%s/plugins/%s/shuffle", p.siteURL, pluginID),
 			Context: actionContext,
 		},
 	})
@@ -166,11 +166,10 @@ func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL str
 		Name: "Post",
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
-			URL: fmt.Sprintf("%s/plugins/%s/post", p.siteURL, pluginID),
+			URL:     fmt.Sprintf("%s/plugins/%s/post", p.siteURL, pluginID),
 			Context: actionContext,
 		},
 	})
-
 
 	attachments := []*model.SlackAttachment{}
 	attachments = append(attachments, &model.SlackAttachment{
@@ -180,7 +179,6 @@ func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL str
 
 	return attachments
 }
-
 
 func getCommandKeywords(commandLine string, trigger string) string {
 	return strings.Replace(commandLine, "/"+trigger, "", 1)
@@ -225,7 +223,7 @@ func (p *GiphyPlugin) handleHTTPAction(action HandlerFunc, c *plugin.Context, w 
 	}
 	keywords, ok := request.Context[contextKeywords]
 	if !ok {
-		p.API.LogError("Giphy Plugin: missing " + contextKeywords +" from action request context")
+		p.API.LogError("Giphy Plugin: missing " + contextKeywords + " from action request context")
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
@@ -252,9 +250,9 @@ func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, 
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
 func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
-		// TODO : here we can't seem to update the actions correctly (they bear the context, which includes the gifURL, so they *must* be updated). Either wer're doing it wrong, either there's a bug, which should be notified in Contributors channel. In the meanwhile, there's the ugly possiblity to delete previous ephemeral message and create a new one /shrug/
+	// TODO : here we can't seem to update the actions correctly (they bear the context, which includes the gifURL, so they *must* be updated). Either wer're doing it wrong, either there's a bug, which should be notified in Contributors channel. In the meanwhile, there's the ugly possiblity to delete previous ephemeral message and create a new one /shrug/
 	post := &model.Post{
-		Id: request.PostId,
+		Id:      request.PostId,
 		Message: p.generateShufflePostText(keywords, gifURL),
 		/*Props: map[string]interface{}{
 			"attachments": p.generateShufflePostAttachments(keywords.(string), gifURL.(string)),
@@ -272,8 +270,8 @@ func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, ke
 	}
 	p.API.DeleteEphemeralPost(request.UserId, ephemeralPost)
 	post := &model.Post{
-		Message: p.generateShufflePostText(keywords, gifURL),
-		UserId: request.UserId,
+		Message:   p.generateShufflePostText(keywords, gifURL),
+		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 	}
 	_, err := p.API.CreatePost(post)
