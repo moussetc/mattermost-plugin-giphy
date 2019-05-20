@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"io/ioutil"
 	"net/http"
 )
@@ -22,7 +21,7 @@ const (
 // getGifURL return the URL of a GIF that matches the requested keywords
 func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
 	if config.APIKey == "" {
-		return "", errors.New("Giphy API key is empty")
+		return "", appError("Giphy API key is empty", nil)
 	}
 	req, err := http.NewRequest("GET", BASE_URL+"/translate", nil)
 	if err != nil {
