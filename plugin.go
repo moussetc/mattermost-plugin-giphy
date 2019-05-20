@@ -7,7 +7,6 @@ import (
 	"sync/atomic"
 
 	"github.com/mattermost/mattermost-server/model"
-	//"github.com/gorilla/mux"
 	"github.com/mattermost/mattermost-server/plugin"
 )
 
@@ -42,7 +41,6 @@ type GiphyPluginConfiguration struct {
 
 // OnActivate register the plugin commands
 func (p *GiphyPlugin) OnActivate() error {
-
 	if p.API.GetConfig().ServiceSettings.SiteURL == nil {
 		return appError("siteURL must be set for the plugin to work. Please set a siteURL and restart the plugin", nil)
 	}
@@ -51,10 +49,10 @@ func (p *GiphyPlugin) OnActivate() error {
 	p.enabled = true
 	err := p.API.RegisterCommand(&model.Command{
 		Trigger:          triggerGif,
-		Description:      "Posts a Giphy GIF that matches the keyword(s)",
-		DisplayName:      "Giphy command",
+		Description:      "Post a GIF from Giphy matching your search",
+		DisplayName:      "Giphy Search",
 		AutoComplete:     true,
-		AutoCompleteDesc: "Posts a Giphy GIF that matches the keyword(s)",
+		AutoCompleteDesc: "Post a GIF from Giphy matching your search",
 		AutoCompleteHint: "happy kitty",
 	})
 	if err != nil {
@@ -62,11 +60,11 @@ func (p *GiphyPlugin) OnActivate() error {
 	}
 	err = p.API.RegisterCommand(&model.Command{
 		Trigger:          triggerGifs,
-		Description:      "TODO shuffle", // TODO update that and also update the README!!
-		DisplayName:      "Giphy command, shuffle mode",
+		Description:      "Preview a GIF from Giphy",
+		DisplayName:      "Giphy Shuffle",
 		AutoComplete:     true,
-		AutoCompleteDesc: "Posts a Giphy GIF that matches the keyword(s)",
-		AutoCompleteHint: "happy kitty",
+		AutoCompleteDesc: "Let you preview and shuffle a GIF from Giphy before posting for real",
+		AutoCompleteHint: "mayhem guy",
 	})
 	if err != nil {
 		return err
@@ -173,7 +171,6 @@ func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL str
 
 	attachments := []*model.SlackAttachment{}
 	attachments = append(attachments, &model.SlackAttachment{
-		//Text : " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")",
 		Actions: actions,
 	})
 
@@ -218,12 +215,12 @@ func (p *GiphyPlugin) handleHTTPAction(action HandlerFunc, c *plugin.Context, w 
 
 	gifURL, ok := request.Context[contextGifURL]
 	if !ok {
-		p.API.LogError("Giphy Plugin: missing " + contextGifURL + " from action request context")
+		p.logHandlerError("Missing "+contextGifURL+" from action request context", nil, request)
 		w.WriteHeader(http.StatusBadRequest)
 	}
 	keywords, ok := request.Context[contextKeywords]
 	if !ok {
-		p.API.LogError("Giphy Plugin: missing " + contextKeywords + " from action request context")
+		p.logHandlerError("Missing "+contextKeywords+" from action request context", nil, request)
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
@@ -250,16 +247,24 @@ func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, 
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
 func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
-	// TODO : here we can't seem to update the actions correctly (they bear the context, which includes the gifURL, so they *must* be updated). Either wer're doing it wrong, either there's a bug, which should be notified in Contributors channel. In the meanwhile, there's the ugly possiblity to delete previous ephemeral message and create a new one /shrug/
+	shuffledGifURL, err := p.gifProvider.getGifURL(p.config(), keywords)
+	if err != nil {
+		p.logHandlerError("Unable to fetch a new Gif for shuffling", err, request)
+		return http.StatusServiceUnavailable
+	}
+
 	post := &model.Post{
-		Id:      request.PostId,
-		Message: p.generateShufflePostText(keywords, gifURL),
-		/*Props: map[string]interface{}{
-			"attachments": p.generateShufflePostAttachments(keywords.(string), gifURL.(string)),
-		},*/
+		Id:        request.PostId,
+		ChannelId: request.ChannelId,
+		UserId:    request.UserId,
+		Message:   p.generateShufflePostText(keywords, shuffledGifURL),
+		Props: map[string]interface{}{
+			"attachments": p.generateShufflePostAttachments(keywords, shuffledGifURL),
+		},
+		CreateAt: model.GetMillis(),
+		UpdateAt: model.GetMillis(),
 	}
 	p.API.UpdateEphemeralPost(request.UserId, post)
-
 	return http.StatusOK
 }
 
@@ -276,10 +281,22 @@ func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, ke
 	}
 	_, err := p.API.CreatePost(post)
 	if err != nil {
-		p.API.LogError("Could not create post", err)
+		p.logHandlerError("Unable to create post : ", err, request)
 		return http.StatusInternalServerError
 	}
 	return http.StatusOK
+}
+
+// logHandlerError informs the user of an error that occured in a buttion handler, and also logs it
+func (p *GiphyPlugin) logHandlerError(message string, err error, request *model.PostActionIntegrationRequest) {
+	p.API.SendEphemeralPost(request.UserId, &model.Post{
+		Message:   "Giphy Plugin: " + message + "\n`" + err.Error() + "`",
+		ChannelId: request.ChannelId,
+		Props: map[string]interface{}{
+			"sent_by_plugin": true,
+		},
+	})
+	p.API.LogWarn(message, appError("", err))
 }
 
 // Install the RCP plugin
