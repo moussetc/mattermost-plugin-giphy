@@ -1,0 +1,34 @@
+# See current containers
+sudo docker ps -a
+
+# Same but only displays containers id
+sudo docker ps -aq
+
+# Create and run container from Mattermost Preview image
+sudo docker run --name mattermost-preview -d --publish 8065:8065 mattermost/mattermost-preview
+# SI CETTE COMMANDE ECHOUE AVEC "pull access denied" SUPPRIMER L'IMAGE ET RECOMMENCER
+
+# Run existing container
+docker start CONTAINER_ID
+
+# Local adress of Mattermost server
+http://localhost:8065/
+
+# Create account, always start with admin/admin so it's easy to remember.
+# Create team, always "test" so it's easy to remember.
+
+# Stop running containers
+docker stop $(docker ps -aq)
+
+# Allow plugins upload from container terminal
+## Get bash terminal on container
+sudo docker exec -ti mattermost-preview /bin/bash
+## Install Vim
+apt-get update
+apt-get install vim
+# Edit config file for Docker
+vim mattermost/config/config_docker.json
+# Set EnableUploads property to true, save, reload plugin admin page
+
+# Save container as new image
+docker commit matt6 mattermost/mattermost-preview:matt5.6PluginReady
