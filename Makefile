@@ -5,7 +5,7 @@ SRC=plugin.go post.go shuffle.go gif.go
 EXEC=plugin
 CONF=plugin.yaml
 PACKAGE_BASENAME=mattermost-plugin-giphy
-TEST=plugin_test.go gifProvider_test.go
+TEST=plugin_test.go gif_test.go
 
 all: test-coverage dist-all
 

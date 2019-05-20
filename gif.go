@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -8,7 +9,7 @@ import (
 
 // gifProvider exposes methods to get GIF URLs
 type gifProvider interface {
-	getGifURL(config *GiphyPluginConfiguration, request string) (string, error)
+	getGifURL(config *GiphyPluginConfiguration, request string, counter int) (string, error)
 }
 
 // giphyProvider get GIF URLs from the Giphy API without any external, out-of-date library
@@ -19,19 +20,26 @@ const (
 )
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
+func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request string, counter int) (string, error) {
 	if config.APIKey == "" {
 		return "", appError("Giphy API key is empty", nil)
 	}
-	req, err := http.NewRequest("GET", BASE_URL+"/translate", nil)
+	req, err := http.NewRequest("GET", BASE_URL+"/search", nil)
 	if err != nil {
 		return "", appError("Could not generate URL", err)
 	}
 
 	q := req.URL.Query()
 	q.Add("api_key", config.APIKey)
-	q.Add("s", request)
-	q.Add("weirdness", "0")
+	q.Add("q", request)
+	q.Add("offset", fmt.Sprintf("%d", counter))
+	q.Add("limit", "1")
+	if len(config.Rating) > 0 {
+		q.Add("rating", config.Rating)
+	}
+	if len(config.Language) > 0 {
+		q.Add("lang", config.Language)
+	}
 
 	req.URL.RawQuery = q.Encode()
 	requestURL := req.URL.String()
@@ -56,14 +64,17 @@ func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request stri
 	if err != nil {
 		return "", appError("Error unmarshalling JSON", err)
 	}
-	var dataNode map[string]*json.RawMessage
+	var dataNode []map[string]*json.RawMessage
 	err = json.Unmarshal(*rootNode["data"], &dataNode)
 	if err != nil {
 		return "", appError("Error unmarshalling JSON", err)
 	}
+	if len(dataNode) < 1 {
+		return "", appError("No match found", err)
+	}
 
 	var imagesNode map[string]*json.RawMessage
-	err = json.Unmarshal(*dataNode["images"], &imagesNode)
+	err = json.Unmarshal(*dataNode[0]["images"], &imagesNode)
 	if err != nil {
 		return "", appError("Error unmarshalling JSON", err)
 	}
