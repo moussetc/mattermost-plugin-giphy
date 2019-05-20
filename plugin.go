@@ -17,6 +17,7 @@ const (
 	pluginID        = "com.github.moussetc.mattermost.plugin.giphy" // TODO get that from manifest
 	contextKeywords = "keywords"
 	contextGifURL   = "gifURL"
+	contextCounter  = "counter"
 	URLShuffle      = "/shuffle"
 	URLCancel       = "/cancel"
 	URLSend         = "/send"

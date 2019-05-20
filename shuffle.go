@@ -11,19 +11,20 @@ import (
 
 // executeCommandGifShuffle returns an ephemeral (private) post with one GIF that can either be posted, shuffled or canceled
 func (p *GiphyPlugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+	counter := 0
 	keywords := getCommandKeywords(command, triggerGifs)
-	gifURL, err := p.gifProvider.getGifURL(p.config(), keywords)
+	gifURL, err := p.gifProvider.getGifURL(p.config(), keywords, counter)
 	if err != nil {
 		return nil, appError("Unable to get GIF URL", err)
 	}
 
 	text := p.generateGifCaption(keywords, gifURL)
-	attachments := p.generateShufflePostAttachments(keywords, gifURL)
+	attachments := p.generateShufflePostAttachments(keywords, gifURL, counter)
 
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
 }
 
-type handlerFunc func(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int
+type handlerFunc func(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int
 
 // handleHTTPAction reads the Gif context for an action (buttons) and execute the action
 func (p *GiphyPlugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w http.ResponseWriter, r *http.Request) {
@@ -33,7 +34,6 @@ func (p *GiphyPlugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 	gifURL, ok := request.Context[contextGifURL]
 	if !ok {
 		p.logHandlerError("Missing "+contextGifURL+" from action request context", nil, request)
@@ -44,8 +44,13 @@ func (p *GiphyPlugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w 
 		p.logHandlerError("Missing "+contextKeywords+" from action request context", nil, request)
 		w.WriteHeader(http.StatusBadRequest)
 	}
+	counter, ok := request.Context[contextCounter]
+	if !ok {
+		p.logHandlerError("Missing "+contextCounter+" from action request context", nil, request)
+		w.WriteHeader(http.StatusBadRequest)
+	}
 
-	httpStatus := action(request, keywords.(string), gifURL.(string))
+	httpStatus := action(request, keywords.(string), gifURL.(string), int(counter.(float64)))
 	w.WriteHeader(httpStatus)
 
 	if httpStatus == http.StatusOK {
@@ -56,10 +61,11 @@ func (p *GiphyPlugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w 
 	}
 }
 
-func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL string) []*model.SlackAttachment {
+func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL string, counter int) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
 		contextKeywords: keywords,
 		contextGifURL:   gifURL,
+		contextCounter:  counter,
 	}
 
 	actions := []*model.PostAction{}
@@ -76,7 +82,7 @@ func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL str
 }
 
 // handleCancel delete the ephemeral shuffle post
-func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
+func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
 	post := &model.Post{
 		Id: request.PostId,
 	}
@@ -86,8 +92,10 @@ func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, 
 }
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
-func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
-	shuffledGifURL, err := p.gifProvider.getGifURL(p.config(), keywords)
+func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
+	// Make sure we don't send the same GIF twice
+	counter = counter + 1
+	shuffledGifURL, err := p.gifProvider.getGifURL(p.config(), keywords, counter)
 	if err != nil {
 		p.logHandlerError("Unable to fetch a new Gif for shuffling", err, request)
 		return http.StatusServiceUnavailable
@@ -99,7 +107,7 @@ func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest,
 		UserId:    request.UserId,
 		Message:   p.generateGifCaption(keywords, shuffledGifURL),
 		Props: map[string]interface{}{
-			"attachments": p.generateShufflePostAttachments(keywords, shuffledGifURL),
+			"attachments": p.generateShufflePostAttachments(keywords, shuffledGifURL, counter),
 		},
 		CreateAt: model.GetMillis(),
 		UpdateAt: model.GetMillis(),
@@ -109,7 +117,7 @@ func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest,
 }
 
 // handlePost post the actual GIF and delete the obsolete ephemeral post
-func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
+func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
 	ephemeralPost := &model.Post{
 		Id: request.PostId,
 	}
