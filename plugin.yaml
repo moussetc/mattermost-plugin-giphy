@@ -6,11 +6,6 @@ backend:
     executable: plugin
 settings_schema:
     settings:
-        - key: EncryptionKey
-          type: generated
-          display_name: Encryption key
-          help_text: Please generate an encryption key (used to check no user can post GIF as another user).
-          default: ""
         - key: APIKey
           type: text
           display_name: Giphy API Key

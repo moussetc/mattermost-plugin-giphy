@@ -39,7 +39,6 @@ type GiphyPluginConfiguration struct {
 	Language      string
 	Rendition     string
 	APIKey        string
-	EncryptionKey string
 }
 
 // OnActivate register the plugin commands
