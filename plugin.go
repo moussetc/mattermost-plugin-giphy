@@ -17,6 +17,9 @@ const (
 	pluginID        = "com.github.moussetc.mattermost.plugin.giphy" // TODO get that from manifest
 	contextKeywords = "keywords"
 	contextGifURL   = "gifURL"
+	URLShuffle      = "/shuffle"
+	URLCancel       = "/cancel"
+	URLSend         = "/send"
 )
 
 // GiphyPlugin is a Mattermost plugin that adds a /gif slash command
@@ -90,7 +93,7 @@ func (p *GiphyPlugin) OnDeactivate() error {
 	return nil
 }
 
-// ExecuteCommand returns a post that displays a GIF choosen using Giphy
+// ExecuteCommand dispatch the command based on the trigger word
 func (p *GiphyPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	if !p.enabled {
 		return nil, appError("Cannot execute command while the plugin is disabled.", nil)
@@ -108,195 +111,43 @@ func (p *GiphyPlugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs)
 	return nil, appError("Command trigger "+args.Command+"is not supported by this plugin.", nil)
 }
 
-// executeCommandGif returns a public post containing a matching GIF
-func (p *GiphyPlugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
-	keywords := getCommandKeywords(command, triggerGif)
-	gifURL, err := p.gifProvider.getGifURL(p.config(), keywords)
-	if err != nil {
-		return nil, appError("Unable to get GIF URL", err)
-	}
-
-	text := " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
-	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, Text: text}, nil
-}
-
-// executeCommandGifShuffle returns an ephemeral (private) post with one GIF that can either be posted, shuffled or canceled
-func (p *GiphyPlugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
-	keywords := getCommandKeywords(command, triggerGifs)
-	gifURL, err := p.gifProvider.getGifURL(p.config(), keywords)
-	if err != nil {
-		return nil, appError("Unable to get GIF URL", err)
-	}
-
-	text := p.generateShufflePostText(keywords, gifURL)
-	attachments := p.generateShufflePostAttachments(keywords, gifURL)
-
-	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
-}
-func (p *GiphyPlugin) generateShufflePostText(keywords string, gifURL string) string {
-	return " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
-}
-
-func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL string) []*model.SlackAttachment {
-	actionContext := map[string]interface{}{
-		contextKeywords: keywords,
-		contextGifURL:   gifURL,
-	}
-
-	actions := []*model.PostAction{}
-	actions = append(actions, &model.PostAction{
-		Name: "Cancel",
-		Type: model.POST_ACTION_TYPE_BUTTON,
-		Integration: &model.PostActionIntegration{
-			URL:     fmt.Sprintf("%s/plugins/%s/cancel", p.siteURL, pluginID),
-			Context: actionContext,
-		},
-	})
-	actions = append(actions, &model.PostAction{
-		Name: "Shuffle",
-		Type: model.POST_ACTION_TYPE_BUTTON,
-		Integration: &model.PostActionIntegration{
-			URL:     fmt.Sprintf("%s/plugins/%s/shuffle", p.siteURL, pluginID),
-			Context: actionContext,
-		},
-	})
-	actions = append(actions, &model.PostAction{
-		Name: "Post",
-		Type: model.POST_ACTION_TYPE_BUTTON,
-		Integration: &model.PostActionIntegration{
-			URL:     fmt.Sprintf("%s/plugins/%s/post", p.siteURL, pluginID),
-			Context: actionContext,
-		},
-	})
-
-	attachments := []*model.SlackAttachment{}
-	attachments = append(attachments, &model.SlackAttachment{
-		Actions: actions,
-	})
-
-	return attachments
-}
-
 func getCommandKeywords(commandLine string, trigger string) string {
 	return strings.Replace(commandLine, "/"+trigger, "", 1)
 }
 
-func appError(message string, err error) *model.AppError {
-	errorMessage := ""
-	if err != nil {
-		errorMessage = err.Error()
-	}
-	return model.NewAppError("Giphy Plugin", message, nil, errorMessage, http.StatusBadRequest)
-}
-
-type HandlerFunc func(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int
-
 // ServeHTTP serve the post action to display an ephemeral spoiler
 func (p *GiphyPlugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
-	case "/shuffle":
+	case URLShuffle:
 		p.handleHTTPAction(p.handleShuffle, c, w, r)
-	case "/post":
+	case URLSend:
 		p.handleHTTPAction(p.handlePost, c, w, r)
-	case "/cancel":
+	case URLCancel:
 		p.handleHTTPAction(p.handleCancel, c, w, r)
 	default:
 		http.NotFound(w, r)
 	}
 }
 
-func (p *GiphyPlugin) handleHTTPAction(action HandlerFunc, c *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	// Read data added by default for a button action
-	request := model.PostActionIntegrationRequestFromJson(r.Body)
-	if request == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	gifURL, ok := request.Context[contextGifURL]
-	if !ok {
-		p.logHandlerError("Missing "+contextGifURL+" from action request context", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-	}
-	keywords, ok := request.Context[contextKeywords]
-	if !ok {
-		p.logHandlerError("Missing "+contextKeywords+" from action request context", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-	}
-
-	httpStatus := action(request, keywords.(string), gifURL.(string))
-	w.WriteHeader(httpStatus)
-
-	if httpStatus == http.StatusOK {
-		// Return the object the MM server expects in case of 200 status
-		response := &model.PostActionIntegrationResponse{}
-		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(response.ToJson())
-	}
-}
-
-// handleCancel delete the ephemeral shuffle post
-func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
-	post := &model.Post{
-		Id: request.PostId,
-	}
-	p.API.DeleteEphemeralPost(request.UserId, post)
-
-	return http.StatusOK
-}
-
-// handleShuffle replace the GIF in the ephemeral shuffle post by a new one
-func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
-	shuffledGifURL, err := p.gifProvider.getGifURL(p.config(), keywords)
-	if err != nil {
-		p.logHandlerError("Unable to fetch a new Gif for shuffling", err, request)
-		return http.StatusServiceUnavailable
-	}
-
-	post := &model.Post{
-		Id:        request.PostId,
-		ChannelId: request.ChannelId,
-		UserId:    request.UserId,
-		Message:   p.generateShufflePostText(keywords, shuffledGifURL),
-		Props: map[string]interface{}{
-			"attachments": p.generateShufflePostAttachments(keywords, shuffledGifURL),
+// Generate an attachment for an action Button that will point to a plugin HTTP handler
+func (p *GiphyPlugin) generateButton(name string, urlAction string, context map[string]interface{}) *model.PostAction {
+	return &model.PostAction{
+		Name: name,
+		Type: model.POST_ACTION_TYPE_BUTTON,
+		Integration: &model.PostActionIntegration{
+			URL:     fmt.Sprintf("%s/plugins/%s"+urlAction, p.siteURL, pluginID),
+			Context: context,
 		},
-		CreateAt: model.GetMillis(),
-		UpdateAt: model.GetMillis(),
 	}
-	p.API.UpdateEphemeralPost(request.UserId, post)
-	return http.StatusOK
 }
 
-// handlePost post the actual GIF and delete the obsolete ephemeral post
-func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, keywords string, gifURL string) int {
-	ephemeralPost := &model.Post{
-		Id: request.PostId,
-	}
-	p.API.DeleteEphemeralPost(request.UserId, ephemeralPost)
-	post := &model.Post{
-		Message:   p.generateShufflePostText(keywords, gifURL),
-		UserId:    request.UserId,
-		ChannelId: request.ChannelId,
-	}
-	_, err := p.API.CreatePost(post)
+//appError generates a normalized error for this plugin
+func appError(message string, err error) *model.AppError {
+	errorMessage := ""
 	if err != nil {
-		p.logHandlerError("Unable to create post : ", err, request)
-		return http.StatusInternalServerError
+		errorMessage = err.Error()
 	}
-	return http.StatusOK
-}
-
-// logHandlerError informs the user of an error that occured in a buttion handler, and also logs it
-func (p *GiphyPlugin) logHandlerError(message string, err error, request *model.PostActionIntegrationRequest) {
-	p.API.SendEphemeralPost(request.UserId, &model.Post{
-		Message:   "Giphy Plugin: " + message + "\n`" + err.Error() + "`",
-		ChannelId: request.ChannelId,
-		Props: map[string]interface{}{
-			"sent_by_plugin": true,
-		},
-	})
-	p.API.LogWarn(message, appError("", err))
+	return model.NewAppError("Giphy Plugin", message, nil, errorMessage, http.StatusBadRequest)
 }
 
 // Install the RCP plugin

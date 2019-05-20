@@ -1,7 +1,7 @@
 #
 # Makefile for Mattermost Giphy Plugin
 #
-SRC=plugin.go gifProvider.go
+SRC=plugin.go post.go shuffle.go gif.go
 EXEC=plugin
 CONF=plugin.yaml
 PACKAGE_BASENAME=mattermost-plugin-giphy
