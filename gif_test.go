@@ -1,6 +1,6 @@
 package main
 
-import (
+/*import (
 	"errors"
 	"io/ioutil"
 	"testing"
@@ -40,4 +40,4 @@ func getDefaultConfig(t *testing.T) (*GiphyPluginConfiguration, error) {
 	}
 
 	return config, nil
-}
+}*/

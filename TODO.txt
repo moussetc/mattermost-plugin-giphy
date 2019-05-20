@@ -1,0 +1,13 @@
+~~~~~TODO~~~~~
+- add cancel link => can't because we don't know postID
+- delete ephemeral message on post or cancelling => can't because we don't know postID
+- set the server root url in the plugin config and update README => wait a day or two to see if the darling devs answer!
+- find a way to NOT need to hard code the server root url
+- add security to prevent any user from sending stuff for other users
+- remove all warnings from the code
+- add code documentation
+- write tests so the coverage is satisfying
+
+WHY NOT A BUTTON IN EPHEMERAL MESSAGE :
+https://mattermost.atlassian.net/browse/MM-10516 
+=> button may appear if an ID is provided, but an error will appear because MM doesn't handle ephemeral buttons yet.
