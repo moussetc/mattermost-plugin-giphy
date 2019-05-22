@@ -3,10 +3,8 @@ package main
 import (
 	"fmt"
 	"encoding/json"
-	"bytes"
 	"net/http"
 	"github.com/mattermost/mattermost-server/plugin"
-	"github.com/mattermost/mattermost-server/model"
 )
 
 // gifyCatProvider get GIF URLs from the GfyCat API, using Mattermost settings
@@ -45,7 +43,7 @@ func (p *gfyCatProvider) getGifURL(api *plugin.API, config *GiphyPluginConfigura
 	}
 
 	if r.StatusCode != http.StatusOK {
-		return "", appError("Error calling the GfyCat search API (HTTP Status: "+string(r.StatusCode)+")", nil)
+		return "", appError(fmt.Sprintf("Error calling the GfyCat search API (HTTP Status: %v)", r.StatusCode), nil)
 	}
 	var response gfySearchResult
 	decoder := json.NewDecoder(r.Body)
