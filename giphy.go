@@ -5,12 +5,8 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"github.com/mattermost/mattermost-server/plugin"
 )
-
-// gifProvider exposes methods to get GIF URLs
-type gifProvider interface {
-	getGifURL(config *GiphyPluginConfiguration, request string, counter int) (string, error)
-}
 
 // giphyProvider get GIF URLs from the Giphy API without any external, out-of-date library
 type giphyProvider struct{}
@@ -20,7 +16,7 @@ const (
 )
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *giphyProvider) getGifURL(config *GiphyPluginConfiguration, request string, counter int) (string, error) {
+func (p *giphyProvider) getGifURL(api *plugin.API, config *GiphyPluginConfiguration, request string, counter int) (string, error) {
 	if config.APIKey == "" {
 		return "", appError("Giphy API key is empty", nil)
 	}

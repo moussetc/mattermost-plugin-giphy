@@ -42,6 +42,11 @@ type GiphyPluginConfiguration struct {
 	APIKey        string
 }
 
+// gifProvider exposes methods to get GIF URLs
+type gifProvider interface {
+	getGifURL(API *plugin.API, config *GiphyPluginConfiguration, request string, counter int) (string, error)
+}
+
 // OnActivate register the plugin commands
 func (p *GiphyPlugin) OnActivate() error {
 	if p.API.GetConfig().ServiceSettings.SiteURL == nil {
@@ -153,6 +158,8 @@ func appError(message string, err error) *model.AppError {
 // Install the RCP plugin
 func main() {
 	p := GiphyPlugin{}
-	p.gifProvider = &giphyProvider{}
+	// TODO wrap all call to gif api in a method that chooses which provider to use based on the plugin configuration. Also : add option to choose between GIPHY and GFYCAT in the plugin configuration.
+	p.gifProvider = &gfyCatProvider{}
+	//p.gifProvider = &giphyProvider{}
 	plugin.ClientMain(&p)
 }
