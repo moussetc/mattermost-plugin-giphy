@@ -1,11 +1,11 @@
 package main
 
 import (
-	"strings"
 	"encoding/json"
 	"fmt"
 	"github.com/mattermost/mattermost-server/plugin"
 	"net/http"
+	"strings"
 )
 
 // gifyCatProvider get GIF URLs from the GfyCat API, using Mattermost settings
@@ -21,22 +21,24 @@ type gfySearchResult struct {
 }
 
 type gfyGIF struct {
-	GifUrl string	`json:"gifUrl"`
+	GifUrl      string `json:"gifUrl"`
 	ContentUrls map[string]struct {
 		Url string `json:"url"`
-	}    `json:"content_urls"`
+	} `json:"content_urls"`
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *gfyCatProvider) getGifURL(api *plugin.API, config *PluginConfiguration, request string, counter int) (string, error) {
+func (p *gfyCatProvider) getGifURL(api *plugin.API, config *PluginConfiguration, request string, cursor *string) (string, error) {
 	req, err := http.NewRequest("GET", GFYCAT_BASE_URL+"/gfycats/search", nil)
 	if err != nil {
 		return "", appError("Could not generate GfyCat search URL", err)
 	}
-	// TODO there's a "cursor" which might serve the same than the Giphy counter, so it's not always the same GIF returned!
 	q := req.URL.Query()
 	q.Add("search_text", request)
 	q.Add("count", "1")
+	if *cursor != "" {
+		q.Add("cursor", *cursor)
+	}
 	req.URL.RawQuery = q.Encode()
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
@@ -60,8 +62,9 @@ func (p *gfyCatProvider) getGifURL(api *plugin.API, config *PluginConfiguration,
 	gif := response.Gfycats[0]
 	url := gif.ContentUrls[(*config).RenditionGfycat].Url
 	// Ignore suffix without a Mattermost preview
-	if url == "" || strings.HasSuffix(url, ".webm") || strings.HasSuffix(url, ".mp4")  {
+	if url == "" || strings.HasSuffix(url, ".webm") || strings.HasSuffix(url, ".mp4") {
 		url = gif.GifUrl
 	}
+	*cursor = response.Cursor
 	return url, nil
 }

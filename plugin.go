@@ -17,7 +17,7 @@ const (
 	pluginID        = "com.github.moussetc.mattermost.plugin.giphy" // TODO get that from manifest
 	contextKeywords = "keywords"
 	contextGifURL   = "gifURL"
-	contextCounter  = "counter"
+	contextCursor   = "cursor"
 	URLShuffle      = "/shuffle"
 	URLCancel       = "/cancel"
 	URLSend         = "/send"
@@ -36,17 +36,17 @@ type Plugin struct {
 
 // PluginConfiguration contains all plugin parameters
 type PluginConfiguration struct {
-	Provider  string
-	Rating    string
-	Language  string
-	Rendition string
+	Provider        string
+	Rating          string
+	Language        string
+	Rendition       string
 	RenditionGfycat string
-	APIKey    string
+	APIKey          string
 }
 
 // gifProvider exposes methods to get GIF URLs
 type gifProvider interface {
-	getGifURL(API *plugin.API, config *PluginConfiguration, request string, counter int) (string, error)
+	getGifURL(API *plugin.API, config *PluginConfiguration, request string, cursor *string) (string, error)
 }
 
 // OnActivate register the plugin commands
