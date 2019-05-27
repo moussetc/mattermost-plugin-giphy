@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
-	"sync/atomic"
+	"sync"
 
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
@@ -14,7 +14,6 @@ const (
 	// Triggers used to define slash commands
 	triggerGif      = "gif"
 	triggerGifs     = "gifs"
-	pluginID        = "com.github.moussetc.mattermost.plugin.giphy" // TODO get that from manifest
 	contextKeywords = "keywords"
 	contextGifURL   = "gifURL"
 	contextCursor   = "cursor"
@@ -29,24 +28,16 @@ type Plugin struct {
 	plugin.MattermostPlugin
 	siteURL string
 
-	configuration atomic.Value
-	gifProvider   gifProvider
-	enabled       bool
-}
+	configurationLock sync.RWMutex
+	configuration     *configuration
 
-// PluginConfiguration contains all plugin parameters
-type PluginConfiguration struct {
-	Provider        string
-	Rating          string
-	Language        string
-	Rendition       string
-	RenditionGfycat string
-	APIKey          string
+	gifProvider gifProvider
+	enabled     bool
 }
 
 // gifProvider exposes methods to get GIF URLs
 type gifProvider interface {
-	getGifURL(API *plugin.API, config *PluginConfiguration, request string, cursor *string) (string, error)
+	getGifURL(API *plugin.API, config *configuration, request string, cursor *string) (string, error)
 }
 
 // OnActivate register the plugin commands
@@ -82,31 +73,6 @@ func (p *Plugin) OnActivate() error {
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (p *Plugin) config() *PluginConfiguration {
-	return p.configuration.Load().(*PluginConfiguration)
-}
-
-// OnConfigurationChange apply a new plugin configuration
-func (p *Plugin) OnConfigurationChange() error {
-	var configuration PluginConfiguration
-	if err := p.API.LoadPluginConfiguration(&configuration); err != nil {
-		return err
-	}
-	if configuration.Provider == "" {
-		return appError("GIF Provider setting must be set", nil)
-	}
-	if configuration.Provider == "giphy" {
-		if configuration.APIKey == "" {
-			return appError("The API Key setting must be set for Giphy", nil)
-		}
-		p.gifProvider = &giphyProvider{}
-	} else {
-		p.gifProvider = &gfyCatProvider{}
-	}
-	p.configuration.Store(&configuration)
 	return nil
 }
 
@@ -158,7 +124,7 @@ func (p *Plugin) generateButton(name string, urlAction string, context map[strin
 		Name: name,
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
-			URL:     fmt.Sprintf("%s/plugins/%s"+urlAction, p.siteURL, pluginID),
+			URL:     fmt.Sprintf("%s/plugins/%s"+urlAction, p.siteURL, manifest.Id),
 			Context: context,
 		},
 	}
@@ -171,10 +137,4 @@ func appError(message string, err error) *model.AppError {
 		errorMessage = err.Error()
 	}
 	return model.NewAppError("GIF Plugin", message, nil, errorMessage, http.StatusBadRequest)
-}
-
-// Install the RCP plugin
-func main() {
-	p := Plugin{}
-	plugin.ClientMain(&p)
 }

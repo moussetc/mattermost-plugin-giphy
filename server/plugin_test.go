@@ -16,7 +16,7 @@ package main
 
 func initMockAPI() *Plugin {
 
-	configuration := PluginConfiguration{
+	configuration := configuration{
 		Language:  "fr",
 		Rating:    "",
 		Rendition: "fixed_height_small",
@@ -24,8 +24,8 @@ func initMockAPI() *Plugin {
 
 	api := &plugintest.API{}
 
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.PluginConfiguration")).Return(func(dest interface{}) error {
-		*dest.(*PluginConfiguration) = configuration
+	api.On("Loadconfiguration", mock.AnythingOfType("*main.configuration")).Return(func(dest interface{}) error {
+		*dest.(*configuration) = configuration
 		return nil
 	})
 	api.On("RegisterCommand", mock.Anything).Return(nil)
@@ -88,11 +88,11 @@ type mockGifProviderFail struct {
 	errorMessage string
 }
 
-func (m *mockGifProviderFail) getGifURL(config *PluginConfiguration, request string) (string, error) {
+func (m *mockGifProviderFail) getGifURL(config *configuration, request string) (string, error) {
 	return "", errors.New(m.errorMessage)
 }
 
-func (m *mockGifProviderFail) getMultipleGifsURL(config *PluginConfiguration, request string) ([]string, error) {
+func (m *mockGifProviderFail) getMultipleGifsURL(config *configuration, request string) ([]string, error) {
 	return nil, errors.New(m.errorMessage)
 }
 
@@ -101,10 +101,10 @@ type mockGifProvider struct {
 	mockURL string
 }
 
-func (m *mockGifProvider) getGifURL(config *PluginConfiguration, request string) (string, error) {
+func (m *mockGifProvider) getGifURL(config *configuration, request string) (string, error) {
 	return m.mockURL, nil
 }
 
-func (m *mockGifProvider) getMultipleGifsURL(config *PluginConfiguration, request string) ([]string, error) {
+func (m *mockGifProvider) getMultipleGifsURL(config *configuration, request string) ([]string, error) {
 	return []string{m.mockURL, m.mockURL, m.mockURL}, nil
 }*/

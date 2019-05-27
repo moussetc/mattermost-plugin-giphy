@@ -28,7 +28,7 @@ type gfyGIF struct {
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *gfyCatProvider) getGifURL(api *plugin.API, config *PluginConfiguration, request string, cursor *string) (string, error) {
+func (p *gfyCatProvider) getGifURL(api *plugin.API, config *configuration, request string, cursor *string) (string, error) {
 	req, err := http.NewRequest("GET", GFYCAT_BASE_URL+"/gfycats/search", nil)
 	if err != nil {
 		return "", appError("Could not generate GfyCat search URL", err)

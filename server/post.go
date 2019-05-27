@@ -10,7 +10,7 @@ import (
 func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
 	keywords := getCommandKeywords(command, triggerGif)
 	cursor := ""
-	gifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, &cursor)
+	gifURL, err := p.gifProvider.getGifURL(&p.API, p.getConfiguration(), keywords, &cursor)
 	if err != nil {
 		return nil, appError("Unable to get GIF URL", err)
 	}
