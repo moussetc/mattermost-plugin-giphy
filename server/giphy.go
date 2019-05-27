@@ -27,7 +27,7 @@ type giphySearchResult struct {
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, request string, cursor *string) (string, error) {
+func (p *giphyProvider) getGifURL(api *plugin.API, config *configuration, request string, cursor *string) (string, error) {
 	if config.APIKey == "" {
 		return "", appError("Giphy API key is empty", nil)
 	}
@@ -40,7 +40,7 @@ func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, 
 
 	q.Add("api_key", config.APIKey)
 	q.Add("q", request)
-	if counter, err := strconv.Atoi(*cursor); err == nil {
+	if counter, err2 := strconv.Atoi(*cursor); err2 == nil {
 		q.Add("offset", fmt.Sprintf("%d", counter+1))
 	}
 	q.Add("limit", "1")
@@ -60,7 +60,7 @@ func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, 
 	}
 
 	if r.StatusCode != http.StatusOK {
-		return "", appError("Error calling the Giphy API (HTTP Status: "+string(r.StatusCode)+")", nil)
+		return "", appError("Error calling the Giphy API (HTTP Status: "+fmt.Sprintf("%v", r.StatusCode), nil)
 	}
 	var response giphySearchResult
 	decoder := json.NewDecoder(r.Body)

@@ -13,7 +13,7 @@ import (
 func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
 	keywords := getCommandKeywords(command, triggerGifs)
-	gifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, &cursor)
+	gifURL, err := p.gifProvider.getGifURL(&p.API, p.getConfiguration(), keywords, &cursor)
 	if err != nil {
 		return nil, appError("Unable to get GIF URL", err)
 	}
@@ -93,7 +93,7 @@ func (p *Plugin) handleCancel(request *model.PostActionIntegrationRequest, keywo
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
 func (p *Plugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string, cursor string) int {
-	shuffledGifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, &cursor)
+	shuffledGifURL, err := p.gifProvider.getGifURL(&p.API, p.getConfiguration(), keywords, &cursor)
 	if err != nil {
 		p.logHandlerError("Unable to fetch a new Gif for shuffling", err, request)
 		return http.StatusServiceUnavailable

@@ -21,7 +21,7 @@ func TestGiphyProviderGetGIFURL(t *testing.T) {
 	assert.NotEmpty(t, url)
 }
 
-func getDefaultConfig(t *testing.T) (*PluginConfiguration, error) {
+func getDefaultConfig(t *testing.T) (*configuration, error) {
 	yamlFile, err := ioutil.ReadFile("plugin.yaml")
 	if err != nil {
 		return nil, errors.New("could not open plugin configuration which is necessary for this test")
@@ -32,7 +32,7 @@ func getDefaultConfig(t *testing.T) (*PluginConfiguration, error) {
 		return nil, errors.New("could not load plugin configuration which is necessary for this test")
 	}
 
-	config := &PluginConfiguration{
+	config := &configuration{
 		Language:  "fr",
 		Rating:    "",
 		Rendition: "fixed_height_small",
