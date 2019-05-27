@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/mattermost/mattermost-server/plugin"
-	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 // giphyProvider get GIF URLs from the Giphy API without any external, out-of-date library
@@ -15,8 +15,19 @@ const (
 	BASE_URL = "http://api.giphy.com/v1/gifs"
 )
 
+type giphySearchResult struct {
+	Data []struct {
+		Images map[string]struct {
+			Url string `json:"url"`
+		} `json:"images"`
+	} `json:"data"`
+	Pagination struct {
+		Offset int `json:"offset"`
+	} `json:"pagination"`
+}
+
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, request string, counter int) (string, error) {
+func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, request string, cursor *string) (string, error) {
 	if config.APIKey == "" {
 		return "", appError("Giphy API key is empty", nil)
 	}
@@ -26,9 +37,12 @@ func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, 
 	}
 
 	q := req.URL.Query()
+
 	q.Add("api_key", config.APIKey)
 	q.Add("q", request)
-	q.Add("offset", fmt.Sprintf("%d", counter))
+	if counter, err := strconv.Atoi(*cursor); err == nil {
+		q.Add("offset", fmt.Sprintf("%d", counter+1))
+	}
 	q.Add("limit", "1")
 	if len(config.Rating) > 0 {
 		q.Add("rating", config.Rating)
@@ -48,43 +62,17 @@ func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, 
 	if r.StatusCode != http.StatusOK {
 		return "", appError("Error calling the Giphy API (HTTP Status: "+string(r.StatusCode)+")", nil)
 	}
+	var response giphySearchResult
+	decoder := json.NewDecoder(r.Body)
+	if err = decoder.Decode(&response); err != nil {
+		return "", appError("Could not parse GIPHY search response body", err)
+	}
+	if len(response.Data) < 1 {
+		return "", appError("An empty list of GIFs was returned", nil)
+	}
+	gif := response.Data[0]
+	url := gif.Images[config.Rendition].Url
 
-	defer r.Body.Close()
-	data, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		return "", appError("Error reading the Giphy API response", err)
-	}
-
-	var rootNode map[string]*json.RawMessage
-	err = json.Unmarshal(data, &rootNode)
-	if err != nil {
-		return "", appError("Error unmarshalling JSON", err)
-	}
-	var dataNode []map[string]*json.RawMessage
-	err = json.Unmarshal(*rootNode["data"], &dataNode)
-	if err != nil {
-		return "", appError("Error unmarshalling JSON", err)
-	}
-	if len(dataNode) < 1 {
-		return "", appError("No match found", err)
-	}
-
-	var imagesNode map[string]*json.RawMessage
-	err = json.Unmarshal(*dataNode[0]["images"], &imagesNode)
-	if err != nil {
-		return "", appError("Error unmarshalling JSON", err)
-	}
-
-	var imageNode map[string]*json.RawMessage
-	err = json.Unmarshal(*imagesNode[config.Rendition], &imageNode)
-	if err != nil {
-		return "", appError("Error unmarshalling JSON", err)
-	}
-
-	var urlNode string
-	err = json.Unmarshal(*imageNode["url"], &urlNode)
-	if err != nil {
-		return "", appError("Error unmarshalling JSON", err)
-	}
-	return urlNode, nil
+	*cursor = fmt.Sprintf("%d", response.Pagination.Offset)
+	return url, nil
 }

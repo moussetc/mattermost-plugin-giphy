@@ -9,7 +9,8 @@ import (
 // executeCommandGif returns a public post containing a matching GIF
 func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
 	keywords := getCommandKeywords(command, triggerGif)
-	gifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, 0)
+	cursor := ""
+	gifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, &cursor)
 	if err != nil {
 		return nil, appError("Unable to get GIF URL", err)
 	}
