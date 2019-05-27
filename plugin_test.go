@@ -14,9 +14,9 @@ package main
 	"github.com/mattermost/mattermost-server/plugin/plugintest/mock"
 )
 
-func initMockAPI() *GiphyPlugin {
+func initMockAPI() *Plugin {
 
-	configuration := GiphyPluginConfiguration{
+	configuration := PluginConfiguration{
 		Language:  "fr",
 		Rating:    "",
 		Rendition: "fixed_height_small",
@@ -24,13 +24,13 @@ func initMockAPI() *GiphyPlugin {
 
 	api := &plugintest.API{}
 
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.GiphyPluginConfiguration")).Return(func(dest interface{}) error {
-		*dest.(*GiphyPluginConfiguration) = configuration
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.PluginConfiguration")).Return(func(dest interface{}) error {
+		*dest.(*PluginConfiguration) = configuration
 		return nil
 	})
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 
-	p := GiphyPlugin{}
+	p := Plugin{}
 	p.SetAPI(api)
 
 	return &p
@@ -88,11 +88,11 @@ type mockGifProviderFail struct {
 	errorMessage string
 }
 
-func (m *mockGifProviderFail) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
+func (m *mockGifProviderFail) getGifURL(config *PluginConfiguration, request string) (string, error) {
 	return "", errors.New(m.errorMessage)
 }
 
-func (m *mockGifProviderFail) getMultipleGifsURL(config *GiphyPluginConfiguration, request string) ([]string, error) {
+func (m *mockGifProviderFail) getMultipleGifsURL(config *PluginConfiguration, request string) ([]string, error) {
 	return nil, errors.New(m.errorMessage)
 }
 
@@ -101,10 +101,10 @@ type mockGifProvider struct {
 	mockURL string
 }
 
-func (m *mockGifProvider) getGifURL(config *GiphyPluginConfiguration, request string) (string, error) {
+func (m *mockGifProvider) getGifURL(config *PluginConfiguration, request string) (string, error) {
 	return m.mockURL, nil
 }
 
-func (m *mockGifProvider) getMultipleGifsURL(config *GiphyPluginConfiguration, request string) ([]string, error) {
+func (m *mockGifProvider) getMultipleGifsURL(config *PluginConfiguration, request string) ([]string, error) {
 	return []string{m.mockURL, m.mockURL, m.mockURL}, nil
 }*/

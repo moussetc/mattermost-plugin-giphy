@@ -7,7 +7,7 @@ import (
 // Contains all that's related to the basic Post command
 
 // executeCommandGif returns a public post containing a matching GIF
-func (p *GiphyPlugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
+func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
 	keywords := getCommandKeywords(command, triggerGif)
 	gifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, 0)
 	if err != nil {
@@ -18,6 +18,6 @@ func (p *GiphyPlugin) executeCommandGif(command string) (*model.CommandResponse,
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, Text: text}, nil
 }
 
-func (p *GiphyPlugin) generateGifCaption(keywords string, gifURL string) string {
+func (p *Plugin) generateGifCaption(keywords string, gifURL string) string {
 	return " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
 }
