@@ -10,7 +10,7 @@ import (
 // Contains what's related to the Shuffle command
 
 // executeCommandGifShuffle returns an ephemeral (private) post with one GIF that can either be posted, shuffled or canceled
-func (p *GiphyPlugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	counter := 0
 	keywords := getCommandKeywords(command, triggerGifs)
 	gifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, counter)
@@ -27,7 +27,7 @@ func (p *GiphyPlugin) executeCommandGifShuffle(command string, args *model.Comma
 type handlerFunc func(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int
 
 // handleHTTPAction reads the Gif context for an action (buttons) and execute the action
-func (p *GiphyPlugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	// Read data added by default for a button action
 	request := model.PostActionIntegrationRequestFromJson(r.Body)
 	if request == nil {
@@ -61,7 +61,7 @@ func (p *GiphyPlugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w 
 	}
 }
 
-func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL string, counter int) []*model.SlackAttachment {
+func (p *Plugin) generateShufflePostAttachments(keywords string, gifURL string, counter int) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
 		contextKeywords: keywords,
 		contextGifURL:   gifURL,
@@ -82,7 +82,7 @@ func (p *GiphyPlugin) generateShufflePostAttachments(keywords string, gifURL str
 }
 
 // handleCancel delete the ephemeral shuffle post
-func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
+func (p *Plugin) handleCancel(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
 	post := &model.Post{
 		Id: request.PostId,
 	}
@@ -92,7 +92,7 @@ func (p *GiphyPlugin) handleCancel(request *model.PostActionIntegrationRequest, 
 }
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
-func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
+func (p *Plugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
 	// Make sure we don't send the same GIF twice
 	counter = counter + 1
 	shuffledGifURL, err := p.gifProvider.getGifURL(&p.API, p.config(), keywords, counter)
@@ -117,7 +117,7 @@ func (p *GiphyPlugin) handleShuffle(request *model.PostActionIntegrationRequest,
 }
 
 // handlePost post the actual GIF and delete the obsolete ephemeral post
-func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
+func (p *Plugin) handlePost(request *model.PostActionIntegrationRequest, keywords string, gifURL string, counter int) int {
 	ephemeralPost := &model.Post{
 		Id: request.PostId,
 	}
@@ -136,7 +136,7 @@ func (p *GiphyPlugin) handlePost(request *model.PostActionIntegrationRequest, ke
 }
 
 // logHandlerError informs the user of an error that occured in a buttion handler, and also logs it
-func (p *GiphyPlugin) logHandlerError(message string, err error, request *model.PostActionIntegrationRequest) {
+func (p *Plugin) logHandlerError(message string, err error, request *model.PostActionIntegrationRequest) {
 	p.API.SendEphemeralPost(request.UserId, &model.Post{
 		Message:   "Giphy Plugin: " + message + "\n`" + err.Error() + "`",
 		ChannelId: request.ChannelId,

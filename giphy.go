@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
+	"github.com/mattermost/mattermost-server/plugin"
 	"io/ioutil"
 	"net/http"
-	"github.com/mattermost/mattermost-server/plugin"
 )
 
 // giphyProvider get GIF URLs from the Giphy API without any external, out-of-date library
@@ -16,7 +16,7 @@ const (
 )
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *giphyProvider) getGifURL(api *plugin.API, config *GiphyPluginConfiguration, request string, counter int) (string, error) {
+func (p *giphyProvider) getGifURL(api *plugin.API, config *PluginConfiguration, request string, counter int) (string, error) {
 	if config.APIKey == "" {
 		return "", appError("Giphy API key is empty", nil)
 	}
