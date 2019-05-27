@@ -49,11 +49,26 @@ If you need to enable & configure this plugin directly in the Mattermost configu
 - Is your plugin version compatible with your server version? Check the Compatibility section in the README.
 - Make sure you have configured the SiteURL setting correctly in the Mattermost administration panel.
 - If you get the following error : `{"level":"error", ... ,"msg":"Unable to get GIF URL", ... ,"method":"POST","err_where":"Giphy Plugin","http_code":400,"err_details":"Error HTTP status 429: 429 Unknown Error"}`: the `429` HTTP status code indicate that you have exceeded the allowed requests for your API key. *Make sure your API is valid for your usage.* This typically happens with the default API key, which musn't be used in production.
+- A post is created in response to the command, but no image is displayed: check if you can access the URL manually (some Gfycat URLs don't seem to exist)
 
 ## Development
-Run make vendor to install dependencies, then develop like any other Go project, using go test, go build, etc.
+To build the plugin:
+```
+make
+```
+This will produce a single plugin file (with support for multiple architectures) for upload to your Mattermost server:
+```
+dist/com.example.my-plugin.tar.gz
+```
 
-If you want to create a fully bundled plugin that will run on a local server, you can use make `mattermost-plugin-giphy.tar.gz`.
+There is a build target to automate deploying and enabling the plugin to your server, but it requires configuration and http to be installed:
+```
+export MM_SERVICESETTINGS_SITEURL=http://localhost:8065
+export MM_ADMIN_USERNAME=admin
+export MM_ADMIN_PASSWORD=password
+make deploy
+```
+Alternatively, if you are running your mattermost-server out of a sibling directory by the same name, use the deploy target alone to unpack the files into the right directory. You will need to restart your server and manually enable your plugin.
 
 ## What's next?
 - Allow customization of the trigger command
