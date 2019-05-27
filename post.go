@@ -19,5 +19,5 @@ func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *mod
 }
 
 func (p *Plugin) generateGifCaption(keywords string, gifURL string) string {
-	return " *[" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
+	return " */gif [" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
 }
