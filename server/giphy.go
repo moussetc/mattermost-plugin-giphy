@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattermost/mattermost-server/plugin"
 	"net/http"
 	"strconv"
 )
@@ -27,7 +26,7 @@ type giphySearchResult struct {
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *giphyProvider) getGifURL(api *plugin.API, config *configuration, request string, cursor *string) (string, error) {
+func (p *giphyProvider) getGifURL(config *configuration, request string, cursor *string) (string, error) {
 	if config.APIKey == "" {
 		return "", appError("Giphy API key is empty", nil)
 	}

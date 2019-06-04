@@ -37,7 +37,7 @@ type Plugin struct {
 
 // gifProvider exposes methods to get GIF URLs
 type gifProvider interface {
-	getGifURL(API *plugin.API, config *configuration, request string, cursor *string) (string, error)
+	getGifURL(config *configuration, request string, cursor *string) (string, error)
 }
 
 // OnActivate register the plugin commands
