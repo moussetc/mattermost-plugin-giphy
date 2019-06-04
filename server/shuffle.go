@@ -26,10 +26,12 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 
 type handlerFunc func(request *model.PostActionIntegrationRequest, keywords string, gifURL string, cursor string) int
 
+var postActionIntegrationRequestFromJson = model.PostActionIntegrationRequestFromJson
+
 // handleHTTPAction reads the Gif context for an action (buttons) and execute the action
 func (p *Plugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	// Read data added by default for a button action
-	request := model.PostActionIntegrationRequestFromJson(r.Body)
+	request := postActionIntegrationRequestFromJson(r.Body)
 	if request == nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -52,7 +54,6 @@ func (p *Plugin) handleHTTPAction(action handlerFunc, c *plugin.Context, w http.
 
 	httpStatus := action(request, keywords.(string), gifURL.(string), cursor.(string))
 	w.WriteHeader(httpStatus)
-
 	if httpStatus == http.StatusOK {
 		// Return the object the MM server expects in case of 200 status
 		response := &model.PostActionIntegrationResponse{}
@@ -135,8 +136,12 @@ func (p *Plugin) handlePost(request *model.PostActionIntegrationRequest, keyword
 
 // logHandlerError informs the user of an error that occured in a buttion handler, and also logs it
 func (p *Plugin) logHandlerError(message string, err error, request *model.PostActionIntegrationRequest) {
+	fullMessage := "Giphy Plugin: " + message
+	if err != nil {
+		fullMessage = fullMessage + "\n`" + err.Error() + "`"
+	}
 	p.API.SendEphemeralPost(request.UserId, &model.Post{
-		Message:   "Giphy Plugin: " + message + "\n`" + err.Error() + "`",
+		Message:   fullMessage,
 		ChannelId: request.ChannelId,
 		Props: map[string]interface{}{
 			"sent_by_plugin": true,
