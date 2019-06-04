@@ -13,12 +13,12 @@ import (
 func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
 	keywords := getCommandKeywords(command, triggerGifs)
-	gifURL, err := p.gifProvider.getGifURL(&p.API, p.getConfiguration(), keywords, &cursor)
+	gifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), keywords, &cursor)
 	if err != nil {
 		return nil, appError("Unable to get GIF URL", err)
 	}
 
-	text := p.generateGifCaption(keywords, gifURL)
+	text := generateGifCaption(keywords, gifURL)
 	attachments := p.generateShufflePostAttachments(keywords, gifURL, cursor)
 
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
@@ -94,7 +94,7 @@ func (p *Plugin) handleCancel(request *model.PostActionIntegrationRequest, keywo
 
 // handleShuffle replace the GIF in the ephemeral shuffle post by a new one
 func (p *Plugin) handleShuffle(request *model.PostActionIntegrationRequest, keywords string, gifURL string, cursor string) int {
-	shuffledGifURL, err := p.gifProvider.getGifURL(&p.API, p.getConfiguration(), keywords, &cursor)
+	shuffledGifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), keywords, &cursor)
 	if err != nil {
 		p.logHandlerError("Unable to fetch a new Gif for shuffling", err, request)
 		return http.StatusServiceUnavailable
@@ -104,7 +104,7 @@ func (p *Plugin) handleShuffle(request *model.PostActionIntegrationRequest, keyw
 		Id:        request.PostId,
 		ChannelId: request.ChannelId,
 		UserId:    request.UserId,
-		Message:   p.generateGifCaption(keywords, shuffledGifURL),
+		Message:   generateGifCaption(keywords, shuffledGifURL),
 		Props: map[string]interface{}{
 			"attachments": p.generateShufflePostAttachments(keywords, shuffledGifURL, cursor),
 		},
@@ -122,7 +122,7 @@ func (p *Plugin) handlePost(request *model.PostActionIntegrationRequest, keyword
 	}
 	p.API.DeleteEphemeralPost(request.UserId, ephemeralPost)
 	post := &model.Post{
-		Message:   p.generateGifCaption(keywords, gifURL),
+		Message:   generateGifCaption(keywords, gifURL),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 	}

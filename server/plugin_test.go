@@ -242,7 +242,7 @@ type mockGifProviderFail struct {
 	errorMessage string
 }
 
-func (m *mockGifProviderFail) getGifURL(api *plugin.API, config *configuration, request string, cursor *string) (string, error) {
+func (m *mockGifProviderFail) getGifURL(config *configuration, request string, cursor *string) (string, error) {
 	return "", errors.New(m.errorMessage)
 }
 
@@ -251,6 +251,6 @@ type mockGifProvider struct {
 	mockURL string
 }
 
-func (m *mockGifProvider) getGifURL(api *plugin.API, config *configuration, request string, cursor *string) (string, error) {
+func (m *mockGifProvider) getGifURL(config *configuration, request string, cursor *string) (string, error) {
 	return m.mockURL, nil
 }

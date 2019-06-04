@@ -10,15 +10,15 @@ import (
 func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
 	keywords := getCommandKeywords(command, triggerGif)
 	cursor := ""
-	gifURL, err := p.gifProvider.getGifURL(&p.API, p.getConfiguration(), keywords, &cursor)
+	gifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), keywords, &cursor)
 	if err != nil {
 		return nil, appError("Unable to get GIF URL", err)
 	}
 
-	text := p.generateGifCaption(keywords, gifURL)
+	text := generateGifCaption(keywords, gifURL)
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, Text: text}, nil
 }
 
-func (p *Plugin) generateGifCaption(keywords string, gifURL string) string {
+func generateGifCaption(keywords string, gifURL string) string {
 	return " */gif [" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
 }
