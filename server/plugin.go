@@ -42,10 +42,11 @@ type gifProvider interface {
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
-	if p.API.GetConfig().ServiceSettings.SiteURL == nil {
+	siteURL := p.API.GetConfig().ServiceSettings.SiteURL
+	if siteURL == nil || *siteURL == "" {
 		return appError("siteURL must be set for the plugin to work. Please set a siteURL and restart the plugin", nil)
 	}
-	p.siteURL = *p.API.GetConfig().ServiceSettings.SiteURL
+	p.siteURL = *siteURL
 
 	if err := p.OnConfigurationChange(); err != nil {
 		return appError("Could not load plugin configuration", err)
@@ -60,7 +61,7 @@ func (p *Plugin) OnActivate() error {
 		AutoCompleteHint: "happy kitty",
 	})
 	if err != nil {
-		return err
+		return appError("Unable to define the following command: "+triggerGif, err)
 	}
 	err = p.API.RegisterCommand(&model.Command{
 		Trigger:          triggerGifs,
@@ -71,7 +72,7 @@ func (p *Plugin) OnActivate() error {
 		AutoCompleteHint: "mayhem guy",
 	})
 	if err != nil {
-		return err
+		return appError("Unable to define the following command: "+triggerGifs, err)
 	}
 	return nil
 }
@@ -86,9 +87,6 @@ func (p *Plugin) OnDeactivate() error {
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	if !p.enabled {
 		return nil, appError("Cannot execute command while the plugin is disabled.", nil)
-	}
-	if p.API == nil {
-		return nil, appError("Cannot access the plugin API.", nil)
 	}
 	if strings.HasPrefix(args.Command, "/"+triggerGifs) {
 		return p.executeCommandGifShuffle(args.Command, args)
