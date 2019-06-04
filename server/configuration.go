@@ -1,10 +1,6 @@
 package main
 
-import (
-	"reflect"
-
-	"github.com/pkg/errors"
-)
+import ()
 
 // configuration captures the plugin's external configuration as exposed in the Mattermost server
 // configuration, as well as values computed from the configuration. Any public fields will be
@@ -45,10 +41,6 @@ func (p *Plugin) setConfiguration(configuration *configuration) {
 	defer p.configurationLock.Unlock()
 
 	if configuration != nil && p.configuration == configuration {
-		if reflect.ValueOf(*configuration).NumField() == 0 {
-			return
-		}
-
 		panic("setConfiguration called with the existing configuration")
 	}
 
@@ -61,13 +53,13 @@ func (p *Plugin) OnConfigurationChange() error {
 
 	// Load the public configuration fields from the Mattermost server configuration.
 	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
-		return errors.Wrap(err, "failed to load plugin configuration")
+		return appError("Failed to load plugin configuration", err)
 	}
 
 	p.setConfiguration(configuration)
 
 	if configuration.Provider == "" {
-		return appError("GIF Provider setting must be set", nil)
+		return appError("The GIF provider must be configured", nil)
 	}
 	if configuration.Provider == "giphy" {
 		if configuration.APIKey == "" {
