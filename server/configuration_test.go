@@ -60,3 +60,23 @@ func TestOnConfigurationChangeGfycatProvider(t *testing.T) {
 	assert.NotNil(t, p.gifProvider)
 	assert.Equal(t, reflect.TypeOf(&gfyCatProvider{}).String(), reflect.TypeOf(p.gifProvider).String())
 }
+
+func TestGetSetConfiguration(t *testing.T) {
+	p := Plugin{}
+
+	initialConfig := p.getConfiguration()
+	assert.NotNil(t, initialConfig)
+
+	initialConfig.APIKey = "COUCOU"
+	p.setConfiguration(initialConfig)
+
+	modifiedConfig := p.getConfiguration()
+	assert.Equal(t, initialConfig.APIKey, modifiedConfig.APIKey)
+
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic")
+		}
+	}()
+	p.setConfiguration(modifiedConfig)
+}
