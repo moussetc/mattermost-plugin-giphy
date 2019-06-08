@@ -40,7 +40,7 @@ func (p *giphyProvider) getGifURL(config *configuration, request string, cursor 
 	q.Add("api_key", config.APIKey)
 	q.Add("q", request)
 	if counter, err2 := strconv.Atoi(*cursor); err2 == nil {
-		q.Add("offset", fmt.Sprintf("%d", counter+1))
+		q.Add("offset", fmt.Sprintf("%d", counter))
 	}
 	q.Add("limit", "1")
 	if len(config.Rating) > 0 {
@@ -51,17 +51,23 @@ func (p *giphyProvider) getGifURL(config *configuration, request string, cursor 
 	}
 
 	req.URL.RawQuery = q.Encode()
-	requestURL := req.URL.String()
 
-	r, err := http.DefaultClient.Get(requestURL)
+	r, err := getGifProviderHttpClient().Do(req)
 	if err != nil {
 		return "", appError("Error calling the Giphy API", err)
 	}
 
 	if r.StatusCode != http.StatusOK {
-		return "", appError("Error calling the Giphy API (HTTP Status: "+fmt.Sprintf("%v", r.StatusCode), nil)
+		explanation := ""
+		if r.StatusCode == http.StatusTooManyRequests {
+			explanation = ", this can happen if you're using the default GIPHY API key"
+		}
+		return "", appError(fmt.Sprintf("Error calling the Giphy API (HTTP Status: %v%s)", r.Status, explanation), nil)
 	}
 	var response giphySearchResult
+	if r.Body == nil {
+		return "", appError("GIPHY search response body is empty", nil)
+	}
 	decoder := json.NewDecoder(r.Body)
 	if err = decoder.Decode(&response); err != nil {
 		return "", appError("Could not parse GIPHY search response body", err)
@@ -72,6 +78,9 @@ func (p *giphyProvider) getGifURL(config *configuration, request string, cursor 
 	gif := response.Data[0]
 	url := gif.Images[config.Rendition].Url
 
-	*cursor = fmt.Sprintf("%d", response.Pagination.Offset)
+	if len(url) < 1 {
+		return "", appError("An empty URL was returned for display style \""+config.Rendition+"\"", nil)
+	}
+	*cursor = fmt.Sprintf("%d", response.Pagination.Offset+1)
 	return url, nil
 }

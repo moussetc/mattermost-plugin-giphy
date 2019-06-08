@@ -1,7 +1,5 @@
 package main
 
-import ()
-
 // configuration captures the plugin's external configuration as exposed in the Mattermost server
 // configuration, as well as values computed from the configuration. Any public fields will be
 // deserialized from the Mattermost server configuration in OnConfigurationChange.

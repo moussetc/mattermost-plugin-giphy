@@ -40,6 +40,15 @@ type gifProvider interface {
 	getGifURL(config *configuration, request string, cursor *string) (string, error)
 }
 
+type HttpClient interface {
+	Do(req *http.Request) (*http.Response, error)
+	Get(s string) (*http.Response, error)
+}
+
+var getGifProviderHttpClient = func() HttpClient {
+	return http.DefaultClient
+}
+
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
 	siteURL := p.API.GetConfig().ServiceSettings.SiteURL
