@@ -48,10 +48,13 @@ func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor
 	}
 
 	if r.StatusCode != http.StatusOK {
-		return "", appError(fmt.Sprintf("Error calling the GfyCat search API (HTTP Status: %v)", r.StatusCode), nil)
+		return "", appError(fmt.Sprintf("Error calling the GfyCat search API (HTTP Status: %v)", r.Status), nil)
 	}
 	var response gfySearchResult
 	decoder := json.NewDecoder(r.Body)
+	if r.Body == nil {
+		return "", appError("GfyCat search response body is empty", nil)
+	}
 	if err = decoder.Decode(&response); err != nil {
 		return "", appError("Could not parse Gfycat search response body", err)
 	}
@@ -63,6 +66,9 @@ func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor
 	// Ignore suffix without a Mattermost preview
 	if url == "" || strings.HasSuffix(url, ".webm") || strings.HasSuffix(url, ".mp4") {
 		url = gif.GifUrl
+	}
+	if url == "" {
+		 return "", appError("An empty URL was returned for display style \""+config.RenditionGfycat+"\"", nil)
 	}
 	*cursor = response.Cursor
 	return url, nil
