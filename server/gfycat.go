@@ -42,7 +42,7 @@ func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("Content-Type", "application/json")
 
-	r, err := http.DefaultClient.Do(req)
+	r, err := getGifProviderHttpClient().Do(req)
 	if err != nil {
 		return "", appError("Error calling the GfyCat search API", err)
 	}
