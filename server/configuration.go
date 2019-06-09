@@ -1,5 +1,9 @@
 package main
 
+import (
+	"github.com/pkg/errors"
+)
+
 // configuration captures the plugin's external configuration as exposed in the Mattermost server
 // configuration, as well as values computed from the configuration. Any public fields will be
 // deserialized from the Mattermost server configuration in OnConfigurationChange.
@@ -48,20 +52,19 @@ func (p *Plugin) setConfiguration(configuration *configuration) {
 // OnConfigurationChange is invoked when configuration changes may have been made.
 func (p *Plugin) OnConfigurationChange() error {
 	var configuration = new(configuration)
-
 	// Load the public configuration fields from the Mattermost server configuration.
 	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
-		return appError("Failed to load plugin configuration", err)
+		return errors.Wrap(err, "Failed to load plugin configuration")
 	}
 
 	p.setConfiguration(configuration)
 
 	if configuration.Provider == "" {
-		return appError("The GIF provider must be configured", nil)
+		return errors.New("The GIF provider must be configured")
 	}
 	if configuration.Provider == "giphy" {
 		if configuration.APIKey == "" {
-			return appError("The API Key setting must be set for Giphy", nil)
+			return errors.New("The API Key setting must be set for Giphy")
 		}
 		p.gifProvider = &giphyProvider{}
 	} else {

@@ -185,7 +185,7 @@ func TestGfycatProviderParameterCursorZero(t *testing.T) {
 	assert.True(t, client.lastRequestPassTest)
 }
 
-func TestGfycatProviderParameterCursorProvided(t *testing.T) {
+func TestGfycatProviderParameterRatingProvided(t *testing.T) {
 	p, client, config, cursor := generateHttpClientForGfycatParameterTest()
 
 	// Initial value : 0
