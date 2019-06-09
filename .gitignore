@@ -9,3 +9,5 @@ vendor/
 dist/
 .vscode/
 coverage.txt
+TODO.txt
+Debug.txt
