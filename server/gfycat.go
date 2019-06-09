@@ -68,7 +68,7 @@ func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor
 		url = gif.GifUrl
 	}
 	if url == "" {
-		 return "", appError("An empty URL was returned for display style \""+config.RenditionGfycat+"\"", nil)
+		return "", appError("An empty URL was returned for display style \""+config.RenditionGfycat+"\"", nil)
 	}
 	*cursor = response.Cursor
 	return url, nil

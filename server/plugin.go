@@ -1,25 +1,20 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"sync"
 
 	"github.com/mattermost/mattermost-server/model"
 	"github.com/mattermost/mattermost-server/plugin"
+
+	"github.com/pkg/errors"
 )
 
 const (
-	// Triggers used to define slash commands
-	triggerGif      = "gif"
-	triggerGifs     = "gifs"
 	contextKeywords = "keywords"
 	contextGifURL   = "gifURL"
 	contextCursor   = "cursor"
-	URLShuffle      = "/shuffle"
-	URLCancel       = "/cancel"
-	URLSend         = "/send"
 )
 
 // Plugin is a Mattermost plugin that adds a /gif slash command
@@ -32,6 +27,7 @@ type Plugin struct {
 	configuration     *configuration
 
 	gifProvider gifProvider
+	httpHandler pluginHTTPHandler
 	enabled     bool
 }
 
@@ -53,37 +49,16 @@ var getGifProviderHttpClient = func() HttpClient {
 func (p *Plugin) OnActivate() error {
 	siteURL := p.API.GetConfig().ServiceSettings.SiteURL
 	if siteURL == nil || *siteURL == "" {
-		return appError("siteURL must be set for the plugin to work. Please set a siteURL and restart the plugin", nil)
+		return errors.New("siteURL must be set for the plugin to work. Please set a siteURL and restart the plugin")
 	}
 	p.siteURL = *siteURL
 
 	if err := p.OnConfigurationChange(); err != nil {
-		return appError("Could not load plugin configuration", err)
+		return errors.Wrap(err, "Could not load plugin configuration")
 	}
+	p.httpHandler = &defaultHTTPHandler{}
 	p.enabled = true
-	err := p.API.RegisterCommand(&model.Command{
-		Trigger:          triggerGif,
-		Description:      "Post a GIF matching your search",
-		DisplayName:      "Giphy Search",
-		AutoComplete:     true,
-		AutoCompleteDesc: "Post a GIF matching your search",
-		AutoCompleteHint: "happy kitty",
-	})
-	if err != nil {
-		return appError("Unable to define the following command: "+triggerGif, err)
-	}
-	err = p.API.RegisterCommand(&model.Command{
-		Trigger:          triggerGifs,
-		Description:      "Preview a GIF",
-		DisplayName:      "Giphy Shuffle",
-		AutoComplete:     true,
-		AutoCompleteDesc: "Let you preview and shuffle a GIF before posting for real",
-		AutoCompleteHint: "mayhem guy",
-	})
-	if err != nil {
-		return appError("Unable to define the following command: "+triggerGifs, err)
-	}
-	return nil
+	return p.RegisterCommands()
 }
 
 // OnDeactivate handles plugin deactivation
@@ -107,34 +82,9 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 	return nil, appError("Command trigger "+args.Command+"is not supported by this plugin.", nil)
 }
 
-func getCommandKeywords(commandLine string, trigger string) string {
-	return strings.Replace(commandLine, "/"+trigger, "", 1)
-}
-
-// ServeHTTP serve the post action to display an ephemeral spoiler
+// ServeHTTP serve the post actions for the shuffle command
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
-	switch r.URL.Path {
-	case URLShuffle:
-		p.handleHTTPAction(p.handleShuffle, c, w, r)
-	case URLSend:
-		p.handleHTTPAction(p.handlePost, c, w, r)
-	case URLCancel:
-		p.handleHTTPAction(p.handleCancel, c, w, r)
-	default:
-		http.NotFound(w, r)
-	}
-}
-
-// Generate an attachment for an action Button that will point to a plugin HTTP handler
-func (p *Plugin) generateButton(name string, urlAction string, context map[string]interface{}) *model.PostAction {
-	return &model.PostAction{
-		Name: name,
-		Type: model.POST_ACTION_TYPE_BUTTON,
-		Integration: &model.PostActionIntegration{
-			URL:     fmt.Sprintf("%s/plugins/%s"+urlAction, p.siteURL, manifest.Id),
-			Context: context,
-		},
-	}
+	p.handleHTTPRequest(w, r)
 }
 
 //appError generates a normalized error for this plugin
