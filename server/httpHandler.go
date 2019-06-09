@@ -159,7 +159,7 @@ func (h *defaultHTTPHandler) handlePost(p *Plugin, w http.ResponseWriter, r *htt
 
 // notifyHandlerError informs the user of an error that occured in a buttion handler (no direct response possible so it use ephemeral messages), and also logs it
 func defaultNotifyHandlerError(api plugin.API, message string, err error, request *model.PostActionIntegrationRequest) {
-	fullMessage := "Giphy Plugin: " + message
+	fullMessage := manifest.Name + message
 	if err != nil {
 		fullMessage = fullMessage + "\n`" + err.Error() + "`"
 	}

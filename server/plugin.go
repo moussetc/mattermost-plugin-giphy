@@ -93,5 +93,5 @@ func appError(message string, err error) *model.AppError {
 	if err != nil {
 		errorMessage = err.Error()
 	}
-	return model.NewAppError("GIF Plugin", message, nil, errorMessage, http.StatusBadRequest)
+	return model.NewAppError(manifest.Name, message, nil, errorMessage, http.StatusBadRequest)
 }
