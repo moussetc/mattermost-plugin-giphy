@@ -2,7 +2,7 @@ dist: trusty
 sudo: false
 language: go
 go:
-- 1.12.X
+- "1.12.x"
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 env:
