@@ -2,18 +2,13 @@ dist: trusty
 sudo: false
 language: go
 go:
-- 1.x
+- 1.12.X
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 env:
-- DEP_VERSION="0.4.1"
-before_install:
-- curl -L -s https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64
-  -o $GOPATH/bin/dep
-- chmod +x $GOPATH/bin/dep
+- GO111MODULE="on"
 install:
-- dep ensure
-- make all
+- make
 deploy:
   provider: releases
   api_key:
