@@ -2,19 +2,21 @@
 This Mattermost plugin adds slash commands to get GIFs from either GIPHY or Gfycat:
 - `/gif <keywords>` will post one GIF matching the keywords 
 - `/gifs <keywords>` will post a private preview of a GIF matching the keywords, and allows you to shuffle it a number of times before making it public. 
+**This command will not work on mobile app until this [Mattermost issue](https://github.com/mattermost/mattermost-mobile/issues/2807) is resolved.**
+
 *No webhooks or additional installation required.*
 
 ## COMPATIBILITY
-- for Mattermost 5.10 or higher: use v1.x.x release (needs to be abe to put button on ephemeral posts)
+- for Mattermost 5.10 or higher: use v1.x.x release (possibility to put buttons on ephemeral posts)
 - for Mattermost 5.2 to 5.9: use v0.2.0 release
 - for Mattermost 4.6 to 5.1: use v0.1.x release
 - for Mattermost below: unsupported versions (plugins can't create slash commands)
 
 ## Installation and configuration
-1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the package for your OS and architecture.
+1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
 2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
-3. Go to the `System Console > Plugins > Giphy` configuration page that appeared, and choose if you want to use GIPHY (API key required, see below) or Gfycat.
-4. If you've chosen GIPHY, configure the Giphy API key. The default key is the [public beta key](https://developers.giphy.com/docs/) WHICH IS SUBJECT TO RATE LIMIT CONSTRAINTS AND MIGHT NOT WORK AT ANY GIVEN TIME and **must be changed**.
+3. Go to the `System Console > Plugins > GIF commands` configuration page that appeared, and choose if you want to use GIPHY (API key required, see below) or Gfycat.
+4. If you've chosen GIPHY, configure the Giphy API key. The default key is the [public beta key](https://developers.giphy.com/docs/) which is subject to rate limit constraints and thus might not work at any given time: **it must be changed**.
 4. You can also configure the following settings :
     - display size (for both GIPHY and Gfycat, see [Giphy rendition guide](https://developers.giphy.com/docs/#rendition-guide))
     - rating (GIPHY only)
@@ -46,10 +48,23 @@ If you need to enable & configure this plugin directly in the Mattermost configu
 ```
 
 ## TROUBLESHOOTING
+### I can't upload or activate the plugin 
 - Is your plugin version compatible with your server version? Check the Compatibility section in the README.
 - Make sure you have configured the SiteURL setting correctly in the Mattermost administration panel.
-- If you get the following error : `{"level":"error", ... ,"msg":"Unable to get GIF URL", ... ,"method":"POST","err_where":"Giphy Plugin","http_code":400,"err_details":"Error HTTP status 429: 429 Unknown Error"}`: the `429` HTTP status code indicate that you have exceeded the allowed requests for your API key. *Make sure your API is valid for your usage.* This typically happens with the default API key, which musn't be used in production.
-- A post is created in response to the command, but no image is displayed: check if you can access the URL manually (some Gfycat URLs don't seem to exist)
+- Check the Mattermost logs (`yourURL/admin_console/logs`) for more detail on why the activation failed.
+
+### Error 'Command with a trigger of `/gif` not found'
+This happens when the plugin is not activated, see above section.
+
+### Error 'Unable to get GIF URL'
+Start by checking the Mattermost logs (`yourURL/admin_console/logs`) for more detail. Usual causes include:
+- Using GIPHY as provider and using the public beta Giphy. The log will looks like: `{"level":"error", ... ,"msg":"Unable to get GIF URL", ... ,"method":"POST","err_where":"Giphy Plugin","http_code":400,"err_details":"Error HTTP status 429: 429 Unknown Error"}`. Solution: get your own GIPHY API key as the default one shouldn't be used in production.
+- If your Mattermost server is behind a proxy:
+  - If the proxy blocks Giphy and Gfycat: there's no solution besides convincing your security department that accessing Giphy is business-critical.
+  - If the proxy allows Giphy and Gfycat: configure your Mattermost server to use your [outbound proxy](https://docs.mattermost.com/install/outbound-proxy.html).
+
+### The picture doesn't load
+- Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY or Gfycat. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
 
 ## Development
 To build the plugin:
