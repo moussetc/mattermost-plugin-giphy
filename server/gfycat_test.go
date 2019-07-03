@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-const defaultGfycatResponseBody = "{ \"cursor\": \"mockCursor\", \"gfycats\" : [ { \"gifUrl\": \"\", \"content_urls\": { \"100pxGif\": {\"url\": \"url\"}}} ] }"
+const defaultGfycatResponseBody = "{ \"cursor\": \"mockCursor\", \"gfycats\" : [ { \"gifUrl\": \"\", \"gif100Px\": \"url\"} ] }"
 
 func TestGfycatProviderGetGIFURLOK(t *testing.T) {
 	p := &gfyCatProvider{}
@@ -95,7 +95,7 @@ func TestGfycatProviderEmptyURLForRendition(t *testing.T) {
 	cursor := ""
 	url, err := p.getGifURL(&config, "cat", &cursor)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "empty URL")
+	assert.Contains(t, err.Error(), "No URL found")
 	assert.Contains(t, err.Error(), config.RenditionGfycat)
 	assert.Empty(t, url)
 }
