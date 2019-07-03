@@ -15,15 +15,8 @@ const (
 )
 
 type gfySearchResult struct {
-	Cursor  string   `json:"cursor"`
-	Gfycats []gfyGIF `json:"gfycats"`
-}
-
-type gfyGIF struct {
-	GifUrl      string `json:"gifUrl"`
-	ContentUrls map[string]struct {
-		Url string `json:"url"`
-	} `json:"content_urls"`
+	Cursor  string                        `json:"cursor"`
+	Gfycats []map[string]*json.RawMessage `json:"gfycats"`
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
@@ -59,13 +52,28 @@ func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor
 		return "", appError("Could not parse Gfycat search response body", err)
 	}
 	if len(response.Gfycats) < 1 {
-		return "", appError("An empty list of GIFs was returned", err)
+		return "", appError("An empty list of GIFs was returned", nil)
 	}
 	gif := response.Gfycats[0]
-	url := gif.ContentUrls[(*config).RenditionGfycat].Url
+	urlNode, ok := gif[(*config).RenditionGfycat]
+	if !ok {
+		return "", appError("No URL found for the \""+(*config).RenditionGfycat+"\" in the response", nil)
+	}
+	var url string
+	if urlNode != nil {
+		if err = json.Unmarshal(*urlNode, &url); err != nil {
+			return "", appError("Could not read "+(*config).RenditionGfycat+"node", err)
+		}
+	}
 	// Ignore suffix without a Mattermost preview
 	if url == "" || strings.HasSuffix(url, ".webm") || strings.HasSuffix(url, ".mp4") {
-		url = gif.GifUrl
+		urlNode, ok = gif["gifUrl"]
+		if !ok {
+			return "", appError("No URL found for the \"gifUrl\" in the response", nil)
+		}
+		if err = json.Unmarshal(*urlNode, &url); err != nil {
+			return "", appError("Could not read gifUrl node", err)
+		}
 	}
 	if url == "" {
 		return "", appError("An empty URL was returned for display style \""+config.RenditionGfycat+"\"", nil)

@@ -31,7 +31,7 @@ func generateMockPluginConfig() configuration {
 		Language:        "fr",
 		Rating:          "",
 		Rendition:       "fixed_height_small",
-		RenditionGfycat: "100pxGif",
+		RenditionGfycat: "gif100Px",
 		APIKey:          "defaultAPIKey",
 	}
 }

@@ -1,5 +1,5 @@
 {
-  "id": "com.github.moussetc.mattermost-plugin-giphy",
+  "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
   "description": "Add GIF slash commands (using Giphy or Gfycat) to Mattermost",
   "version": "1.0.0",
@@ -45,12 +45,12 @@
         "key": "RenditionGfycat",
         "type": "dropdown",
         "display_name": "Gfycat display style",
-        "help_text": "Select the style to display GIFs from Gfycat.",
-        "default": "100pxGif",
+        "help_text": "Select the style to display GIFs from Gfycat (more info [here](https://developers.gfycat.com/api/#best-format-to-use))",
+        "default": "gif100px",
         "options": [
           {
             "display_name": "Height set to 100px.",
-            "value": "100pxGif"
+            "value": "gif100px"
           },
           {
             "display_name": "Weight <= 1Mb",
@@ -65,12 +65,8 @@
             "value": "max5mbGif"
           },
           {
-            "display_name": "Large GIF",
-            "value": "largeGif"
-          },
-          {
             "display_name": "Static preview image",
-            "value": "mobilePoster"
+            "value": "posterUrl"
           }
         ]
       },
@@ -78,7 +74,7 @@
         "key": "Rendition",
         "type": "dropdown",
         "display_name": "GIPHY display style",
-        "help_text": "Select the style to display GIFs from GIPHY.",
+        "help_text": "Select the style to display GIFs from GIPHY (more info [here](https://developers.giphy.com/docs/#rendition-guide)).",
         "default": "fixed_height_small",
         "options": [
           {
@@ -277,6 +273,6 @@
         ]
       }
     ],
-    "footer": "Powered by Giphy and Gfycat.\n\n* To get your own Giphy API key, follow the instructions in the [developers documentation](https://developers.giphy.com/docs).\n\n* For more information on the rendering styles, see the [Giphy API guide](https://developers.giphy.com/docs/#rendition-guide).\n\n* To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
+    "footer": "Powered by Giphy and Gfycat.\n\n* To get your own Giphy API key, follow the instructions in the [developers documentation](https://developers.giphy.com/docs).\n\n* To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
   }
 }
