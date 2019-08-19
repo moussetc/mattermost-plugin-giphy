@@ -3,6 +3,7 @@
   "name": "GIF commands",
   "description": "Add GIF slash commands (using Giphy or Gfycat) to Mattermost",
   "version": "1.0.0",
+  "min_server_version": "5.12.0",
   "server": {
     "executables": { 
         "linux-amd64": "server/dist/plugin-linux-amd64",

@@ -93,10 +93,7 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, r *h
 		return
 	}
 
-	post := &model.Post{
-		Id: request.PostId,
-	}
-	p.API.DeleteEphemeralPost(request.UserId, post)
+	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 
 	writeResponse(http.StatusOK, w)
 }
@@ -138,10 +135,7 @@ func (h *defaultHTTPHandler) handlePost(p *Plugin, w http.ResponseWriter, r *htt
 		return
 	}
 
-	ephemeralPost := &model.Post{
-		Id: request.PostId,
-	}
-	p.API.DeleteEphemeralPost(request.UserId, ephemeralPost)
+	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 	post := &model.Post{
 		Message:   generateGifCaption(keywords, gifURL),
 		UserId:    request.UserId,
