@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/mattermost/mattermost-server/model"
 	"net/http"
 	"strings"
 )
@@ -20,7 +21,7 @@ type gfySearchResult struct {
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
-func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor *string) (string, error) {
+func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", GFYCAT_BASE_URL+"/gfycats/search", nil)
 	if err != nil {
 		return "", appError("Could not generate GfyCat search URL", err)

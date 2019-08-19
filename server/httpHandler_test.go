@@ -110,7 +110,7 @@ func TestParseRequestKOMissingContext(t *testing.T) {
 			}
 		}
 
-		notifyHandlerError = func(api plugin.API, message string, err error, request *model.PostActionIntegrationRequest) {
+		notifyHandlerError = func(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 			assert.Contains(t, message, contextElements[i])
 		}
 
@@ -185,7 +185,7 @@ func TestHandleShuffleKOProviderError(t *testing.T) {
 	h := &defaultHTTPHandler{}
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 
-	notifyHandlerError = func(api plugin.API, message string, err error, request *model.PostActionIntegrationRequest) {
+	notifyHandlerError = func(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 		assert.Contains(t, message, "Gif")
 	}
 
@@ -218,7 +218,7 @@ func TestHandlePostiKOCreatePostError(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, appError("errorMessage", nil))
-	notifyHandlerError = func(api plugin.API, message string, err error, request *model.PostActionIntegrationRequest) {
+	notifyHandlerError = func(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 		assert.Contains(t, message, "create")
 	}
 
@@ -237,7 +237,7 @@ func TestDefaultNotifyHandlerErrorOK(t *testing.T) {
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
 	api.On("LogWarn", mock.Anything, mock.Anything).Return(nil)
 	message := "oops"
-	err := errors.New("strange failure")
+	err := appError(message, errors.New("strange failure"))
 	channelID := "42"
 	userID := "jane"
 	request := &model.PostActionIntegrationRequest{
@@ -249,7 +249,7 @@ func TestDefaultNotifyHandlerErrorOK(t *testing.T) {
 		return post != nil &&
 			post.ChannelId == channelID &&
 			strings.Contains(post.Message, message) &&
-			(err == nil || strings.Contains(post.Message, err.Error()))
+			(err == nil || strings.Contains(post.Message, err.Message))
 	}
 	// With error
 	defaultNotifyHandlerError(api, message, err, request)

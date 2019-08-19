@@ -158,17 +158,19 @@ func (h *defaultHTTPHandler) handlePost(p *Plugin, w http.ResponseWriter, r *htt
 }
 
 // notifyHandlerError informs the user of an error that occured in a buttion handler (no direct response possible so it use ephemeral messages), and also logs it
-func defaultNotifyHandlerError(api plugin.API, message string, err error, request *model.PostActionIntegrationRequest) {
-	fullMessage := manifest.Name + message
+func defaultNotifyHandlerError(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
+	fullMessage := manifest.Name + ":"
 	if err != nil {
-		fullMessage = fullMessage + "\n`" + err.Error() + "`"
+		fullMessage = err.Message
+	} else {
+		fullMessage = message
 	}
 	api.SendEphemeralPost(request.UserId, &model.Post{
-		Message:   fullMessage,
+		Message:   "*" + fullMessage + "*",
 		ChannelId: request.ChannelId,
 		Props: map[string]interface{}{
 			"sent_by_plugin": true,
 		},
 	})
-	api.LogWarn(message, appError("", err))
+	api.LogWarn(message, err)
 }

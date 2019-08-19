@@ -33,7 +33,7 @@ type Plugin struct {
 
 // gifProvider exposes methods to get GIF URLs
 type gifProvider interface {
-	getGifURL(config *configuration, request string, cursor *string) (string, error)
+	getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError)
 }
 
 type HttpClient interface {
