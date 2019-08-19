@@ -145,7 +145,7 @@ func TestWriteResponseOtherStatus(t *testing.T) {
 
 func TestHandleCancel(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
+	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	p := Plugin{}
 	p.SetAPI(api)
 	h := &defaultHTTPHandler{}
@@ -154,7 +154,7 @@ func TestHandleCancel(t *testing.T) {
 	r := httptest.NewRequest("GET", URLCancel, nil)
 	h.handleCancel(&p, w, r)
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
-	api.AssertCalled(t, "DeleteEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(p *model.Post) bool { return p.Id == "postID" }))
+	api.AssertCalled(t, "DeleteEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(postId string) bool { return postId == "postID" }))
 }
 
 func TestHandleShuffleOK(t *testing.T) {
@@ -198,7 +198,7 @@ func TestHandleShuffleKOProviderError(t *testing.T) {
 
 func TestHandlePostOK(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
+	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, nil)
 	p := Plugin{}
 	p.SetAPI(api)
@@ -208,7 +208,7 @@ func TestHandlePostOK(t *testing.T) {
 	r := httptest.NewRequest("GET", URLCancel, nil)
 	h.handlePost(&p, w, r)
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
-	api.AssertCalled(t, "DeleteEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(p *model.Post) bool { return p.Id == "postID" }))
+	api.AssertCalled(t, "DeleteEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(postId string) bool { return postId == "postID" }))
 	api.AssertCalled(t, "CreatePost", mock.MatchedBy(func(p *model.Post) bool {
 		return strings.Contains(p.Message, "gifUrl") && p.UserId == "userID" && p.ChannelId == "channelID"
 	}))
@@ -216,7 +216,7 @@ func TestHandlePostOK(t *testing.T) {
 
 func TestHandlePostiKOCreatePostError(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
+	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, appError("errorMessage", nil))
 	notifyHandlerError = func(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 		assert.Contains(t, message, "create")
