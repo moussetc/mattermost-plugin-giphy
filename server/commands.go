@@ -53,7 +53,7 @@ func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *mod
 	cursor := ""
 	gifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), keywords, &cursor)
 	if err != nil {
-		return nil, appError("Unable to get GIF URL", err)
+		return nil, err
 	}
 
 	text := generateGifCaption(keywords, gifURL)
@@ -66,7 +66,7 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 	keywords := getCommandKeywords(command, triggerGifs)
 	gifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), keywords, &cursor)
 	if err != nil {
-		return nil, appError("Unable to get GIF URL", err)
+		return nil, err
 	}
 
 	text := generateGifCaption(keywords, gifURL)

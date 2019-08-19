@@ -102,7 +102,7 @@ func TestGiphyProviderEmptyGIFList(t *testing.T) {
 	cursor := ""
 	url, err := p.getGifURL(&config, "cat", &cursor)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "empty list")
+	assert.Contains(t, err.Error(), "No more GIF")
 	assert.Empty(t, url)
 }
 

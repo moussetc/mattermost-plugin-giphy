@@ -55,7 +55,7 @@ func TestExecuteCommandGifUnableToGetGIFError(t *testing.T) {
 	response, err := p.executeCommandGif("mayhem")
 	assert.NotNil(t, err)
 	assert.Empty(t, response)
-	assert.True(t, strings.Contains(err.DetailedError, errorMessage))
+	assert.Contains(t, err.DetailedError, errorMessage)
 }
 
 func TestExecuteCommandGifShuffleOK(t *testing.T) {
@@ -76,7 +76,6 @@ func TestExecuteCommandGifShuffleKOProviderError(t *testing.T) {
 	command := "/gifs hello"
 	response, err := p.executeCommandGifShuffle(command, nil)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Unable to get")
 	assert.Contains(t, err.Error(), "mockError")
 	assert.Nil(t, response)
 }
