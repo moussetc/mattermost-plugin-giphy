@@ -7,5 +7,5 @@ var manifest = struct {
 }{
 	Id:      "com.github.moussetc.mattermost.plugin.giphy",
 	Name:    "GIF commands",
-	Version: "1.0.0",
+	Version: "1.1.0",
 }
