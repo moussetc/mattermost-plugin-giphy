@@ -1,4 +1,4 @@
-# mattermost-plugin-gifs
+# Mattermost GIF commands plugin (ex 'GIPHY plugin')
 This Mattermost plugin adds slash commands to get GIFs from either GIPHY or Gfycat:
 - `/gif <keywords>` will post one GIF matching the keywords 
 - `/gifs <keywords>` will post a private preview of a GIF matching the keywords, and allows you to shuffle it a number of times before making it public. 
@@ -7,7 +7,8 @@ This Mattermost plugin adds slash commands to get GIFs from either GIPHY or Gfyc
 *No webhooks or additional installation required.*
 
 ## COMPATIBILITY
-- for Mattermost 5.10 or higher: use v1.x.x release (possibility to put buttons on ephemeral posts)
+- for Mattermost 5.12 or higher: use v1.1.x release (breaking plugin API change)
+- for Mattermost 5.10 to 5.11: use v1.0.x release (possibility to put buttons on ephemeral posts)
 - for Mattermost 5.2 to 5.9: use v0.2.0 release
 - for Mattermost 4.6 to 5.1: use v0.1.x release
 - for Mattermost below: unsupported versions (plugins can't create slash commands)
@@ -65,6 +66,9 @@ Start by checking the Mattermost logs (`yourURL/admin_console/logs`) for more de
 
 ### The picture doesn't load
 - Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY or Gfycat. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
+
+### There are no buttons on the shuffle message
+- Check your Mattermost version with the compatibility list at the top of this page.
 
 ## Development
 To build the plugin:
