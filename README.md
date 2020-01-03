@@ -2,8 +2,7 @@
 This Mattermost plugin adds slash commands to get GIFs from either GIPHY or Gfycat:
 - `/gif <keywords>` will post one GIF matching the keywords 
 - `/gifs <keywords>` will post a private preview of a GIF matching the keywords, and allows you to shuffle it a number of times before making it public. 
-**This command will not work on mobile app until this [Mattermost issue](https://github.com/mattermost/mattermost-mobile/issues/2807) is resolved.**
-
+**This command is not available for older Mattermost versions. It will also not work on mobile app until this [Mattermost issue](https://github.com/mattermost/mattermost-mobile/issues/2807) is resolved.**
 *No webhooks or additional installation required.*
 
 ## COMPATIBILITY
