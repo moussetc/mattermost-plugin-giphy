@@ -2,8 +2,11 @@
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
   "description": "Add GIF slash commands (using Giphy or Gfycat) to Mattermost",
-  "version": "1.1.0",
-  "min_server_version": "5.12.0",
+  "version": "1.2.0",
+  "min_server_version": "5.20.0",
+  "homepage_url":"https://github.com/moussetc/mattermost-plugin-giphy/",
+  "support_url":"https://github.com/moussetc/mattermost-plugin-giphy/issues",
+  "icon_path":"assets/icon.png",
   "server": {
     "executables": { 
         "linux-amd64": "server/dist/plugin-linux-amd64",
@@ -15,7 +18,7 @@
   "settings_schema": {
     "settings": [
       {
-        "key": "Provider",
+        "key": "Provider",	
         "type": "radio",
         "display_name": "GIF Provider",
         "default": "giphy",
