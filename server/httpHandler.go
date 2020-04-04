@@ -118,7 +118,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, r *
 		UserId:    request.UserId,
 		Message:   generateGifCaption(keywords, shuffledGifURL),
 		Props: map[string]interface{}{
-			"attachments": generateShufflePostAttachments(p, keywords, shuffledGifURL, cursor),
+			"attachments": generateShufflePostAttachments(keywords, shuffledGifURL, cursor),
 		},
 		CreateAt: model.GetMillis(),
 		UpdateAt: model.GetMillis(),

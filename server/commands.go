@@ -70,7 +70,7 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 	}
 
 	text := generateGifCaption(keywords, gifURL)
-	attachments := generateShufflePostAttachments(p, keywords, gifURL, cursor)
+	attachments := generateShufflePostAttachments(keywords, gifURL, cursor)
 
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
 }
@@ -79,7 +79,7 @@ func generateGifCaption(keywords string, gifURL string) string {
 	return " */gif [" + keywords + "](" + gifURL + ")* \n\n![GIF for '" + keywords + "'](" + gifURL + ")"
 }
 
-func generateShufflePostAttachments(p *Plugin, keywords string, gifURL string, cursor string) []*model.SlackAttachment {
+func generateShufflePostAttachments(keywords string, gifURL string, cursor string) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
 		contextKeywords: keywords,
 		contextGifURL:   gifURL,
@@ -87,9 +87,9 @@ func generateShufflePostAttachments(p *Plugin, keywords string, gifURL string, c
 	}
 
 	actions := []*model.PostAction{}
-	actions = append(actions, generateButton(p.siteURL, "Cancel", URLCancel, actionContext))
-	actions = append(actions, generateButton(p.siteURL, "Shuffle", URLShuffle, actionContext))
-	actions = append(actions, generateButton(p.siteURL, "Send", URLSend, actionContext))
+	actions = append(actions, generateButton("Cancel", URLCancel, actionContext))
+	actions = append(actions, generateButton("Shuffle", URLShuffle, actionContext))
+	actions = append(actions, generateButton("Send", URLSend, actionContext))
 
 	attachments := []*model.SlackAttachment{}
 	attachments = append(attachments, &model.SlackAttachment{
@@ -100,12 +100,12 @@ func generateShufflePostAttachments(p *Plugin, keywords string, gifURL string, c
 }
 
 // Generate an attachment for an action Button that will point to a plugin HTTP handler
-func generateButton(siteURL string, name string, urlAction string, context map[string]interface{}) *model.PostAction {
+func generateButton(name string, urlAction string, context map[string]interface{}) *model.PostAction {
 	return &model.PostAction{
 		Name: name,
 		Type: model.POST_ACTION_TYPE_BUTTON,
 		Integration: &model.PostActionIntegration{
-			URL:     fmt.Sprintf("%s/plugins/%s"+urlAction, siteURL, manifest.Id),
+			URL:     fmt.Sprintf("/plugins/%s%s", manifest.Id, urlAction),
 			Context: context,
 		},
 	}
