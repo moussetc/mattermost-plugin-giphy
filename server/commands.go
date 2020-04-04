@@ -76,7 +76,7 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 }
 
 func generateGifCaption(keywords string, gifURL string) string {
-	return " */gif [" + keywords + "](" + gifURL + ")*\n" + "![GIF for '" + keywords + "'](" + gifURL + ")"
+	return " */gif [" + keywords + "](" + gifURL + ")* \n\n![GIF for '" + keywords + "'](" + gifURL + ")"
 }
 
 func generateShufflePostAttachments(p *Plugin, keywords string, gifURL string, cursor string) []*model.SlackAttachment {
