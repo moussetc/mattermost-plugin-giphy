@@ -6,6 +6,7 @@ This Mattermost plugin adds slash commands to get GIFs from either GIPHY or Gfyc
 *No webhooks or additional installation required.*
 
 ## COMPATIBILITY
+- for Mattermost 5.20 or higher: use v1.2.x release (breaking plugin manifest change)
 - for Mattermost 5.12 or higher: use v1.1.x release (breaking plugin API change)
 - for Mattermost 5.10 to 5.11: use v1.0.x release (possibility to put buttons on ephemeral posts)
 - for Mattermost 5.2 to 5.9: use v0.2.0 release
