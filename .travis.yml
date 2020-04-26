@@ -1,8 +1,8 @@
+os: linux
 dist: trusty
-sudo: false
 language: go
 go:
-- "1.12.x"
+- "1.14.x"
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 env:
@@ -11,7 +11,7 @@ install:
 - make
 deploy:
   provider: releases
-  api_key:
+  token:
     secure: GzPHJa72lMilN5kaErPbyEDRXaSMJr1UXh2MfPmWOopQvJKvUuuszBoMI28ZldyyoMAuDU1l/9EDo0s72I5/9ZWGwWWumDsflw4pFd0OqJw3NBx+6YE88Gd/N+T9CoEe114O2QqmLK73ONJz4TTrFQMPXzjjVq6D4/c76nQhkMNOsH/H0HKgroU9t7k90/+XgCkRwbteDo415vEvv2kJHaxor1vCvH26L8beBsH9wAYVUErLFew6j26wjnxmJrKN4Q5a2+B4L63fAfqEu+sV2YllTRIJPz7J4GV87YaxDq9igMiOFgeZk9gKj8JC8CLL9w6+uBrgL6AN6OBamPg+0RpvYHUw/P843tMG7/GBn3kjjBLJU/g40NjuDtCTeRn7U+34fZRsj1lVyv4jZgUl0o1Mx8QyKRcO57Q2872or/eKfNNXQpVZ+PFbO6JRRlk1agA/KeonR6OYO0znmtqwbvV6sg5DV7ouqqq+7gB9aiCl4cjFTapuBg9ZjL2dzD97whDnYBdaYTTQkEYHzVPTXyjHpSm1QAKUAQo0oSPqyCxzyzVLQbnhrbxat4EdJXMTV/6NtD+efsZbOEP/rpX4TSx4nWMDxC0/oOw+P9FOiIiM+i2dJ+cDgCI+d38AL3lZMfWFw2k7MFz4nl3F6dg7kRB0xlFwxIocqKROq6CdGwo=
   file: dist/*
   file_glob: true
