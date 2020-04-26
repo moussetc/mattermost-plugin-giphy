@@ -14,7 +14,7 @@ const manifestStr = `
 {
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
-  "description": "Add GIF slash commands (using Giphy or Gfycat) to Mattermost",
+  "description": "Add GIF slash commands from Giphy or Gfycat",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
   "icon_path": "assets/icon.png",
@@ -30,7 +30,7 @@ const manifestStr = `
   },
   "settings_schema": {
     "header": "",
-    "footer": "Powered by Giphy and Gfycat.\n\n* To get your own Giphy API key, follow the instructions in the [developers documentation](https://developers.giphy.com/docs).\n\n* To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
+    "footer": "Powered by Giphy and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
     "settings": [
       {
         "key": "Provider",
@@ -54,7 +54,7 @@ const manifestStr = `
         "key": "APIKey",
         "display_name": "Giphy API Key",
         "type": "text",
-        "help_text": "Configure your Giphy API Key (the default key is the beta public key, which is subject to rate limit constraints).",
+        "help_text": "Configure your Giphy API Key (the default key is the beta public key, which is subject to rate limit constraints). To get your own Giphy API key, follow [these instructions](https://developers.giphy.com/docs/api#quick-start-guide).",
         "placeholder": "",
         "default": "dc6zaTOxFJmzC"
       },
@@ -62,7 +62,7 @@ const manifestStr = `
         "key": "Rating",
         "display_name": "GIF Rating (GIPHY only)",
         "type": "text",
-        "help_text": "Choose the MPAA-style rating (y, g, pg, pg-13, r...) used to filter results or leave empty for no rating filtering.",
+        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering (more info [here](https://developers.giphy.com/docs/optional-settings#rating).",
         "placeholder": "",
         "default": null
       },
@@ -100,7 +100,7 @@ const manifestStr = `
         "key": "Rendition",
         "display_name": "GIPHY display style",
         "type": "dropdown",
-        "help_text": "Select the style to display GIFs from GIPHY (more info [here](https://developers.giphy.com/docs/#rendition-guide)).",
+        "help_text": "Select the style to display GIFs from GIPHY (more info [here](https://developers.giphy.com/docs/optional-settings/#rendition-guide)).",
         "placeholder": "",
         "default": "fixed_height_small",
         "options": [
@@ -166,7 +166,7 @@ const manifestStr = `
         "key": "Language (GIPHY only)",
         "display_name": "Language",
         "type": "dropdown",
-        "help_text": "Select the language used to search GIFs.",
+        "help_text": "Select the language used to search GIFs (more info [here](https://developers.giphy.com/docs/optional-settings/#language-support)).",
         "placeholder": "",
         "default": "en",
         "options": [
