@@ -1,17 +1,27 @@
-# Mattermost GIF commands plugin (ex 'GIPHY plugin')
-This Mattermost plugin adds slash commands to get GIFs from either GIPHY or Gfycat:
-- `/gif <keywords>` will post one GIF matching the keywords 
-- `/gifs <keywords>` will post a private preview of a GIF matching the keywords, and allows you to shuffle it a number of times before making it public. 
-**This command is not available for older Mattermost versions. It will also not work on mobile app until this [Mattermost issue](https://github.com/mattermost/mattermost-mobile/issues/2807) is resolved.**
-*No webhooks or additional installation required.*
+# Mattermost GIF commands plugin (ex-'GIPHY plugin') [![Build status](https://travis-ci.org/moussetc/mattermost-plugin-giphy.svg?branch=master)](https://travis-ci.com/github/moussetc/mattermost-plugin-giphy)
 
-## COMPATIBILITY
-- for Mattermost 5.20 or higher: use v1.2.x release (breaking plugin manifest change)
-- for Mattermost 5.12 or higher: use v1.1.x release (breaking plugin API change)
-- for Mattermost 5.10 to 5.11: use v1.0.x release (possibility to put buttons on ephemeral posts)
-- for Mattermost 5.2 to 5.9: use v0.2.0 release
-- for Mattermost 4.6 to 5.1: use v0.1.x release
-- for Mattermost below: unsupported versions (plugins can't create slash commands)
+**Maintainer:** [@moussetc](https://github.com/moussetc)
+
+A Mattermost plugin to post GIFs from **Giphy or Gfycat** with slash commands.
+
+- Send a GIF directly with `/gif <keywords>`: 
+
+![demo](assets/demo_gif.png)
+- Choose a GIF privately before sending with `/gifs <keywords>`: 
+
+![demo](assets/demo_gifs.png)
+
+## Compatibility
+Use the following table to find the correct plugin version for each Mattermost server version:
+
+| Mattermost server | Plugin release | Incompatibility |
+| --- | --- | --- |
+| 5.20 and higher | v1.2.x | breaking plugin manifest change |
+| 5.12 to 5.19 | v1.1.x | breaking plugin API change |
+| 5.10 to 5.11 | v1.0.x | buttons on ephemeral posts |
+| 5.2 to 5.9 | v0.2.0 | |
+| 4.6 to 5.1 | v0.1.x | |
+| below | *not supported* |  plugins can't create slash commands |
 
 ## Installation and configuration
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
@@ -19,20 +29,25 @@ This Mattermost plugin adds slash commands to get GIFs from either GIPHY or Gfyc
 3. Go to the `System Console > Plugins > GIF commands` configuration page that appeared, and choose if you want to use GIPHY (API key required, see below) or Gfycat.
 4. If you've chosen GIPHY, configure the Giphy API key. The default key is the [public beta key](https://developers.giphy.com/docs/) which is subject to rate limit constraints and thus might not work at any given time: **it must be changed**.
 4. You can also configure the following settings :
-    - display size (for both GIPHY and Gfycat, see [Giphy rendition guide](https://developers.giphy.com/docs/#rendition-guide))
-    - rating (GIPHY only)
-    - language (GIPHY only, see [Giphy Language support](https://developers.giphy.com/docs/#rendition-guide))
+    - display style (for both GIPHY (see [rendition guide](https://developers.giphy.com/docs/optional-settings#rendition-guide)) and Gfycat (see [rendition guide](https://developers.gfycat.com/api/#best-format-to-use)))
+    - rating (GIPHY only, see [rating guide](https://developers.giphy.com/docs/optional-settings/#rating) for more info)
+    - language (GIPHY only, see [supported languages](https://developers.giphy.com/docs/optional-settings#language-support))
 4. **Activate the plugin** in the `System Console > Plugins Management > Management` page
 
-## Manual configuration
-If you need to enable & configure this plugin directly in the Mattermost configuration file `config.json`, for example if you are doing a [High Availability setup](https://docs.mattermost.com/deployment/cluster.html), you can use the following lines (remember to set the API key!):
+### Configuration Notes in HA
+
+If you are running Mattermost v5.11 or earlier in [High Availability mode](https://docs.mattermost.com/deployment/cluster.html), please review the following:
+
+1. To install the plugin, [use these documented steps](https://docs.mattermost.com/administration/plugins.html#plugin-uploads-in-high-availability-mode)
+2. Then, modify the config.json [using the standard doc steps](https://docs.mattermost.com/deployment/cluster.html#updating-configuration-changes-while-operating-continuously) to the following (check the [plugin.json](https://github.com/moussetc/mattermost-plugin-giphy/blob/master/plugin.json) file to see the lists of options for language, rating, rendition, etC.).
+
 ```json
  "PluginSettings": {
         // [...]
         "Plugins": {
             "com.github.moussetc.mattermost.plugin.giphy": {
-		"provider": "giphy",
-                "apikey": "YOUR_GIPHY_API_KEY_HERE", 
+		"provider": "<giphy or gfycat>",
+                "apikey": "<your Giphy API key from Step 4. above, if you've choosen Giphy as your GIF provider>", 
                 "language": "en",
                 "rating": "",
                 "rendition": "fixed_height_small"
@@ -88,7 +103,3 @@ export MM_ADMIN_PASSWORD=password
 make deploy
 ```
 Alternatively, if you are running your mattermost-server out of a sibling directory by the same name, use the deploy target alone to unpack the files into the right directory. You will need to restart your server and manually enable your plugin.
-
-## What's next?
-- Allow customization of the trigger command
-- Command to choose between several GIFS at once (alternative to shuffle)

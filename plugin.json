@@ -1,8 +1,8 @@
 {
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
-  "description": "Add GIF slash commands (using Giphy or Gfycat) to Mattermost",
   "version": "1.2.0",
+  "description": "Add GIF slash commands from Giphy or Gfycat",
   "min_server_version": "5.20.0",
   "homepage_url":"https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url":"https://github.com/moussetc/mattermost-plugin-giphy/issues",
@@ -37,14 +37,14 @@
         "key": "APIKey",
         "type": "text",
         "display_name": "Giphy API Key",
-        "help_text": "Configure your Giphy API Key (the default key is the beta public key, which is subject to rate limit constraints).",
+        "help_text": "Configure your Giphy API Key (the default key is the beta public key, which is subject to rate limit constraints). To get your own Giphy API key, follow [these instructions](https://developers.giphy.com/docs/api#quick-start-guide).",
         "default": "dc6zaTOxFJmzC"
       },
       {
         "key": "Rating",
         "type": "text",
         "display_name": "GIF Rating (GIPHY only)",
-        "help_text": "Choose the MPAA-style rating (y, g, pg, pg-13, r...) used to filter results or leave empty for no rating filtering."
+        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering (more info [here](https://developers.giphy.com/docs/optional-settings#rating)."
       },
       {
         "key": "RenditionGfycat",
@@ -79,7 +79,7 @@
         "key": "Rendition",
         "type": "dropdown",
         "display_name": "GIPHY display style",
-        "help_text": "Select the style to display GIFs from GIPHY (more info [here](https://developers.giphy.com/docs/#rendition-guide)).",
+        "help_text": "Select the style to display GIFs from GIPHY (more info [here](https://developers.giphy.com/docs/optional-settings/#rendition-guide)).",
         "default": "fixed_height_small",
         "options": [
           {
@@ -144,7 +144,7 @@
         "key": "Language (GIPHY only)",
         "type": "dropdown",
         "display_name": "Language",
-        "help_text": "Select the language used to search GIFs.",
+        "help_text": "Select the language used to search GIFs (more info [here](https://developers.giphy.com/docs/optional-settings/#language-support)).",
         "default": "en",
         "options": [
           {
@@ -278,6 +278,6 @@
         ]
       }
     ],
-    "footer": "Powered by Giphy and Gfycat.\n\n* To get your own Giphy API key, follow the instructions in the [developers documentation](https://developers.giphy.com/docs).\n\n* To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
+    "footer": "Powered by Giphy and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
   }
 }
