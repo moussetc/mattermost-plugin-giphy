@@ -1,8 +1,8 @@
 {
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
-  "version": "1.2.0",
   "description": "Add GIF slash commands from Giphy or Gfycat",
+  "version": "1.2.1",
   "min_server_version": "5.20.0",
   "homepage_url":"https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url":"https://github.com/moussetc/mattermost-plugin-giphy/issues",
