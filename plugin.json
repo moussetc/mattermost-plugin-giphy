@@ -6,6 +6,7 @@
   "min_server_version": "5.20.0",
   "homepage_url":"https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url":"https://github.com/moussetc/mattermost-plugin-giphy/issues",
+  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases",
   "icon_path":"assets/icon.png",
   "server": {
     "executables": { 
