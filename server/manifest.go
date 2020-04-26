@@ -19,7 +19,7 @@ const manifestStr = `
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
   "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases",
   "icon_path": "assets/icon.png",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "min_server_version": "5.20.0",
   "server": {
     "executables": {
