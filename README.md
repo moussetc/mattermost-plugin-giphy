@@ -103,3 +103,7 @@ export MM_ADMIN_PASSWORD=password
 make deploy
 ```
 Alternatively, if you are running your mattermost-server out of a sibling directory by the same name, use the deploy target alone to unpack the files into the right directory. You will need to restart your server and manually enable your plugin.
+
+## How do I share feedback on this plugin?
+
+Feel free to create a GitHub issue or to contact me at `@cmousset` on the [community Mattermost instance](https://pre-release.mattermost.com/) to discuss.
