@@ -17,6 +17,7 @@ const manifestStr = `
   "description": "Add GIF slash commands from Giphy or Gfycat",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
+  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases",
   "icon_path": "assets/icon.png",
   "version": "1.2.0",
   "min_server_version": "5.20.0",
