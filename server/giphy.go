@@ -12,7 +12,7 @@ import (
 type giphyProvider struct{}
 
 const (
-	BASE_URL = "http://api.giphy.com/v1/gifs"
+	BASE_URL = "https://api.giphy.com/v1/gifs"
 )
 
 type giphySearchResult struct {
