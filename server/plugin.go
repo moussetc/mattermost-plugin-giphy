@@ -15,6 +15,7 @@ const (
 	contextKeywords = "keywords"
 	contextGifURL   = "gifURL"
 	contextCursor   = "cursor"
+	contextRootId = "rootId"
 )
 
 // Plugin is a Mattermost plugin that adds a /gif slash command

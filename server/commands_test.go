@@ -63,7 +63,10 @@ func TestExecuteCommandGifShuffleOK(t *testing.T) {
 	p := Plugin{}
 	p.gifProvider = &mockGifProvider{}
 	command := "/gifs hello"
-	response, err := p.executeCommandGifShuffle(command, nil)
+	args := &model.CommandArgs{
+		RootId: "42",
+	}
+	response, err := p.executeCommandGifShuffle(command, args)
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
 	assert.Equal(t, model.COMMAND_RESPONSE_TYPE_EPHEMERAL, response.ResponseType)
@@ -79,4 +82,28 @@ func TestExecuteCommandGifShuffleKOProviderError(t *testing.T) {
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "mockError")
 	assert.Nil(t, response)
+}
+
+func TestGenerateShufflePostAttachments(t *testing.T) {
+	keywords := "rain"
+	gifURL := "https://test.fr/rain-gif"
+	cursor := "424242"
+	rootId := "42"
+	attachments := generateShufflePostAttachments(keywords, gifURL, cursor, rootId)
+	assert.NotNil(t, attachments)
+	assert.Len(t, attachments, 1)
+	attachment := attachments[0]
+	assert.NotNil(t, attachment)
+	actions := attachment.Actions
+	assert.NotNil(t, actions)
+	assert.Len(t, actions, 3)
+	for i:= 0; i < 3; i++ {
+		assert.NotNil(t, actions[i].Integration)
+		context := actions[i].Integration.Context
+		assert.NotNil(t, context)
+		assert.Equal(t, context[contextKeywords], keywords)
+		assert.Equal(t, context[contextGifURL], gifURL)
+		assert.Equal(t, context[contextCursor], cursor)
+		assert.Equal(t, context[contextRootId], rootId)
+	}
 }
