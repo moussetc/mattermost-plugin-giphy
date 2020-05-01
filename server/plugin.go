@@ -22,7 +22,6 @@ const (
 // to display a GIF based on user keywords.
 type Plugin struct {
 	plugin.MattermostPlugin
-	siteURL string
 
 	configurationLock sync.RWMutex
 	configuration     *configuration
@@ -48,12 +47,6 @@ var getGifProviderHttpClient = func() HttpClient {
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
-	siteURL := p.API.GetConfig().ServiceSettings.SiteURL
-	if siteURL == nil || *siteURL == "" {
-		return errors.New("siteURL must be set for the plugin to work. Please set a siteURL and restart the plugin")
-	}
-	p.siteURL = *siteURL
-
 	if err := p.OnConfigurationChange(); err != nil {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}

@@ -13,7 +13,6 @@ import (
 
 func TestRegisterCommandsKORegisterGifCommand(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("GetConfig").Return(generateMockMattermostConfig())
 	config := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == "gif" })).Return(errors.New("Fail mock register command"))
@@ -26,7 +25,6 @@ func TestRegisterCommandsKORegisterGifCommand(t *testing.T) {
 
 func TestRegisterCommandsKORegisterGifsCommand(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("GetConfig").Return(generateMockMattermostConfig())
 	config := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == "gif" })).Return(nil)

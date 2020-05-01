@@ -16,15 +16,6 @@ import (
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest/mock"
 )
 
-func generateMockMattermostConfig() *model.Config {
-	siteURL := "defaultSiteURL"
-	return &model.Config{
-		ServiceSettings: model.ServiceSettings{
-			SiteURL: &siteURL,
-		},
-	}
-}
-
 func generateMockPluginConfig() configuration {
 	return configuration{
 		Provider:        "giphy",
@@ -68,22 +59,8 @@ func initMockAPI() *Plugin {
 	return &p
 }
 
-func TestOnActivateWithEmptySiteURL(t *testing.T) {
-	api := &plugintest.API{}
-	mattermostConfig := generateMockMattermostConfig()
-	emptyURL := ""
-	mattermostConfig.ServiceSettings.SiteURL = &emptyURL
-	api.On("GetConfig").Return(mattermostConfig)
-
-	p := Plugin{}
-	p.SetAPI(api)
-
-	assert.NotNil(t, p.OnActivate())
-}
-
 func TestOnActivateWithBadConfig(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("GetConfig").Return(generateMockMattermostConfig())
 	config := generateMockPluginConfig()
 	config.APIKey = ""
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
@@ -95,7 +72,6 @@ func TestOnActivateWithBadConfig(t *testing.T) {
 
 func TestOnActivateOK(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("GetConfig").Return(generateMockMattermostConfig())
 	config := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
