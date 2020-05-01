@@ -39,7 +39,7 @@ const manifestStr = `
         "type": "radio",
         "help_text": "",
         "placeholder": "",
-        "default": "giphy",
+        "default": "gfycat",
         "options": [
           {
             "display_name": "GIPHY (API Key required below)",
