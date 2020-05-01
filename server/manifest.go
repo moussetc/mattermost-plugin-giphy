@@ -63,7 +63,7 @@ const manifestStr = `
         "key": "Rating",
         "display_name": "GIF Rating (GIPHY only)",
         "type": "text",
-        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering (more info [here](https://developers.giphy.com/docs/optional-settings#rating).",
+        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering (more info [here](https://developers.giphy.com/docs/optional-settings#rating)).",
         "placeholder": "",
         "default": null
       },
