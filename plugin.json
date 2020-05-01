@@ -22,7 +22,7 @@
         "key": "Provider",	
         "type": "radio",
         "display_name": "GIF Provider",
-        "default": "giphy",
+        "default": "gfycat",
         "options": [
           {
             "display_name": "GIPHY (API Key required below)",
