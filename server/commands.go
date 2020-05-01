@@ -70,7 +70,7 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 	}
 
 	text := generateGifCaption(keywords, gifURL)
-	attachments := generateShufflePostAttachments(keywords, gifURL, cursor)
+	attachments := generateShufflePostAttachments(keywords, gifURL, cursor, args.RootId)
 
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
 }
@@ -79,11 +79,12 @@ func generateGifCaption(keywords string, gifURL string) string {
 	return " */gif [" + keywords + "](" + gifURL + ")* \n\n![GIF for '" + keywords + "'](" + gifURL + ")"
 }
 
-func generateShufflePostAttachments(keywords string, gifURL string, cursor string) []*model.SlackAttachment {
+func generateShufflePostAttachments(keywords, gifURL, cursor, rootId string) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
 		contextKeywords: keywords,
 		contextGifURL:   gifURL,
 		contextCursor:   cursor,
+		contextRootId:  rootId,
 	}
 
 	actions := []*model.PostAction{}

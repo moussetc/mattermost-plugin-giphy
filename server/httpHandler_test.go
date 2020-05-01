@@ -26,6 +26,7 @@ func mockPostActionIntegratioRequestFromJSON(body io.Reader) *model.PostActionIn
 			contextGifURL:   "gifUrl",
 			contextKeywords: "keywords",
 			contextCursor:   "cursor",
+			contextRootId:   "rootID",
 		},
 	}
 }
@@ -66,13 +67,14 @@ func TestParseRequestOK(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", URLSend, nil)
-	request, url, keywords, cursor, ok := parseRequest(api, w, r)
+	request, url, keywords, cursor, rootId, ok := parseRequest(api, w, r)
 	assert.NotNil(t, request)
 	assert.Equal(t, request.ChannelId, "channelID")
 	assert.Equal(t, request.UserId, "userID")
 	assert.Equal(t, url, "gifUrl")
 	assert.Equal(t, keywords, "keywords")
 	assert.Equal(t, cursor, "cursor")
+	assert.Equal(t, rootId, "rootID")
 	assert.True(t, ok)
 }
 
@@ -82,11 +84,12 @@ func TestParseRequestKOBadRequest(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", URLSend, nil)
-	request, url, keywords, cursor, ok := parseRequest(api, w, r)
+	request, url, keywords, cursor, rootId, ok := parseRequest(api, w, r)
 	assert.Nil(t, request)
 	assert.Empty(t, url, "gifUrl")
 	assert.Empty(t, keywords, "keywords")
 	assert.Empty(t, cursor, "cursor")
+	assert.Empty(t, rootId, "rootID")
 	assert.False(t, ok)
 	api.AssertCalled(t, "LogWarn", mock.MatchedBy(func(s string) bool { return strings.Contains(s, "parse") }), nil)
 }
@@ -116,11 +119,12 @@ func TestParseRequestKOMissingContext(t *testing.T) {
 
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("GET", URLSend, nil)
-		request, url, keywords, cursor, ok := parseRequest(api, w, r)
+		request, url, keywords, cursor, rootId, ok := parseRequest(api, w, r)
 		assert.Nil(t, request)
 		assert.Empty(t, url, "gifUrl")
 		assert.Empty(t, keywords, "keywords")
 		assert.Empty(t, cursor, "cursor")
+		assert.Empty(t, rootId, "rootID")
 		assert.False(t, ok)
 	}
 }
@@ -173,7 +177,8 @@ func TestHandleShuffleOK(t *testing.T) {
 		return p.Id == "postID" &&
 			strings.Contains(p.Message, "fakeURL") &&
 			p.UserId == "userID" &&
-			p.ChannelId == "channelID"
+			p.ChannelId == "channelID" &&
+			p.RootId == "rootID"
 	}))
 }
 
@@ -210,7 +215,7 @@ func TestHandlePostOK(t *testing.T) {
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t, "DeleteEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(postId string) bool { return postId == "postID" }))
 	api.AssertCalled(t, "CreatePost", mock.MatchedBy(func(p *model.Post) bool {
-		return strings.Contains(p.Message, "gifUrl") && p.UserId == "userID" && p.ChannelId == "channelID"
+		return strings.Contains(p.Message, "gifUrl") && p.UserId == "userID" && p.ChannelId == "channelID" && p.RootId == "rootID"
 	}))
 }
 
