@@ -29,6 +29,11 @@ var postActionIntegrationRequestFromJson = model.PostActionIntegrationRequestFro
 var notifyHandlerError = defaultNotifyHandlerError
 
 func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	switch r.URL.Path {
 	case URLShuffle:
 		p.httpHandler.handleShuffle(p, w, r)

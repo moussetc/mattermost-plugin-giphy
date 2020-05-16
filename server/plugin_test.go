@@ -158,7 +158,7 @@ func TestExecuteUnkownCommand(t *testing.T) {
 func TestServeHTTP(t *testing.T) {
 	p := initMockAPI()
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLShuffle, nil)
+	r := httptest.NewRequest("POST", URLShuffle, nil)
 	p.ServeHTTP(nil, w, r)
 	result := w.Result()
 	assert.NotNil(t, result)

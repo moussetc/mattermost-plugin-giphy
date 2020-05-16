@@ -46,27 +46,47 @@ func TestHandleHTTPRequest(t *testing.T) {
 	goodURLs := [3]string{URLCancel, URLShuffle, URLSend}
 	for _, URL := range goodURLs {
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", URL, nil)
+		r := httptest.NewRequest("POST", URL, nil)
 		p.handleHTTPRequest(w, r)
 		result := w.Result()
 		assert.NotNil(t, result)
 		assert.Equal(t, 200, result.StatusCode)
 	}
+}
 
+func TestHandleHTTPRequestBadMethod(t *testing.T) {
+	p := &Plugin{}
+	p.httpHandler = &mockHTTPHandler{}
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", "/unexistingURL", nil)
+	r := httptest.NewRequest("GET", URLSend, nil)
+
 	p.handleHTTPRequest(w, r)
+
+	result := w.Result()
+	assert.NotNil(t, result)
+	assert.Equal(t, 405, result.StatusCode)
+}
+
+func TestHandleHTTPRequestBadURL(t *testing.T) {
+	p := &Plugin{}
+	p.httpHandler = &mockHTTPHandler{}
+	w := httptest.NewRecorder()
+	r := httptest.NewRequest("POST", "/unexistingURL", nil)
+
+	p.handleHTTPRequest(w, r)
+
 	result := w.Result()
 	assert.NotNil(t, result)
 	assert.Equal(t, 404, result.StatusCode)
 }
+
 
 func TestParseRequestOK(t *testing.T) {
 	api := generateMockAPIForHandlers()
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLSend, nil)
+	r := httptest.NewRequest("POST", URLSend, nil)
 	request, url, keywords, cursor, rootId, ok := parseRequest(api, w, r)
 	assert.NotNil(t, request)
 	assert.Equal(t, request.ChannelId, "channelID")
@@ -83,7 +103,7 @@ func TestParseRequestKOBadRequest(t *testing.T) {
 	postActionIntegrationRequestFromJson = func(body io.Reader) *model.PostActionIntegrationRequest { return nil }
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLSend, nil)
+	r := httptest.NewRequest("POST", URLSend, nil)
 	request, url, keywords, cursor, rootId, ok := parseRequest(api, w, r)
 	assert.Nil(t, request)
 	assert.Empty(t, url, "gifUrl")
@@ -118,7 +138,7 @@ func TestParseRequestKOMissingContext(t *testing.T) {
 		}
 
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("GET", URLSend, nil)
+		r := httptest.NewRequest("POST", URLSend, nil)
 		request, url, keywords, cursor, rootId, ok := parseRequest(api, w, r)
 		assert.Nil(t, request)
 		assert.Empty(t, url, "gifUrl")
@@ -155,7 +175,7 @@ func TestHandleCancel(t *testing.T) {
 	h := &defaultHTTPHandler{}
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLCancel, nil)
+	r := httptest.NewRequest("POST", URLCancel, nil)
 	h.handleCancel(&p, w, r)
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t, "DeleteEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(postId string) bool { return postId == "postID" }))
@@ -170,7 +190,7 @@ func TestHandleShuffleOK(t *testing.T) {
 	h := &defaultHTTPHandler{}
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLShuffle, nil)
+	r := httptest.NewRequest("POST", URLShuffle, nil)
 	h.handleShuffle(&p, w, r)
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t, "UpdateEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(p *model.Post) bool {
@@ -195,7 +215,7 @@ func TestHandleShuffleKOProviderError(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLShuffle, nil)
+	r := httptest.NewRequest("POST", URLShuffle, nil)
 	h.handleShuffle(&p, w, r)
 	assert.Equal(t, w.Result().StatusCode, http.StatusServiceUnavailable)
 	api.AssertNumberOfCalls(t, "UpdateEphemeralPost", 0)
@@ -210,7 +230,7 @@ func TestHandlePostOK(t *testing.T) {
 	h := &defaultHTTPHandler{}
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLCancel, nil)
+	r := httptest.NewRequest("POST", URLCancel, nil)
 	h.handlePost(&p, w, r)
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t, "DeleteEphemeralPost", mock.MatchedBy(func(s string) bool { return s == "userID" }), mock.MatchedBy(func(postId string) bool { return postId == "postID" }))
@@ -219,7 +239,7 @@ func TestHandlePostOK(t *testing.T) {
 	}))
 }
 
-func TestHandlePostiKOCreatePostError(t *testing.T) {
+func TestHandlePostKOCreatePostError(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, appError("errorMessage", nil))
@@ -232,7 +252,7 @@ func TestHandlePostiKOCreatePostError(t *testing.T) {
 	h := &defaultHTTPHandler{}
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLCancel, nil)
+	r := httptest.NewRequest("POST", URLCancel, nil)
 	h.handlePost(&p, w, r)
 	assert.Equal(t, w.Result().StatusCode, http.StatusInternalServerError)
 }
