@@ -36,13 +36,13 @@ func mockLoadConfig(conf configuration) func(dest interface{}) error {
 
 type mockHTTPHandler struct{}
 
-func (h *mockHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, r *http.Request) {
+func (h *mockHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
-func (h *mockHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, r *http.Request) {
+func (h *mockHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
-func (h *mockHTTPHandler) handlePost(p *Plugin, w http.ResponseWriter, r *http.Request) {
+func (h *mockHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -156,9 +156,10 @@ func TestExecuteUnkownCommand(t *testing.T) {
 }
 
 func TestServeHTTP(t *testing.T) {
-	p := initMockAPI()
+	p := setupMockPluginWithAuthent()
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", URLShuffle, nil)
+	r.Header.Add("Mattermost-User-Id", testUserId)
 	p.ServeHTTP(nil, w, r)
 	result := w.Result()
 	assert.NotNil(t, result)
