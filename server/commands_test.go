@@ -95,7 +95,7 @@ func TestGenerateShufflePostAttachments(t *testing.T) {
 	actions := attachment.Actions
 	assert.NotNil(t, actions)
 	assert.Len(t, actions, 3)
-	for i:= 0; i < 3; i++ {
+	for i := 0; i < 3; i++ {
 		assert.NotNil(t, actions[i].Integration)
 		context := actions[i].Integration.Context
 		assert.NotNil(t, context)
