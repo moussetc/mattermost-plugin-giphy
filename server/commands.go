@@ -84,7 +84,7 @@ func generateShufflePostAttachments(keywords, gifURL, cursor, rootId string) []*
 		contextKeywords: keywords,
 		contextGifURL:   gifURL,
 		contextCursor:   cursor,
-		contextRootId:  rootId,
+		contextRootId:   rootId,
 	}
 
 	actions := []*model.PostAction{}

@@ -119,7 +119,7 @@ func TestGiphyProviderEMptyURLForRendition(t *testing.T) {
 	cursor := ""
 	url, err := p.getGifURL(&config, "cat", &cursor)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "empty URL")
+	assert.Contains(t, err.Error(), "No URL found for display style")
 	assert.Contains(t, err.Error(), config.Rendition)
 	assert.Empty(t, url)
 }

@@ -13,6 +13,7 @@ type configuration struct {
 	Language        string
 	Rendition       string
 	RenditionGfycat string
+	RenditionTenor  string
 	APIKey          string
 }
 
@@ -67,6 +68,11 @@ func (p *Plugin) OnConfigurationChange() error {
 			return errors.New("The API Key setting must be set for Giphy")
 		}
 		p.gifProvider = &giphyProvider{}
+	} else if configuration.Provider == "tenor" {
+		if configuration.APIKey == "" {
+			return errors.New("The API Key setting must be set for Tenor")
+		}
+		p.gifProvider = &tenorProvider{}
 	} else {
 		p.gifProvider = &gfyCatProvider{}
 	}

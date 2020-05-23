@@ -80,7 +80,7 @@ func (p *giphyProvider) getGifURL(config *configuration, request string, cursor 
 	url := gif.Images[config.Rendition].Url
 
 	if len(url) < 1 {
-		return "", appError("An empty URL was returned for display style \""+config.Rendition+"\"", nil)
+		return "", appError("No URL found for display style \""+config.Rendition+"\" in the response", nil)
 	}
 	*cursor = fmt.Sprintf("%d", response.Pagination.Offset+1)
 	return url, nil

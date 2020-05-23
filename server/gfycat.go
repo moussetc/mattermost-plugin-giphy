@@ -53,12 +53,12 @@ func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor
 		return "", appError("Could not parse Gfycat search response body", err)
 	}
 	if len(response.Gfycats) < 1 {
-		return "", appError("An empty list of GIFs was returned", nil)
+		return "", appError("No more GIF results for this search!", nil)
 	}
 	gif := response.Gfycats[0]
 	urlNode, ok := gif[(*config).RenditionGfycat]
 	if !ok {
-		return "", appError("No URL found for the \""+(*config).RenditionGfycat+"\" in the response", nil)
+		return "", appError("No URL found for display style \""+(*config).RenditionGfycat+"\" in the response", nil)
 	}
 	var url string
 	if urlNode != nil {
