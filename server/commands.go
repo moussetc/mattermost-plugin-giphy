@@ -69,14 +69,27 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 		return nil, err
 	}
 
-	text := generateGifCaption(keywords, gifURL)
-	attachments := generateShufflePostAttachments(keywords, gifURL, cursor, args.RootId)
+	post := p.generateGifPost(p.botId, keywords, gifURL, args.ChannelId, args.RootId)
+	post.Message = generateGifCaption(keywords, gifURL)
+	post.Props = map[string]interface{}{
+		"attachments": generateShufflePostAttachments(keywords, gifURL, cursor, args.RootId),
+	}
+	p.API.SendEphemeralPost(args.UserId, post)
 
-	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
+	return &model.CommandResponse{}, nil
 }
 
-func generateGifCaption(keywords string, gifURL string) string {
-	return " */gif [" + keywords + "](" + gifURL + ")* \n\n![GIF for '" + keywords + "'](" + gifURL + ")"
+func generateGifCaption(keywords, gifURL string) string {
+	return fmt.Sprintf("*/gif [%s](%s)* \n\n![GIF for '%s'](%s)", keywords, gifURL, keywords, gifURL)
+}
+
+func (p *Plugin) generateGifPost(userId, keywords, gifURL, channelId, rootId string) *model.Post {
+	return &model.Post{
+		Message:   generateGifCaption(keywords, gifURL),
+		UserId:    userId,
+		ChannelId: channelId,
+		RootId:    rootId,
+	}
 }
 
 func generateShufflePostAttachments(keywords, gifURL, cursor, rootId string) []*model.SlackAttachment {

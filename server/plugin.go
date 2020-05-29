@@ -28,7 +28,7 @@ type Plugin struct {
 
 	gifProvider gifProvider
 	httpHandler pluginHTTPHandler
-	enabled     bool
+	botId       string
 }
 
 // gifProvider exposes methods to get GIF URLs
@@ -51,21 +51,11 @@ func (p *Plugin) OnActivate() error {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}
 	p.httpHandler = &defaultHTTPHandler{}
-	p.enabled = true
 	return p.RegisterCommands()
-}
-
-// OnDeactivate handles plugin deactivation
-func (p *Plugin) OnDeactivate() error {
-	p.enabled = false
-	return nil
 }
 
 // ExecuteCommand dispatch the command based on the trigger word
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
-	if !p.enabled {
-		return nil, appError("Cannot execute command while the plugin is disabled.", nil)
-	}
 	if strings.HasPrefix(args.Command, "/"+triggerGifs) {
 		return p.executeCommandGifShuffle(args.Command, args)
 	}
