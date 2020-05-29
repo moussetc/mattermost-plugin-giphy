@@ -268,12 +268,12 @@ func TestHandleShuffleOK(t *testing.T) {
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t, "UpdateEphemeralPost",
 		mock.MatchedBy(func(s string) bool { return s == testUserId }),
-		mock.MatchedBy(func(p *model.Post) bool {
-			return p.Id == testPostId &&
-				strings.Contains(p.Message, "fakeURL") &&
-				p.UserId == testUserId &&
-				p.ChannelId == testChannelId &&
-				p.RootId == testRootId
+		mock.MatchedBy(func(post *model.Post) bool {
+			return post.Id == testPostId &&
+				strings.Contains(post.Message, "fakeURL") &&
+				post.UserId == p.botId &&
+				post.ChannelId == testChannelId &&
+				post.RootId == testRootId
 		}))
 }
 

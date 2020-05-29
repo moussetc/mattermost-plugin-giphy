@@ -47,17 +47,22 @@ func (h *mockHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *
 	w.WriteHeader(http.StatusOK)
 }
 
-func initMockAPI() *Plugin {
-	api := &plugintest.API{}
+func initMockAPI() (api *plugintest.API, p *Plugin) {
+	api = &plugintest.API{}
 
 	pluginConfig := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(pluginConfig))
-
-	p := Plugin{}
+	p = &Plugin{}
 	p.SetAPI(api)
-	p.enabled = true
+	p.botId = "botId42"
 	p.httpHandler = &mockHTTPHandler{}
-	return &p
+	return api, p
+}
+
+func setMockHelpers(plugin *Plugin) {
+	testHelpers := &plugintest.Helpers{}
+	testHelpers.On("EnsureBot", mock.AnythingOfType("*model.Bot"), mock.AnythingOfType("plugin.EnsureBotOption")).Return("botId42", nil)
+	plugin.SetHelpers(testHelpers)
 }
 
 func TestOnActivateWithBadConfig(t *testing.T) {
@@ -78,12 +83,13 @@ func TestOnActivateOK(t *testing.T) {
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 	p := Plugin{}
 	p.SetAPI(api)
+	setMockHelpers(&p)
 
 	assert.Nil(t, p.OnActivate())
 }
 
-func TestExecuteGifCommandToReturnCommandResponse(t *testing.T) {
-	p := initMockAPI()
+func TestExecuteGifCommandToSendPost(t *testing.T) {
+	_, p := initMockAPI()
 
 	url := "http://fakeURL"
 	p.gifProvider = &mockGifProvider{url}
@@ -101,8 +107,7 @@ func TestExecuteGifCommandToReturnCommandResponse(t *testing.T) {
 }
 
 func TestExecuteShuffleCommandToReturnCommandResponse(t *testing.T) {
-	p := initMockAPI()
-
+	api, p := initMockAPI()
 	url := "http://fakeURL"
 	p.gifProvider = &mockGifProvider{url}
 
@@ -110,29 +115,14 @@ func TestExecuteShuffleCommandToReturnCommandResponse(t *testing.T) {
 		Command: "/gifs cute doggo",
 		UserId:  "userid",
 	}
-
+	api.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil, nil)
 	response, err := p.ExecuteCommand(&plugin.Context{}, &command)
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.True(t, strings.Contains(response.Text, url))
-	assert.Equal(t, "ephemeral", response.ResponseType)
-}
-
-func TestExecuteCommandToReturDisabledPluginError(t *testing.T) {
-	p := initMockAPI()
-	p.enabled = false
-	p.gifProvider = &giphyProvider{}
-
-	response, err := p.ExecuteCommand(&plugin.Context{}, &model.CommandArgs{Command: "/gif cute doggo"})
-	assert.NotNil(t, err)
-	assert.Nil(t, response)
-	assert.True(t, strings.Contains(err.Error(), "disabled"))
-
-	assert.Nil(t, p.OnDeactivate())
 }
 
 func TestExecuteCommandToReturUnableToGetGIFError(t *testing.T) {
-	p := initMockAPI()
+	_, p := initMockAPI()
 
 	errorMessage := "ARGHHHH"
 	p.gifProvider = &mockGifProviderFail{errorMessage}
@@ -144,7 +134,7 @@ func TestExecuteCommandToReturUnableToGetGIFError(t *testing.T) {
 }
 
 func TestExecuteUnkownCommand(t *testing.T) {
-	p := initMockAPI()
+	_, p := initMockAPI()
 
 	command := model.CommandArgs{
 		Command: "/worm cute doggo",

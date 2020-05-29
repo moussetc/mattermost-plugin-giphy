@@ -148,7 +148,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 	post := &model.Post{
 		Id:        request.PostId,
 		ChannelId: request.ChannelId,
-		UserId:    request.UserId,
+		UserId:    p.botId,
 		RootId:    request.RootId,
 		Message:   generateGifCaption(request.Keywords, shuffledGifURL),
 		Props: map[string]interface{}{

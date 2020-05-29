@@ -2,12 +2,24 @@ package main
 
 import (
 	"errors"
+	"reflect"
+	"testing"
+
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest/mock"
 	"github.com/stretchr/testify/assert"
-	"reflect"
-	"testing"
 )
+
+func generateMocksForConfigurationTesting(gifProvider string) Plugin {
+	api := &plugintest.API{}
+	pluginConfig := generateMockPluginConfig()
+	pluginConfig.Provider = gifProvider
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(pluginConfig))
+	p := Plugin{}
+	p.SetAPI(api)
+	setMockHelpers(&p)
+	return p
+}
 
 func TestOnConfigurationChangeLoadFail(t *testing.T) {
 	api := &plugintest.API{}
@@ -21,25 +33,14 @@ func TestOnConfigurationChangeLoadFail(t *testing.T) {
 }
 
 func TestOnConfigurationChangeEmptyProvider(t *testing.T) {
-	api := &plugintest.API{}
-	pluginConfig := generateMockPluginConfig()
-	pluginConfig.Provider = ""
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(pluginConfig))
-	p := Plugin{}
-	p.SetAPI(api)
-
+	p := generateMocksForConfigurationTesting("")
 	err := p.OnConfigurationChange()
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "The GIF provider must be configured")
 }
 
 func TestOnConfigurationChangeGiphyProvider(t *testing.T) {
-	api := &plugintest.API{}
-	pluginConfig := generateMockPluginConfig()
-	pluginConfig.Provider = "giphy"
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(pluginConfig))
-	p := Plugin{}
-	p.SetAPI(api)
+	p := generateMocksForConfigurationTesting("giphy")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)
@@ -48,12 +49,7 @@ func TestOnConfigurationChangeGiphyProvider(t *testing.T) {
 }
 
 func TestOnConfigurationChangeGfycatProvider(t *testing.T) {
-	api := &plugintest.API{}
-	pluginConfig := generateMockPluginConfig()
-	pluginConfig.Provider = "gfycat"
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(pluginConfig))
-	p := Plugin{}
-	p.SetAPI(api)
+	p := generateMocksForConfigurationTesting("gfycat")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)
@@ -61,6 +57,14 @@ func TestOnConfigurationChangeGfycatProvider(t *testing.T) {
 	assert.Equal(t, reflect.TypeOf(&gfyCatProvider{}).String(), reflect.TypeOf(p.gifProvider).String())
 }
 
+func TestOnConfigurationChangeTenorProvider(t *testing.T) {
+	p := generateMocksForConfigurationTesting("tenor")
+
+	err := p.OnConfigurationChange()
+	assert.Nil(t, err)
+	assert.NotNil(t, p.gifProvider)
+	assert.Equal(t, reflect.TypeOf(&tenorProvider{}).String(), reflect.TypeOf(p.gifProvider).String())
+}
 func TestGetSetConfiguration(t *testing.T) {
 	p := Plugin{}
 
