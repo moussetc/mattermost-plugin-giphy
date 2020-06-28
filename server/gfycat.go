@@ -20,6 +20,10 @@ type gfySearchResult struct {
 	Gfycats []map[string]*json.RawMessage `json:"gfycats"`
 }
 
+func (p *gfyCatProvider) getAttributionMessage() string {
+	return "Powered by Gfycat"
+}
+
 // getGifURL return the URL of a GIF that matches the requested keywords
 func (p *gfyCatProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", GFYCAT_BASE_URL+"/gfycats/search", nil)

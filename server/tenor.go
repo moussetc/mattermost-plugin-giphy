@@ -28,6 +28,10 @@ type tenorSearchError struct {
 	Code  string `json:"code"`
 }
 
+func (p *tenorProvider) getAttributionMessage() string {
+	return "Via Tenor"
+}
+
 // Return the URL of a GIF that matches the requested keywords
 func (p *tenorProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
 	if config.APIKey == "" {

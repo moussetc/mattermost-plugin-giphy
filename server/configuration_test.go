@@ -10,7 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func generateMocksForConfigurationTesting(gifProvider string) Plugin {
+func generateMocksForConfigurationTesting(gifProvider string) *Plugin {
 	api := &plugintest.API{}
 	pluginConfig := generateMockPluginConfig()
 	pluginConfig.Provider = gifProvider
@@ -18,7 +18,7 @@ func generateMocksForConfigurationTesting(gifProvider string) Plugin {
 	p := Plugin{}
 	p.SetAPI(api)
 	setMockHelpers(&p)
-	return p
+	return &p
 }
 
 func TestOnConfigurationChangeLoadFail(t *testing.T) {

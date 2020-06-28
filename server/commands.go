@@ -56,7 +56,7 @@ func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *mod
 		return nil, err
 	}
 
-	text := generateGifCaption(keywords, gifURL)
+	text := generateGifCaption(keywords, gifURL, p.gifProvider.getAttributionMessage())
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, Text: text}, nil
 }
 
@@ -69,8 +69,8 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 		return nil, err
 	}
 
-	post := p.generateGifPost(p.botId, keywords, gifURL, args.ChannelId, args.RootId)
-	post.Message = generateGifCaption(keywords, gifURL)
+	post := p.generateGifPost(p.botId, keywords, gifURL, args.ChannelId, args.RootId, p.gifProvider.getAttributionMessage())
+	post.Message = generateGifCaption(keywords, gifURL, p.gifProvider.getAttributionMessage())
 	post.Props = map[string]interface{}{
 		"attachments": generateShufflePostAttachments(keywords, gifURL, cursor, args.RootId),
 	}
@@ -79,13 +79,13 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 	return &model.CommandResponse{}, nil
 }
 
-func generateGifCaption(keywords, gifURL string) string {
-	return fmt.Sprintf("*/gif [%s](%s)* \n\n![GIF for '%s'](%s)", keywords, gifURL, keywords, gifURL)
+func generateGifCaption(keywords, gifURL, attributionMessage string) string {
+	return fmt.Sprintf("**/gif [%s](%s)** \n\n*%s* \n\n![GIF for '%s'](%s)", keywords, gifURL, attributionMessage, keywords, gifURL)
 }
 
-func (p *Plugin) generateGifPost(userId, keywords, gifURL, channelId, rootId string) *model.Post {
+func (p *Plugin) generateGifPost(userId, keywords, gifURL, channelId, rootId, attributionMessage string) *model.Post {
 	return &model.Post{
-		Message:   generateGifCaption(keywords, gifURL),
+		Message:   generateGifCaption(keywords, gifURL, attributionMessage),
 		UserId:    userId,
 		ChannelId: channelId,
 		RootId:    rootId,
