@@ -166,6 +166,10 @@ func (m *mockGifProviderFail) getGifURL(config *configuration, request string, c
 	return "", appError(m.errorMessage, errors.New(m.errorMessage))
 }
 
+func (m *mockGifProviderFail) getAttributionMessage() string {
+	return "test"
+}
+
 // mockGifProvider always provides the same fake GIF URL
 type mockGifProvider struct {
 	mockURL string
@@ -173,4 +177,8 @@ type mockGifProvider struct {
 
 func (m *mockGifProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
 	return m.mockURL, nil
+}
+
+func (m *mockGifProvider) getAttributionMessage() string {
+	return "test"
 }

@@ -26,6 +26,10 @@ type giphySearchResult struct {
 	} `json:"pagination"`
 }
 
+func (p *giphyProvider) getAttributionMessage() string {
+	return "Powered by Giphy"
+}
+
 // getGifURL return the URL of a GIF that matches the requested keywords
 func (p *giphyProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
 	if config.APIKey == "" {

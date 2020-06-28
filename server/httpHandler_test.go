@@ -300,6 +300,7 @@ func TestHandleSendOK(t *testing.T) {
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, nil)
 	p := Plugin{}
 	p.SetAPI(api)
+	p.gifProvider = &mockGifProvider{"fakeURL"}
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
 	h.handleSend(&p, w, generateTestIntegrationRequest())
@@ -330,6 +331,7 @@ func TestHandleSendKOCreatePostError(t *testing.T) {
 
 	p := Plugin{}
 	p.SetAPI(api)
+	p.gifProvider = &mockGifProvider{"fakeURL"}
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
 	h.handleSend(&p, w, generateTestIntegrationRequest())
