@@ -117,7 +117,14 @@ func parseRequestValue(api plugin.API, w http.ResponseWriter, request *model.Pos
 		w.WriteHeader(http.StatusBadRequest)
 		return "", false
 	}
-	return valueObj.(string), true
+	valueStr, ok := valueObj.(string)
+	if !ok {
+		notifyHandlerError(api, "Value of "+valueKey+" should be a String", nil, request)
+		w.WriteHeader(http.StatusBadRequest)
+		return "", false
+	}
+
+	return valueStr, true
 }
 
 func writeResponse(httpStatus int, w http.ResponseWriter) {
