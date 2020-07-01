@@ -42,17 +42,18 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, ok := parseRequest(p.API, w, r)
-	if !ok {
-		return
-	}
-
 	// Header is set by MM server only if the request was successfully authenticated
 	userId := r.Header.Get("Mattermost-User-Id")
 	if userId == "" {
 		http.Error(w, "Authentication failed: user not set in header", http.StatusUnauthorized)
 		return
 	}
+
+	request, ok := parseRequest(p.API, w, r)
+	if !ok {
+		return
+	}
+
 	if userId != request.UserId {
 		http.Error(w, "The user of the request should match the authenticated user", http.StatusBadRequest)
 		return
