@@ -1,7 +1,12 @@
 package main
 
 import (
+	"path/filepath"
+
 	"github.com/pkg/errors"
+
+	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
 // configuration captures the plugin's external configuration as exposed in the Mattermost server
@@ -13,6 +18,7 @@ type configuration struct {
 	Language        string
 	Rendition       string
 	RenditionGfycat string
+	RenditionTenor  string
 	APIKey          string
 }
 
@@ -62,14 +68,36 @@ func (p *Plugin) OnConfigurationChange() error {
 	if configuration.Provider == "" {
 		return errors.New("The GIF provider must be configured")
 	}
-	if configuration.Provider == "giphy" {
+	switch configuration.Provider {
+	case "giphy":
 		if configuration.APIKey == "" {
 			return errors.New("The API Key setting must be set for Giphy")
 		}
 		p.gifProvider = &giphyProvider{}
-	} else {
+	case "tenor":
+		if configuration.APIKey == "" {
+			return errors.New("The API Key setting must be set for Tenor")
+		}
+		p.gifProvider = &tenorProvider{}
+	default:
 		p.gifProvider = &gfyCatProvider{}
 	}
+
+	return p.defineBot(configuration.Provider)
+}
+
+func (p *Plugin) defineBot(provider string) error {
+	bot := model.Bot{
+		Username:    "gifcommandsplugin",
+		DisplayName: manifest.Name,
+		Description: "Bot for the " + manifest.Name + " plugin.",
+	}
+	botId, ensureBotError := p.Helpers.EnsureBot(&bot, plugin.ProfileImagePath(filepath.Join("assets", "icon.png")))
+	if ensureBotError != nil {
+		return errors.Wrap(ensureBotError, "failed to ensure GIF bot.")
+	}
+
+	p.botId = botId
 
 	return nil
 }

@@ -14,12 +14,12 @@ const manifestStr = `
 {
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
-  "description": "Add GIF slash commands from Giphy or Gfycat",
+  "description": "Add GIF slash commands from Giphy, Gfycat or Tenor",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
-  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases",
-  "icon_path": "assets/icon.png",
-  "version": "1.2.1",
+  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/tag/v1.3.0",
+  "icon_path": "assets/icon.svg",
+  "version": "1.3.0",
   "min_server_version": "5.20.0",
   "server": {
     "executables": {
@@ -31,7 +31,7 @@ const manifestStr = `
   },
   "settings_schema": {
     "header": "",
-    "footer": "Powered by Giphy and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
+    "footer": "Powered by Giphy, Tenor and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
     "settings": [
       {
         "key": "Provider",
@@ -39,33 +39,55 @@ const manifestStr = `
         "type": "radio",
         "help_text": "",
         "placeholder": "",
-        "default": "giphy",
+        "default": "gfycat",
         "options": [
+          {
+            "display_name": "Gfycat (No API Key required)",
+            "value": "gfycat"
+          },
           {
             "display_name": "GIPHY (API Key required below)",
             "value": "giphy"
           },
           {
-            "display_name": "Gfycat (No API Key required)",
-            "value": "gfycat"
+            "display_name": "Tenor (API Key required below)",
+            "value": "tenor"
           }
         ]
       },
       {
         "key": "APIKey",
-        "display_name": "Giphy API Key",
+        "display_name": "Giphy/Tenor API Key",
         "type": "text",
-        "help_text": "Configure your Giphy API Key (the default key is the beta public key, which is subject to rate limit constraints). To get your own Giphy API key, follow [these instructions](https://developers.giphy.com/docs/api#quick-start-guide).",
+        "help_text": "Configure your own API Key (not required for Gfycat). To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://tenor.com/developer/keyregistration).",
         "placeholder": "",
-        "default": "dc6zaTOxFJmzC"
+        "default": null
       },
       {
         "key": "Rating",
-        "display_name": "GIF Rating (GIPHY only)",
-        "type": "text",
-        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering (more info [here](https://developers.giphy.com/docs/optional-settings#rating).",
+        "display_name": "Content Rating (GIPHY\u0026Tenor only)",
+        "type": "dropdown",
+        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering.",
         "placeholder": "",
-        "default": null
+        "default": null,
+        "options": [
+          {
+            "display_name": "G",
+            "value": "g"
+          },
+          {
+            "display_name": "PG",
+            "value": "pg"
+          },
+          {
+            "display_name": "PG-13",
+            "value": "pg-13"
+          },
+          {
+            "display_name": "R",
+            "value": "r"
+          }
+        ]
       },
       {
         "key": "RenditionGfycat",
@@ -164,7 +186,29 @@ const manifestStr = `
         ]
       },
       {
-        "key": "Language (GIPHY only)",
+        "key": "RenditionTenor",
+        "display_name": "Tenor display style",
+        "type": "dropdown",
+        "help_text": "Select the style to display GIFs from Tenor (more info [here](https://tenor.com/gifapi/documentation#responseobjects-gifformat))",
+        "placeholder": "",
+        "default": "mediumgif",
+        "options": [
+          {
+            "display_name": "Original: High quality GIF format, largest file size available, use this size for GIF shares on desktop",
+            "value": "gif"
+          },
+          {
+            "display_name": "Medium: Small reduction in size of the original format",
+            "value": "mediumgif"
+          },
+          {
+            "display_name": "Tiny: reduced size of the original format, up to 220 pixels wide, good for mobile",
+            "value": "tinygif"
+          }
+        ]
+      },
+      {
+        "key": "Language (GIPHY\u0026Tenor only)",
         "display_name": "Language",
         "type": "dropdown",
         "help_text": "Select the language used to search GIFs (more info [here](https://developers.giphy.com/docs/optional-settings/#language-support)).",

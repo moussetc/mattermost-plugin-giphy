@@ -56,7 +56,7 @@ func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *mod
 		return nil, err
 	}
 
-	text := generateGifCaption(keywords, gifURL)
+	text := generateGifCaption(keywords, gifURL, p.gifProvider.getAttributionMessage())
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, Text: text}, nil
 }
 
@@ -69,21 +69,35 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 		return nil, err
 	}
 
-	text := generateGifCaption(keywords, gifURL)
-	attachments := generateShufflePostAttachments(keywords, gifURL, cursor)
+	post := p.generateGifPost(p.botId, keywords, gifURL, args.ChannelId, args.RootId, p.gifProvider.getAttributionMessage())
+	post.Message = generateGifCaption(keywords, gifURL, p.gifProvider.getAttributionMessage())
+	post.Props = map[string]interface{}{
+		"attachments": generateShufflePostAttachments(keywords, gifURL, cursor, args.RootId),
+	}
+	p.API.SendEphemeralPost(args.UserId, post)
 
-	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_EPHEMERAL, Text: text, Attachments: attachments}, nil
+	return &model.CommandResponse{}, nil
 }
 
-func generateGifCaption(keywords string, gifURL string) string {
-	return " */gif [" + keywords + "](" + gifURL + ")* \n\n![GIF for '" + keywords + "'](" + gifURL + ")"
+func generateGifCaption(keywords, gifURL, attributionMessage string) string {
+	return fmt.Sprintf("**/gif [%s](%s)** \n\n*%s* \n\n![GIF for '%s'](%s)", keywords, gifURL, attributionMessage, keywords, gifURL)
 }
 
-func generateShufflePostAttachments(keywords string, gifURL string, cursor string) []*model.SlackAttachment {
+func (p *Plugin) generateGifPost(userId, keywords, gifURL, channelId, rootId, attributionMessage string) *model.Post {
+	return &model.Post{
+		Message:   generateGifCaption(keywords, gifURL, attributionMessage),
+		UserId:    userId,
+		ChannelId: channelId,
+		RootId:    rootId,
+	}
+}
+
+func generateShufflePostAttachments(keywords, gifURL, cursor, rootId string) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
 		contextKeywords: keywords,
 		contextGifURL:   gifURL,
 		contextCursor:   cursor,
+		contextRootId:   rootId,
 	}
 
 	actions := []*model.PostAction{}

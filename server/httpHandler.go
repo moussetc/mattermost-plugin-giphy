@@ -15,11 +15,19 @@ const (
 	URLSend    = "/send"
 )
 
+type integrationRequest struct {
+	GifURL   string
+	Keywords string
+	Cursor   string
+	RootId   string
+	model.PostActionIntegrationRequest
+}
+
 type (
 	pluginHTTPHandler interface {
-		handleCancel(p *Plugin, w http.ResponseWriter, r *http.Request)
-		handleShuffle(p *Plugin, w http.ResponseWriter, r *http.Request)
-		handlePost(p *Plugin, w http.ResponseWriter, r *http.Request)
+		handleCancel(p *Plugin, w http.ResponseWriter, request *integrationRequest)
+		handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest)
+		handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest)
 	}
 	defaultHTTPHandler struct{}
 )
@@ -29,51 +37,95 @@ var postActionIntegrationRequestFromJson = model.PostActionIntegrationRequestFro
 var notifyHandlerError = defaultNotifyHandlerError
 
 func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Header is set by MM server only if the request was successfully authenticated
+	userId := r.Header.Get("Mattermost-User-Id")
+	if userId == "" {
+		http.Error(w, "Authentication failed: user not set in header", http.StatusUnauthorized)
+		return
+	}
+
+	request, ok := parseRequest(p.API, w, r)
+	if !ok {
+		return
+	}
+
+	if userId != request.UserId {
+		http.Error(w, "The user of the request should match the authenticated user", http.StatusBadRequest)
+		return
+	}
+	if !p.API.HasPermissionToChannel(request.UserId, request.ChannelId, model.PERMISSION_READ_CHANNEL) {
+		http.Error(w, "The user is not allowed to read this channel", http.StatusForbidden)
+		return
+	}
+	if !p.API.HasPermissionToChannel(request.UserId, request.ChannelId, model.PERMISSION_CREATE_POST) {
+		http.Error(w, "The user is not allowed to post in this channel", http.StatusForbidden)
+		return
+	}
+
 	switch r.URL.Path {
 	case URLShuffle:
-		p.httpHandler.handleShuffle(p, w, r)
+		p.httpHandler.handleShuffle(p, w, request)
 	case URLSend:
-		p.httpHandler.handlePost(p, w, r)
+		p.httpHandler.handleSend(p, w, request)
 	case URLCancel:
-		p.httpHandler.handleCancel(p, w, r)
+		p.httpHandler.handleCancel(p, w, request)
 	default:
 		http.NotFound(w, r)
 	}
 }
 
-func parseRequest(api plugin.API, w http.ResponseWriter, r *http.Request) (request *model.PostActionIntegrationRequest, gifURL string, keywords string, cursor string, ok bool) {
+func parseRequest(api plugin.API, w http.ResponseWriter, r *http.Request) (actionRequest *integrationRequest, ok bool) {
 	// Read data added by default for a button action
-	request = postActionIntegrationRequestFromJson(r.Body)
+	request := postActionIntegrationRequestFromJson(r.Body)
 	if request == nil {
 		api.LogWarn("Could not parse PostActionIntegrationRequest", nil)
 		w.WriteHeader(http.StatusBadRequest)
-		return nil, "", "", "", false
+		return nil, false
 	}
-	gifURLObj, ok := request.Context[contextGifURL]
+	gifURL, ok := parseRequestValue(api, w, request, contextGifURL)
 	if !ok {
-		notifyHandlerError(api, "Missing "+contextGifURL+" from action request context", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, "", "", "", false
+		return nil, false
 	}
-	gifURL = gifURLObj.(string)
 
-	keywordsObj, ok := request.Context[contextKeywords]
+	keywords, ok := parseRequestValue(api, w, request, contextKeywords)
 	if !ok {
-		notifyHandlerError(api, "Missing "+contextKeywords+" from action request context", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, "", "", "", false
+		return nil, false
 	}
-	keywords = keywordsObj.(string)
 
-	cursorObj, ok := request.Context[contextCursor]
+	cursor, ok := parseRequestValue(api, w, request, contextCursor)
 	if !ok {
-		notifyHandlerError(api, "Missing "+contextCursor+" from action request context", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, "", "", "", false
+		return nil, false
 	}
-	cursor = cursorObj.(string)
 
-	return request, gifURL, keywords, cursor, true
+	rootId, ok := parseRequestValue(api, w, request, contextRootId)
+	if !ok {
+		return nil, false
+	}
+
+	return &integrationRequest{gifURL, keywords, cursor, rootId, *request},
+		true
+}
+
+func parseRequestValue(api plugin.API, w http.ResponseWriter, request *model.PostActionIntegrationRequest, valueKey string) (string, bool) {
+	valueObj, ok := request.Context[valueKey]
+	if !ok {
+		notifyHandlerError(api, "Missing "+valueKey+" from action request context", nil, request)
+		w.WriteHeader(http.StatusBadRequest)
+		return "", false
+	}
+	valueStr, ok := valueObj.(string)
+	if !ok {
+		notifyHandlerError(api, "Value of "+valueKey+" should be a String", nil, request)
+		w.WriteHeader(http.StatusBadRequest)
+		return "", false
+	}
+
+	return valueStr, true
 }
 
 func writeResponse(httpStatus int, w http.ResponseWriter) {
@@ -86,28 +138,17 @@ func writeResponse(httpStatus int, w http.ResponseWriter) {
 	}
 }
 
-// handleCancel delete the ephemeral shuffle post
-func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, r *http.Request) {
-	request, _, _, _, ok := parseRequest(p.API, w, r)
-	if !ok {
-		return
-	}
-
+// Delete the ephemeral shuffle post
+func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
-
 	writeResponse(http.StatusOK, w)
 }
 
-// handleShuffle replace the GIF in the ephemeral shuffle post by a new one
-func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, r *http.Request) {
-	request, _, keywords, cursor, ok := parseRequest(p.API, w, r)
-	if !ok {
-		return
-	}
-
-	shuffledGifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), keywords, &cursor)
+// Replace the GIF in the ephemeral shuffle post by a new one
+func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+	shuffledGifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), request.Keywords, &request.Cursor)
 	if err != nil {
-		notifyHandlerError(p.API, "Unable to fetch a new Gif for shuffling", err, request)
+		notifyHandlerError(p.API, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)
 		return
 	}
@@ -115,10 +156,11 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, r *
 	post := &model.Post{
 		Id:        request.PostId,
 		ChannelId: request.ChannelId,
-		UserId:    request.UserId,
-		Message:   generateGifCaption(keywords, shuffledGifURL),
+		UserId:    p.botId,
+		RootId:    request.RootId,
+		Message:   generateGifCaption(request.Keywords, shuffledGifURL, p.gifProvider.getAttributionMessage()),
 		Props: map[string]interface{}{
-			"attachments": generateShufflePostAttachments(keywords, shuffledGifURL, cursor),
+			"attachments": generateShufflePostAttachments(request.Keywords, shuffledGifURL, request.Cursor, request.RootId),
 		},
 		CreateAt: model.GetMillis(),
 		UpdateAt: model.GetMillis(),
@@ -128,22 +170,18 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, r *
 	writeResponse(http.StatusOK, w)
 }
 
-// handlePost post the actual GIF and delete the obsolete ephemeral post
-func (h *defaultHTTPHandler) handlePost(p *Plugin, w http.ResponseWriter, r *http.Request) {
-	request, gifURL, keywords, _, ok := parseRequest(p.API, w, r)
-	if !ok {
-		return
-	}
-
+// Post the actual GIF and delete the obsolete ephemeral post
+func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 	post := &model.Post{
-		Message:   generateGifCaption(keywords, gifURL),
+		Message:   generateGifCaption(request.Keywords, request.GifURL, p.gifProvider.getAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
+		RootId:    request.RootId,
 	}
 	_, err := p.API.CreatePost(post)
 	if err != nil {
-		notifyHandlerError(p.API, "Unable to create post : ", err, request)
+		notifyHandlerError(p.API, "Unable to create post : ", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusInternalServerError, w)
 		return
 	}
@@ -151,7 +189,7 @@ func (h *defaultHTTPHandler) handlePost(p *Plugin, w http.ResponseWriter, r *htt
 	writeResponse(http.StatusOK, w)
 }
 
-// notifyHandlerError informs the user of an error that occured in a buttion handler (no direct response possible so it use ephemeral messages), and also logs it
+// Informs the user of an error that occured in a button handler (no direct response possible so it use ephemeral messages), and also logs it
 func defaultNotifyHandlerError(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 	fullMessage := manifest.Name + ":"
 	if err != nil {

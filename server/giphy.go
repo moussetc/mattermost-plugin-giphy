@@ -12,7 +12,7 @@ import (
 type giphyProvider struct{}
 
 const (
-	BASE_URL = "http://api.giphy.com/v1/gifs"
+	BASE_URL = "https://api.giphy.com/v1/gifs"
 )
 
 type giphySearchResult struct {
@@ -24,6 +24,10 @@ type giphySearchResult struct {
 	Pagination struct {
 		Offset int `json:"offset"`
 	} `json:"pagination"`
+}
+
+func (p *giphyProvider) getAttributionMessage() string {
+	return "Powered by Giphy"
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
@@ -80,7 +84,7 @@ func (p *giphyProvider) getGifURL(config *configuration, request string, cursor 
 	url := gif.Images[config.Rendition].Url
 
 	if len(url) < 1 {
-		return "", appError("An empty URL was returned for display style \""+config.Rendition+"\"", nil)
+		return "", appError("No URL found for display style \""+config.Rendition+"\" in the response", nil)
 	}
 	*cursor = fmt.Sprintf("%d", response.Pagination.Offset+1)
 	return url, nil

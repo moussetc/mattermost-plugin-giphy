@@ -16,21 +16,13 @@ import (
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest/mock"
 )
 
-func generateMockMattermostConfig() *model.Config {
-	siteURL := "defaultSiteURL"
-	return &model.Config{
-		ServiceSettings: model.ServiceSettings{
-			SiteURL: &siteURL,
-		},
-	}
-}
-
 func generateMockPluginConfig() configuration {
 	return configuration{
 		Provider:        "giphy",
 		Language:        "fr",
 		Rating:          "",
 		Rendition:       "fixed_height_small",
+		RenditionTenor:  "tinygif",
 		RenditionGfycat: "gif100Px",
 		APIKey:          "defaultAPIKey",
 	}
@@ -45,45 +37,36 @@ func mockLoadConfig(conf configuration) func(dest interface{}) error {
 
 type mockHTTPHandler struct{}
 
-func (h *mockHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, r *http.Request) {
+func (h *mockHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
-func (h *mockHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, r *http.Request) {
+func (h *mockHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
-func (h *mockHTTPHandler) handlePost(p *Plugin, w http.ResponseWriter, r *http.Request) {
+func (h *mockHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func initMockAPI() *Plugin {
-	api := &plugintest.API{}
+func initMockAPI() (api *plugintest.API, p *Plugin) {
+	api = &plugintest.API{}
 
 	pluginConfig := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(pluginConfig))
-
-	p := Plugin{}
+	p = &Plugin{}
 	p.SetAPI(api)
-	p.enabled = true
+	p.botId = "botId42"
 	p.httpHandler = &mockHTTPHandler{}
-	return &p
+	return api, p
 }
 
-func TestOnActivateWithEmptySiteURL(t *testing.T) {
-	api := &plugintest.API{}
-	mattermostConfig := generateMockMattermostConfig()
-	emptyURL := ""
-	mattermostConfig.ServiceSettings.SiteURL = &emptyURL
-	api.On("GetConfig").Return(mattermostConfig)
-
-	p := Plugin{}
-	p.SetAPI(api)
-
-	assert.NotNil(t, p.OnActivate())
+func setMockHelpers(plugin *Plugin) {
+	testHelpers := &plugintest.Helpers{}
+	testHelpers.On("EnsureBot", mock.AnythingOfType("*model.Bot"), mock.AnythingOfType("plugin.EnsureBotOption")).Return("botId42", nil)
+	plugin.SetHelpers(testHelpers)
 }
 
 func TestOnActivateWithBadConfig(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("GetConfig").Return(generateMockMattermostConfig())
 	config := generateMockPluginConfig()
 	config.APIKey = ""
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
@@ -95,18 +78,18 @@ func TestOnActivateWithBadConfig(t *testing.T) {
 
 func TestOnActivateOK(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("GetConfig").Return(generateMockMattermostConfig())
 	config := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 	p := Plugin{}
 	p.SetAPI(api)
+	setMockHelpers(&p)
 
 	assert.Nil(t, p.OnActivate())
 }
 
-func TestExecuteGifCommandToReturnCommandResponse(t *testing.T) {
-	p := initMockAPI()
+func TestExecuteGifCommandToSendPost(t *testing.T) {
+	_, p := initMockAPI()
 
 	url := "http://fakeURL"
 	p.gifProvider = &mockGifProvider{url}
@@ -124,8 +107,7 @@ func TestExecuteGifCommandToReturnCommandResponse(t *testing.T) {
 }
 
 func TestExecuteShuffleCommandToReturnCommandResponse(t *testing.T) {
-	p := initMockAPI()
-
+	api, p := initMockAPI()
 	url := "http://fakeURL"
 	p.gifProvider = &mockGifProvider{url}
 
@@ -133,29 +115,14 @@ func TestExecuteShuffleCommandToReturnCommandResponse(t *testing.T) {
 		Command: "/gifs cute doggo",
 		UserId:  "userid",
 	}
-
+	api.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil, nil)
 	response, err := p.ExecuteCommand(&plugin.Context{}, &command)
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.True(t, strings.Contains(response.Text, url))
-	assert.Equal(t, "ephemeral", response.ResponseType)
-}
-
-func TestExecuteCommandToReturDisabledPluginError(t *testing.T) {
-	p := initMockAPI()
-	p.enabled = false
-	p.gifProvider = &giphyProvider{}
-
-	response, err := p.ExecuteCommand(&plugin.Context{}, &model.CommandArgs{Command: "/gif cute doggo"})
-	assert.NotNil(t, err)
-	assert.Nil(t, response)
-	assert.True(t, strings.Contains(err.Error(), "disabled"))
-
-	assert.Nil(t, p.OnDeactivate())
 }
 
 func TestExecuteCommandToReturUnableToGetGIFError(t *testing.T) {
-	p := initMockAPI()
+	_, p := initMockAPI()
 
 	errorMessage := "ARGHHHH"
 	p.gifProvider = &mockGifProviderFail{errorMessage}
@@ -167,7 +134,7 @@ func TestExecuteCommandToReturUnableToGetGIFError(t *testing.T) {
 }
 
 func TestExecuteUnkownCommand(t *testing.T) {
-	p := initMockAPI()
+	_, p := initMockAPI()
 
 	command := model.CommandArgs{
 		Command: "/worm cute doggo",
@@ -180,9 +147,10 @@ func TestExecuteUnkownCommand(t *testing.T) {
 }
 
 func TestServeHTTP(t *testing.T) {
-	p := initMockAPI()
+	p := setupMockPluginWithAuthent()
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("GET", URLShuffle, nil)
+	r := httptest.NewRequest("POST", URLShuffle, nil)
+	r.Header.Add("Mattermost-User-Id", testUserId)
 	p.ServeHTTP(nil, w, r)
 	result := w.Result()
 	assert.NotNil(t, result)
@@ -198,6 +166,10 @@ func (m *mockGifProviderFail) getGifURL(config *configuration, request string, c
 	return "", appError(m.errorMessage, errors.New(m.errorMessage))
 }
 
+func (m *mockGifProviderFail) getAttributionMessage() string {
+	return "test"
+}
+
 // mockGifProvider always provides the same fake GIF URL
 type mockGifProvider struct {
 	mockURL string
@@ -205,4 +177,8 @@ type mockGifProvider struct {
 
 func (m *mockGifProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
 	return m.mockURL, nil
+}
+
+func (m *mockGifProvider) getAttributionMessage() string {
+	return "test"
 }

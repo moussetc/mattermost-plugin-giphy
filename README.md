@@ -2,7 +2,7 @@
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
-A Mattermost plugin to post GIFs from **Giphy or Gfycat** with slash commands.
+A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands.
 
 - Send a GIF directly with `/gif <keywords>`: 
 
@@ -16,7 +16,7 @@ Use the following table to find the correct plugin version for each Mattermost s
 
 | Mattermost server | Plugin release | Incompatibility |
 | --- | --- | --- |
-| 5.20 and higher | v1.2.x | breaking plugin manifest change |
+| 5.20 and higher | v1.2.x+ | breaking plugin manifest change |
 | 5.12 to 5.19 | v1.1.x | breaking plugin API change |
 | 5.10 to 5.11 | v1.0.x | buttons on ephemeral posts |
 | 5.2 to 5.9 | v0.2.0 | |
@@ -60,12 +60,13 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
         // [...]
         "Plugins": {
             "com.github.moussetc.mattermost.plugin.giphy": {
-		"provider": "<giphy or gfycat>",
-                "apikey": "<your Giphy API key from Step 4. above, if you've choosen Giphy as your GIF provider>", 
+		"provider": "<giphy or gfycat or tenor>",
+                "apikey": "<your API key from Step 4. above, if you've choosen Giphy or Tenor as your GIF provider>", 
                 "language": "en",
                 "rating": "",
-                "rendition": "fixed_height_small"
-		"renditionGfycat": "100pxGif"
+                "rendition": "fixed_height_small",
+		"renditiongfycat": "100pxGif",
+		"renditiontenor": "mediumgif"
             },
         },
         "PluginStates": {
@@ -90,11 +91,11 @@ This happens when the plugin is not activated, see above section.
 Start by checking the Mattermost logs (`yourURL/admin_console/logs`) for more detail. Usual causes include:
 - Using GIPHY as provider and using the public beta Giphy. The log will looks like: `{"level":"error", ... ,"msg":"Unable to get GIF URL", ... ,"method":"POST","err_where":"Giphy Plugin","http_code":400,"err_details":"Error HTTP status 429: 429 Unknown Error"}`. Solution: get your own GIPHY API key as the default one shouldn't be used in production.
 - If your Mattermost server is behind a proxy:
-  - If the proxy blocks Giphy and Gfycat: there's no solution besides convincing your security department that accessing Giphy is business-critical.
-  - If the proxy allows Giphy and Gfycat: configure your Mattermost server to use your [outbound proxy](https://docs.mattermost.com/install/outbound-proxy.html).
+  - If the proxy blocks Giphy, Tenor and Gfycat: there's no solution besides convincing your security department that accessing Giphy is business-critical.
+  - If the proxy allows Giphy, Tenor and Gfycat: configure your Mattermost server to use your [outbound proxy](https://docs.mattermost.com/install/outbound-proxy.html).
 
 ### The picture doesn't load
-- Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY or Gfycat. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
+- Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY, Tenor or Gfycat. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
 
 ### There are no buttons on the shuffle message
 - Check your Mattermost version with the compatibility list at the top of this page.
