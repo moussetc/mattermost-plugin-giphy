@@ -41,12 +41,12 @@ If you are running Mattermost 5.15 or earlier, or do not have the Plugin Marketp
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
 2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
 3. Go to the `System Console > Plugins > GIF commands` configuration page that appeared, and choose if you want to use GIPHY (API key required, see below) or Gfycat.
-4. If you've chosen GIPHY, configure the Giphy API key. The default key is the [public beta key](https://developers.giphy.com/docs/) which is subject to rate limit constraints and thus might not work at any given time: **it must be changed**.
-4. You can also configure the following settings :
-    - display style (for both GIPHY (see [rendition guide](https://developers.giphy.com/docs/optional-settings#rendition-guide)) and Gfycat (see [rendition guide](https://developers.gfycat.com/api/#best-format-to-use)))
-    - rating (GIPHY only, see [rating guide](https://developers.giphy.com/docs/optional-settings/#rating) for more info)
-    - language (GIPHY only, see [supported languages](https://developers.giphy.com/docs/optional-settings#language-support))
-4. **Activate the plugin** in the `System Console > Plugins Management > Management` page
+4. **If you've chosen Giphy or Tenor, configure the API key** as explained on the configuration page.
+5. You can also configure the following settings :
+    - display style
+    - rating (not available for Gfycat)
+    - language (not available for Gfycat)
+6. **Activate the plugin** in the `System Console > Plugins Management > Management` page
 
 ### Configuration Notes in HA
 
