@@ -29,13 +29,13 @@ Use the following table to find the correct plugin version for each Mattermost s
 1. In Mattermost, go to **Main Menu > Plugin Marketplace**.
 2. Search for the "GIF Commands" plugin, then click **Install** to install it.
 3. Once the installation is completed, click **Configure**. This will take you to System Console to configure the plugin.
-4. Choose if you want to use GIPHY or Gfycat.
-    - If you choose to use GIPHY, configure the **Giphy API key** field. The default key is the [public beta key](https://developers.giphy.com/docs/), which is subject to rate limit constraints and thus might not work at any given time. We highly encourage you to use your own Giphy API key.
-5. (Optional) You can also configure the following settings:
-    - **Display Style** (for both GIPHY (see [rendition guide](https://developers.giphy.com/docs/optional-settings#rendition-guide)) and Gfycat (see [rendition guide](https://developers.gfycat.com/api/#best-format-to-use)));
-    - **Rating** (GIPHY only, see [rating guide](https://developers.giphy.com/docs/optional-settings/#rating));
-    - **Language** (GIPHY only, see [supported languages](https://developers.giphy.com/docs/optional-settings#language-support)).
-6. **Activate the plugin** in the **System Console > Plugins Management > Management** page.
+4. Choose if you want to use Gfycat (default), GIPHY or Tenor (both of which requires an API key, see below).
+5. **If you've chosen Giphy or Tenor, configure the API key** as explained on the configuration page.
+6. You can also configure the following settings :
+    - display style
+    - rating (not available for Gfycat)
+    - language (not available for Gfycat)
+7. **Activate the plugin** in the `System Console > Plugins Management > Management` page
 
 If you are running Mattermost 5.15 or earlier, or do not have the Plugin Marketplace enabled, follow these steps:
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
