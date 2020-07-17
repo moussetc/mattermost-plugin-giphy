@@ -24,15 +24,29 @@ Use the following table to find the correct plugin version for each Mattermost s
 | below | *not supported* |  plugins can't create slash commands |
 
 ## Installation and configuration
+
+**In Mattermost 5.16 and later:**
+1. In Mattermost, go to **Main Menu > Plugin Marketplace**.
+2. Search for the "GIF Commands" plugin, then click **Install** to install it.
+3. Once the installation is completed, click **Configure**. This will take you to System Console to configure the plugin.
+4. Choose if you want to use Gfycat (default), GIPHY or Tenor (both of which requires an API key, see below).
+5. **If you've chosen Giphy or Tenor, configure the API key** as explained on the configuration page.
+6. You can also configure the following settings :
+    - display style
+    - rating (not available for Gfycat)
+    - language (not available for Gfycat)
+7. **Activate the plugin** in the `System Console > Plugins Management > Management` page
+
+If you are running Mattermost 5.15 or earlier, or do not have the Plugin Marketplace enabled, follow these steps:
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
 2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
 3. Go to the `System Console > Plugins > GIF commands` configuration page that appeared, and choose if you want to use Gfycat (default), GIPHY or Tenor (both of which requires an API key, see below).
 4. **If you've chosen Giphy or Tenor, configure the API key** as explained on the configuration page.
-4. You can also configure the following settings :
+5. You can also configure the following settings :
     - display style
     - rating (not available for Gfycat)
     - language (not available for Gfycat)
-4. **Activate the plugin** in the `System Console > Plugins Management > Management` page
+6. **Activate the plugin** in the `System Console > Plugins Management > Management` page
 
 ### Configuration Notes in HA
 
