@@ -146,7 +146,7 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, requ
 
 // Replace the GIF in the ephemeral shuffle post by a new one
 func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
-	shuffledGifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), request.Keywords, &request.Cursor)
+	shuffledGifURL, err := p.gifProvider.GetGifURL(p.getConfiguration(), request.Keywords, &request.Cursor)
 	if err != nil {
 		notifyHandlerError(p.API, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)
@@ -158,7 +158,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		ChannelId: request.ChannelId,
 		UserId:    p.botId,
 		RootId:    request.RootId,
-		Message:   generateGifCaption(request.Keywords, shuffledGifURL, p.gifProvider.getAttributionMessage()),
+		Message:   generateGifCaption(request.Keywords, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
 		Props: map[string]interface{}{
 			"attachments": generateShufflePostAttachments(request.Keywords, shuffledGifURL, request.Cursor, request.RootId),
 		},
@@ -174,7 +174,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 	post := &model.Post{
-		Message:   generateGifCaption(request.Keywords, request.GifURL, p.gifProvider.getAttributionMessage()),
+		Message:   generateGifCaption(request.Keywords, request.GifURL, p.gifProvider.GetAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 		RootId:    request.RootId,

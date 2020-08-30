@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -324,7 +325,7 @@ func TestHandleSendOK(t *testing.T) {
 func TestHandleSendKOCreatePostError(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
-	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, appError("errorMessage", nil))
+	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, model.NewAppError("test", "id42", nil, "errorMessage", 42))
 	notifyHandlerError = func(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 		assert.Contains(t, message, "create")
 	}
@@ -343,7 +344,7 @@ func TestDefaultNotifyHandlerErrorOK(t *testing.T) {
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
 	api.On("LogWarn", mock.Anything, mock.Anything).Return(nil)
 	message := "oops"
-	err := appError(message, errors.New("strange failure"))
+	err := test.MockErrorGenerator().FromError(message, errors.New("strange failure"))
 	channelID := "42"
 	userID := "jane"
 	request := &model.PostActionIntegrationRequest{

@@ -15,7 +15,7 @@ import (
 func TestRegisterCommandsKORegisterGifCommand(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == "gif" })).Return(errors.New("Fail mock register command"))
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == "gifs" })).Return(nil)
 	p := Plugin{}
@@ -27,7 +27,7 @@ func TestRegisterCommandsKORegisterGifCommand(t *testing.T) {
 func TestRegisterCommandsKORegisterGifsCommand(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == "gif" })).Return(nil)
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == "gifs" })).Return(errors.New("Fail mock register command"))
 	p := Plugin{}

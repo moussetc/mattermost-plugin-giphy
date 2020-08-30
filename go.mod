@@ -1,4 +1,4 @@
-module github/moussetc/mattermost-plugin-giphy-sample
+module github.com/moussetc/mattermost-plugin-giphy
 
 go 1.12
 

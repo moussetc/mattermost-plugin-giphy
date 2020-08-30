@@ -1,24 +1,38 @@
-package main
+package provider
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
 
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
+	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
+
 	"github.com/mattermost/mattermost-server/v5/model"
 )
 
-type tenorProvider struct{}
+// NewTenorProvider creates an instance of a GIF provider that uses the Tenor API
+func NewTenorProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError) GifProvider {
+	tenorProvider := Tenor{}
+	tenorProvider.httpClient = httpClient
+	tenorProvider.errorGenerator = errorGenerator
+	return &tenorProvider
+}
+
+// giphy find GIFs using the Tenor API
+type Tenor struct {
+	abstractGifProvider
+}
 
 const (
-	baseURL = "https://api.tenor.com/v1"
+	baseURLTenor = "https://api.tenor.com/v1"
 )
 
 type tenorSearchResult struct {
 	Next    string `json:"next"`
 	Results []struct {
 		Media []map[string]struct {
-			Url string `json:"url"`
+			URL string `json:"url"`
 		} `json:"media"`
 	} `json:"results"`
 }
@@ -28,18 +42,18 @@ type tenorSearchError struct {
 	Code  string `json:"code"`
 }
 
-func (p *tenorProvider) getAttributionMessage() string {
+func (p *Tenor) GetAttributionMessage() string {
 	return "Via Tenor"
 }
 
 // Return the URL of a GIF that matches the requested keywords
-func (p *tenorProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
+func (p *Tenor) GetGifURL(config *pluginConf.Configuration, request string, cursor *string) (string, *model.AppError) {
 	if config.APIKey == "" {
-		return "", appError("Tenor API key is empty", nil)
+		return "", p.errorGenerator.FromMessage("Tenor API key is empty")
 	}
-	req, err := http.NewRequest("GET", baseURL+"/search", nil)
+	req, err := http.NewRequest("GET", baseURLTenor+"/search", nil)
 	if err != nil {
-		return "", appError("Could not generate URL", err)
+		return "", p.errorGenerator.FromError("Could not generate URL", err)
 	}
 
 	q := req.URL.Query()
@@ -58,9 +72,9 @@ func (p *tenorProvider) getGifURL(config *configuration, request string, cursor 
 
 	req.URL.RawQuery = q.Encode()
 
-	r, err := getGifProviderHttpClient().Do(req)
+	r, err := p.httpClient.Do(req)
 	if err != nil {
-		return "", appError("Error calling the Tenor API", err)
+		return "", p.errorGenerator.FromError("Error calling the Tenor API", err)
 	}
 
 	if r.StatusCode != http.StatusOK {
@@ -73,24 +87,24 @@ func (p *tenorProvider) getGifURL(config *configuration, request string, cursor 
 			}
 		}
 		errorDetails += ")"
-		return "", appError(errorDetails, nil)
+		return "", p.errorGenerator.FromMessage(errorDetails)
 	}
 	var response tenorSearchResult
 	if r.Body == nil {
-		return "", appError("Tenor search response body is empty", nil)
+		return "", p.errorGenerator.FromMessage("Tenor search response body is empty")
 	}
 	decoder := json.NewDecoder(r.Body)
 	if err = decoder.Decode(&response); err != nil {
-		return "", appError("Could not parse Tenor search response body", err)
+		return "", p.errorGenerator.FromError("Could not parse Tenor search response body", err)
 	}
 	if len(response.Results) < 1 || len(response.Results[0].Media) < 1 {
-		return "", appError("No more GIF results for this search!", nil)
+		return "", p.errorGenerator.FromMessage("No more GIF results for this search!")
 	}
 	gif := response.Results[0].Media[0]
-	url := gif[config.RenditionTenor].Url
+	url := gif[config.RenditionTenor].URL
 
 	if len(url) < 1 {
-		return "", appError("No URL found for display style \""+config.RenditionTenor+"\" in the response", nil)
+		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + config.RenditionTenor + "\" in the response")
 	}
 	*cursor = response.Next
 	return url, nil
