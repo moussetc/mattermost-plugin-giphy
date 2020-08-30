@@ -12,10 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func generateMocksForConfigurationTesting(gifProvider string) *Plugin {
+func generateMocksForConfigurationTesting(displayMode, gifProvider string) *Plugin {
 	api := &plugintest.API{}
 	pluginConfig := generateMockPluginConfig()
 	pluginConfig.Provider = gifProvider
+	pluginConfig.DisplayMode = displayMode
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(pluginConfig))
 	p := Plugin{}
 	p.SetAPI(api)
@@ -34,15 +35,22 @@ func TestOnConfigurationChangeLoadFail(t *testing.T) {
 	assert.Contains(t, err.Error(), "Failed config load")
 }
 
+func TestOnConfigurationChangeEmptyDisplayMode(t *testing.T) {
+	p := generateMocksForConfigurationTesting("", "giphy")
+	err := p.OnConfigurationChange()
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "The Display Mode must be configured")
+}
+
 func TestOnConfigurationChangeEmptyProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("")
+	p := generateMocksForConfigurationTesting("embedded", "")
 	err := p.OnConfigurationChange()
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "The GIF provider must be configured")
 }
 
 func TestOnConfigurationChangeGiphyProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("giphy")
+	p := generateMocksForConfigurationTesting("embedded", "giphy")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)
@@ -51,7 +59,7 @@ func TestOnConfigurationChangeGiphyProvider(t *testing.T) {
 }
 
 func TestOnConfigurationChangeGfycatProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("gfycat")
+	p := generateMocksForConfigurationTesting("embedded", "gfycat")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)
@@ -60,7 +68,7 @@ func TestOnConfigurationChangeGfycatProvider(t *testing.T) {
 }
 
 func TestOnConfigurationChangeTenorProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("tenor")
+	p := generateMocksForConfigurationTesting("embedded", "tenor")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)

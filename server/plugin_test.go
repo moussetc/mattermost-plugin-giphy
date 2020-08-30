@@ -20,6 +20,7 @@ import (
 
 func generateMockPluginConfig() pluginConf.Configuration {
 	return pluginConf.Configuration{
+		DisplayMode:     "embedded",
 		Provider:        "giphy",
 		Language:        "fr",
 		Rating:          "",

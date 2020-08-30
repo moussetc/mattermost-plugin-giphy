@@ -34,6 +34,24 @@ const manifestStr = `
     "footer": "Powered by Giphy, Tenor and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
     "settings": [
       {
+        "key": "DisplayMode",
+        "display_name": "Display the GIF as an",
+        "type": "radio",
+        "help_text": "It is not yet possible to collapse an embedded image in Mattermost: use the Full URL option if preferred and keep an eye on [this issue](https://github.com/moussetc/mattermost-plugin-giphy/issues/12).\n\n**To activate links preview**, go to System Console \u003e Posts \u003e Enable Link Previews.",
+        "placeholder": "",
+        "default": "embedded",
+        "options": [
+          {
+            "display_name": "Embedded image (the GIF cannot be collapsed)",
+            "value": "embedded"
+          },
+          {
+            "display_name": "Collapsable image preview (the full URL is displayed, requires links preview to be activated)",
+            "value": "full_url"
+          }
+        ]
+      },
+      {
         "key": "Provider",
         "display_name": "GIF Provider",
         "type": "radio",

@@ -49,6 +49,10 @@ func (p *Plugin) OnConfigurationChange() error {
 
 	p.setConfiguration(configuration)
 
+	if configuration.DisplayMode == "" {
+		return errors.New("The Display Mode must be configured")
+	}
+
 	if configuration.Provider == "" {
 		return errors.New("The GIF provider must be configured")
 	}

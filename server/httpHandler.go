@@ -158,7 +158,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		ChannelId: request.ChannelId,
 		UserId:    p.botId,
 		RootId:    request.RootId,
-		Message:   generateGifCaption(request.Keywords, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
+		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
 		Props: map[string]interface{}{
 			"attachments": generateShufflePostAttachments(request.Keywords, shuffledGifURL, request.Cursor, request.RootId),
 		},
@@ -174,7 +174,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 	post := &model.Post{
-		Message:   generateGifCaption(request.Keywords, request.GifURL, p.gifProvider.GetAttributionMessage()),
+		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.GifURL, p.gifProvider.GetAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 		RootId:    request.RootId,
