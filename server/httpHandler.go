@@ -1,10 +1,12 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/mitchellh/mapstructure"
 )
 
 // Contains what's related to handling HTTP requests directed to the plugin
@@ -16,10 +18,10 @@ const (
 )
 
 type integrationRequest struct {
-	GifURL   string
-	Keywords string
-	Cursor   string
-	RootId   string
+	Keywords string `mapstructure:"keywords"`
+	GifURL   string `mapstructure:"gifURL"`
+	Cursor   string `mapstructure:"cursor"`
+	RootId   string `mapstructure:"rootId"`
 	model.PostActionIntegrationRequest
 }
 
@@ -49,8 +51,10 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, ok := parseRequest(p.API, w, r)
-	if !ok {
+	request, err := parseRequest(r)
+	if err != nil {
+		p.API.LogWarn("Could not parse PostActionIntegrationRequest: "+err.Error(), nil)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -79,53 +83,29 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func parseRequest(api plugin.API, w http.ResponseWriter, r *http.Request) (actionRequest *integrationRequest, ok bool) {
+func parseRequest(r *http.Request) (*integrationRequest, error) {
 	// Read data added by default for a button action
 	request := postActionIntegrationRequestFromJson(r.Body)
 	if request == nil {
-		api.LogWarn("Could not parse PostActionIntegrationRequest", nil)
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, false
-	}
-	gifURL, ok := parseRequestValue(api, w, request, contextGifURL)
-	if !ok {
-		return nil, false
+		return nil, errors.New("request cannot be nil")
 	}
 
-	keywords, ok := parseRequestValue(api, w, request, contextKeywords)
-	if !ok {
-		return nil, false
+	context := integrationRequest{}
+	context.PostActionIntegrationRequest = *request
+	err := mapstructure.Decode(request.Context, &context)
+	if context.Keywords == "" {
+		return nil, errors.New("Missing " + contextKeywords + " from action request context")
 	}
-
-	cursor, ok := parseRequestValue(api, w, request, contextCursor)
-	if !ok {
-		return nil, false
+	if context.GifURL == "" {
+		return nil, errors.New("Missing " + contextGifURL + " from action request context")
 	}
-
-	rootId, ok := parseRequestValue(api, w, request, contextRootId)
-	if !ok {
-		return nil, false
+	if context.Cursor == "" {
+		return nil, errors.New("Missing " + contextCursor + " from action request context")
 	}
-
-	return &integrationRequest{gifURL, keywords, cursor, rootId, *request},
-		true
-}
-
-func parseRequestValue(api plugin.API, w http.ResponseWriter, request *model.PostActionIntegrationRequest, valueKey string) (string, bool) {
-	valueObj, ok := request.Context[valueKey]
-	if !ok {
-		notifyHandlerError(api, "Missing "+valueKey+" from action request context", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-		return "", false
+	if context.RootId == "" {
+		return nil, errors.New("Missing " + contextRootId + " from action request context")
 	}
-	valueStr, ok := valueObj.(string)
-	if !ok {
-		notifyHandlerError(api, "Value of "+valueKey+" should be a String", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-		return "", false
-	}
-
-	return valueStr, true
+	return &context, err
 }
 
 func writeResponse(httpStatus int, w http.ResponseWriter) {

@@ -162,12 +162,11 @@ func TestHandleHTTPRequestKOUserNotAllowedToPostHere(t *testing.T) {
 }
 
 func TestParseRequestOK(t *testing.T) {
-	api := generateMockAPIForHandlers()
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 
-	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", URLSend, nil)
-	request, ok := parseRequest(api, w, r)
+	request, err := parseRequest(r)
+	assert.Nil(t, err)
 	assert.NotNil(t, request)
 	assert.Equal(t, request.ChannelId, testChannelId)
 	assert.Equal(t, request.UserId, testUserId)
@@ -175,24 +174,20 @@ func TestParseRequestOK(t *testing.T) {
 	assert.Equal(t, request.Keywords, testKeywords)
 	assert.Equal(t, request.Cursor, testCursor)
 	assert.Equal(t, request.RootId, testRootId)
-	assert.True(t, ok)
 }
 
 func TestParseRequestKOBadRequest(t *testing.T) {
-	api := generateMockAPIForHandlers()
 	postActionIntegrationRequestFromJson = func(body io.Reader) *model.PostActionIntegrationRequest { return nil }
 
-	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", URLSend, nil)
-	request, ok := parseRequest(api, w, r)
+	request, err := parseRequest(r)
 	assert.Nil(t, request)
-	assert.False(t, ok)
-	api.AssertCalled(t, "LogWarn", mock.MatchedBy(func(s string) bool { return strings.Contains(s, "parse") }), nil)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "cannot be nil")
 }
 
 func TestParseRequestKOMissingContext(t *testing.T) {
 	contextElements := [3]string{contextGifURL, contextKeywords, contextCursor}
-	api := generateMockAPIForHandlers()
 	for i := 0; i < len(contextElements); i++ {
 		context := map[string]interface{}{}
 		for j := 0; j < len(contextElements); j++ {
@@ -214,11 +209,10 @@ func TestParseRequestKOMissingContext(t *testing.T) {
 			assert.Contains(t, message, contextElements[i])
 		}
 
-		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", URLSend, nil)
-		request, ok := parseRequest(api, w, r)
+		request, err := parseRequest(r)
 		assert.Nil(t, request)
-		assert.False(t, ok)
+		assert.NotNil(t, err)
 	}
 }
 
