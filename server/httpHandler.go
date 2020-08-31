@@ -146,7 +146,7 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, requ
 
 // Replace the GIF in the ephemeral shuffle post by a new one
 func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
-	shuffledGifURL, err := p.gifProvider.GetGifURL(p.getConfiguration(), request.Keywords, &request.Cursor)
+	shuffledGifURL, err := p.gifProvider.GetGifURL(request.Keywords, &request.Cursor)
 	if err != nil {
 		notifyHandlerError(p.API, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)

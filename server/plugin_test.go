@@ -166,7 +166,7 @@ type mockGifProviderFail struct {
 	errorMessage string
 }
 
-func (m *mockGifProviderFail) GetGifURL(config *pluginConf.Configuration, request string, cursor *string) (string, *model.AppError) {
+func (m *mockGifProviderFail) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	return "", (test.MockErrorGenerator()).FromError(m.errorMessage, errors.New(m.errorMessage))
 }
 
@@ -179,7 +179,7 @@ type mockGifProvider struct {
 	mockURL string
 }
 
-func (m *mockGifProvider) GetGifURL(config *pluginConf.Configuration, request string, cursor *string) (string, *model.AppError) {
+func (m *mockGifProvider) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	return m.mockURL, nil
 }
 

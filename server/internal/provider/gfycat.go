@@ -6,18 +6,23 @@ import (
 	"net/http"
 	"strings"
 
-	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 )
 
 // NewGfycatProvider creates an instance of a GIF provider that uses the GfyCat API
-func NewGfycatProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError) GifProvider {
+func NewGfycatProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, rendition string) (GifProvider, *model.AppError) {
+	if rendition == "" {
+		return nil, errorGenerator.FromMessage("The Rendition setting must be set for Gfycat")
+	}
+
 	gfycatProvider := Gfycat{}
 	gfycatProvider.httpClient = httpClient
 	gfycatProvider.errorGenerator = errorGenerator
-	return &gfycatProvider
+	gfycatProvider.rendition = rendition
+
+	return &gfycatProvider, nil
 }
 
 // Gfycat find GIFs using the GfyCat API
@@ -39,7 +44,7 @@ func (p *Gfycat) GetAttributionMessage() string {
 }
 
 // GetGifURL return the URL of a GIF that matches the requested keywords
-func (p *Gfycat) GetGifURL(config *pluginConf.Configuration, request string, cursor *string) (string, *model.AppError) {
+func (p *Gfycat) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLGfycat+"/gfycats/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate GfyCat search URL", err)
@@ -74,14 +79,14 @@ func (p *Gfycat) GetGifURL(config *pluginConf.Configuration, request string, cur
 		return "", p.errorGenerator.FromMessage("No more GIF results for this search!")
 	}
 	gif := response.Gfycats[0]
-	urlNode, ok := gif[(*config).RenditionGfycat]
+	urlNode, ok := gif[p.rendition]
 	if !ok {
-		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + (*config).RenditionGfycat + "\" in the response")
+		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + p.rendition + "\" in the response")
 	}
 	var url string
 	if urlNode != nil {
 		if err = json.Unmarshal(*urlNode, &url); err != nil {
-			return "", p.errorGenerator.FromError("Could not read "+(*config).RenditionGfycat+"node", err)
+			return "", p.errorGenerator.FromError("Could not read "+p.rendition+"node", err)
 		}
 	}
 	// Ignore suffix without a Mattermost preview
@@ -95,7 +100,7 @@ func (p *Gfycat) GetGifURL(config *pluginConf.Configuration, request string, cur
 		}
 	}
 	if url == "" {
-		return "", p.errorGenerator.FromMessage("An empty URL was returned for display style \"" + config.RenditionGfycat + "\"")
+		return "", p.errorGenerator.FromMessage("An empty URL was returned for display style \"" + p.rendition + "\"")
 	}
 	*cursor = response.Cursor
 	return url, nil

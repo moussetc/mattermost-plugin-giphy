@@ -5,23 +5,35 @@ import (
 	"fmt"
 	"net/http"
 
-	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 )
 
 // NewTenorProvider creates an instance of a GIF provider that uses the Tenor API
-func NewTenorProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError) GifProvider {
+func NewTenorProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition string) (GifProvider, *model.AppError) {
+	if apiKey == "" {
+		return nil, errorGenerator.FromMessage("The API Key setting must be set for Tenor")
+	}
+	if rendition == "" {
+		return nil, errorGenerator.FromMessage("The Rendition setting must be set for Tenor")
+	}
+
 	tenorProvider := Tenor{}
 	tenorProvider.httpClient = httpClient
 	tenorProvider.errorGenerator = errorGenerator
-	return &tenorProvider
+	tenorProvider.apiKey = apiKey
+	tenorProvider.language = language
+	tenorProvider.rating = convertRatingToContentFilter(rating)
+	tenorProvider.rendition = rendition
+
+	return &tenorProvider, nil
 }
 
-// giphy find GIFs using the Tenor API
+// Tenor find GIFs using the Tenor API
 type Tenor struct {
 	abstractGifProvider
+	apiKey string
 }
 
 const (
@@ -47,10 +59,7 @@ func (p *Tenor) GetAttributionMessage() string {
 }
 
 // Return the URL of a GIF that matches the requested keywords
-func (p *Tenor) GetGifURL(config *pluginConf.Configuration, request string, cursor *string) (string, *model.AppError) {
-	if config.APIKey == "" {
-		return "", p.errorGenerator.FromMessage("Tenor API key is empty")
-	}
+func (p *Tenor) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLTenor+"/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate URL", err)
@@ -58,16 +67,16 @@ func (p *Tenor) GetGifURL(config *pluginConf.Configuration, request string, curs
 
 	q := req.URL.Query()
 
-	q.Add("key", config.APIKey)
+	q.Add("key", p.apiKey)
 	q.Add("q", request)
 	q.Add("ar_range", "all")
 	if cursor != nil && *cursor != "" {
 		q.Add("pos", *cursor)
 	}
 	q.Add("limit", "1")
-	q.Add("contentfilter", convertRatingToContentFilter(config.Rating))
-	if len(config.Language) > 0 {
-		q.Add("locale", config.Language)
+	q.Add("contentfilter", p.rating)
+	if len(p.language) > 0 {
+		q.Add("locale", p.language)
 	}
 
 	req.URL.RawQuery = q.Encode()
@@ -101,10 +110,10 @@ func (p *Tenor) GetGifURL(config *pluginConf.Configuration, request string, curs
 		return "", p.errorGenerator.FromMessage("No more GIF results for this search!")
 	}
 	gif := response.Results[0].Media[0]
-	url := gif[config.RenditionTenor].URL
+	url := gif[p.rendition].URL
 
 	if len(url) < 1 {
-		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + config.RenditionTenor + "\" in the response")
+		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + p.rendition + "\" in the response")
 	}
 	*cursor = response.Next
 	return url, nil

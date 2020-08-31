@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strconv"
 
-	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -15,13 +14,14 @@ import (
 // Giphy find GIFs using the Giphy API
 type Giphy struct {
 	abstractGifProvider
+	apiKey string
 }
 
 const (
-	baseURLGiphy = "https://api.giphy.com/v1/gifs"
+	baseURLGiphy = "https://api.Giphy.com/v1/gifs"
 )
 
-type giphySearchResult struct {
+type GiphySearchResult struct {
 	Data []struct {
 		Images map[string]struct {
 			URL string `json:"url"`
@@ -33,21 +33,30 @@ type giphySearchResult struct {
 }
 
 // NewGiphyProvider creates an instance of a GIF provider that uses the Giphy API
-func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError) GifProvider {
-	giphyProvider := &Giphy{}
-	giphyProvider.httpClient = httpClient
-	giphyProvider.errorGenerator = errorGenerator
-	return giphyProvider
+func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition string) (GifProvider, *model.AppError) {
+	if apiKey == "" {
+		return nil, errorGenerator.FromMessage("The API Key setting must be set for Giphy")
+	}
+	if rendition == "" {
+		return nil, errorGenerator.FromMessage("The Rendition setting must be set for Giphy")
+	}
+
+	GiphyProvider := &Giphy{}
+	GiphyProvider.httpClient = httpClient
+	GiphyProvider.errorGenerator = errorGenerator
+	GiphyProvider.apiKey = apiKey
+	GiphyProvider.language = language
+	GiphyProvider.rating = rating
+	GiphyProvider.rendition = rendition
+
+	return GiphyProvider, nil
 }
 
 func (p *Giphy) GetAttributionMessage() string {
 	return "Powered by Giphy"
 }
 
-func (p *Giphy) GetGifURL(config *pluginConf.Configuration, request string, cursor *string) (string, *model.AppError) {
-	if config.APIKey == "" {
-		return "", p.errorGenerator.FromMessage("Giphy API key is empty")
-	}
+func (p *Giphy) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLGiphy+"/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate URL", err)
@@ -55,17 +64,17 @@ func (p *Giphy) GetGifURL(config *pluginConf.Configuration, request string, curs
 
 	q := req.URL.Query()
 
-	q.Add("api_key", config.APIKey)
+	q.Add("api_key", p.apiKey)
 	q.Add("q", request)
 	if counter, err2 := strconv.Atoi(*cursor); err2 == nil {
 		q.Add("offset", fmt.Sprintf("%d", counter))
 	}
 	q.Add("limit", "1")
-	if len(config.Rating) > 0 {
-		q.Add("rating", config.Rating)
+	if len(p.rating) > 0 {
+		q.Add("rating", p.rating)
 	}
-	if len(config.Language) > 0 {
-		q.Add("lang", config.Language)
+	if len(p.language) > 0 {
+		q.Add("lang", p.language)
 	}
 
 	req.URL.RawQuery = q.Encode()
@@ -78,26 +87,26 @@ func (p *Giphy) GetGifURL(config *pluginConf.Configuration, request string, curs
 	if r.StatusCode != http.StatusOK {
 		explanation := ""
 		if r.StatusCode == http.StatusTooManyRequests {
-			explanation = ", this can happen if you're using the default GIPHY API key"
+			explanation = ", this can happen if you're using the default Giphy API key"
 		}
 		return "", p.errorGenerator.FromMessage(fmt.Sprintf("Error calling the Giphy API (HTTP Status: %v%s)", r.Status, explanation))
 	}
-	var response giphySearchResult
+	var response GiphySearchResult
 	if r.Body == nil {
-		return "", p.errorGenerator.FromMessage("GIPHY search response body is empty")
+		return "", p.errorGenerator.FromMessage("Giphy search response body is empty")
 	}
 	decoder := json.NewDecoder(r.Body)
 	if err = decoder.Decode(&response); err != nil {
-		return "", p.errorGenerator.FromError("Could not parse GIPHY search response body", err)
+		return "", p.errorGenerator.FromError("Could not parse Giphy search response body", err)
 	}
 	if len(response.Data) < 1 {
 		return "", p.errorGenerator.FromMessage("No more GIF results for this search!")
 	}
 	gif := response.Data[0]
-	url := gif.Images[config.Rendition].URL
+	url := gif.Images[p.rendition].URL
 
 	if len(url) < 1 {
-		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + config.Rendition + "\" in the response")
+		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + p.rendition + "\" in the response")
 	}
 	*cursor = fmt.Sprintf("%d", response.Pagination.Offset+1)
 	return url, nil

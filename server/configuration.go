@@ -4,8 +4,8 @@ import (
 	"net/http"
 	"path/filepath"
 
-	. "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
-	"github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
+	provider "github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
 
 	"github.com/pkg/errors"
 
@@ -16,19 +16,19 @@ import (
 // getConfiguration retrieves the active configuration under lock, making it safe to use
 // concurrently. The active configuration may change underneath the client of this method, but
 // the struct returned by this API call is considered immutable.
-func (p *Plugin) getConfiguration() *Configuration {
+func (p *Plugin) getConfiguration() *pluginConf.Configuration {
 	p.configurationLock.RLock()
 	defer p.configurationLock.RUnlock()
 
 	if p.configuration == nil {
-		return &Configuration{}
+		return &pluginConf.Configuration{}
 	}
 
 	return p.configuration
 }
 
 // setConfiguration replaces the active configuration under lock.
-func (p *Plugin) setConfiguration(configuration *Configuration) {
+func (p *Plugin) setConfiguration(configuration *pluginConf.Configuration) {
 	p.configurationLock.Lock()
 	defer p.configurationLock.Unlock()
 
@@ -41,7 +41,7 @@ func (p *Plugin) setConfiguration(configuration *Configuration) {
 
 // OnConfigurationChange is invoked when configuration changes may have been made.
 func (p *Plugin) OnConfigurationChange() error {
-	var configuration = new(Configuration)
+	var configuration = new(pluginConf.Configuration)
 	// Load the public configuration fields from the Mattermost server configuration.
 	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
 		return errors.Wrap(err, "Failed to load plugin configuration")
@@ -56,20 +56,21 @@ func (p *Plugin) OnConfigurationChange() error {
 	if configuration.Provider == "" {
 		return errors.New("The GIF provider must be configured")
 	}
+
+	var gifProvider provider.GifProvider
+	var err *model.AppError
 	switch configuration.Provider {
 	case "giphy":
-		if configuration.APIKey == "" {
-			return errors.New("The API Key setting must be set for Giphy")
-		}
-		p.gifProvider = provider.NewGiphyProvider(http.DefaultClient, p.errorGenerator)
+		gifProvider, err = provider.NewGiphyProvider(http.DefaultClient, p.errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.Rendition)
 	case "tenor":
-		if configuration.APIKey == "" {
-			return errors.New("The API Key setting must be set for Tenor")
-		}
-		p.gifProvider = provider.NewTenorProvider(http.DefaultClient, p.errorGenerator)
+		gifProvider, err = provider.NewTenorProvider(http.DefaultClient, p.errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.RenditionTenor)
 	default:
-		p.gifProvider = provider.NewGfycatProvider(http.DefaultClient, p.errorGenerator)
+		gifProvider, err = provider.NewGfycatProvider(http.DefaultClient, p.errorGenerator, configuration.Rendition)
 	}
+	if err != nil {
+		return err
+	}
+	p.gifProvider = gifProvider
 
 	return p.defineBot(configuration.Provider)
 }

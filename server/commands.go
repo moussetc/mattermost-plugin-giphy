@@ -51,7 +51,7 @@ func getCommandKeywords(commandLine string, trigger string) string {
 func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
 	keywords := getCommandKeywords(command, triggerGif)
 	cursor := ""
-	gifURL, err := p.gifProvider.GetGifURL(p.getConfiguration(), keywords, &cursor)
+	gifURL, err := p.gifProvider.GetGifURL(keywords, &cursor)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *mod
 func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
 	keywords := getCommandKeywords(command, triggerGifs)
-	gifURL, err := p.gifProvider.GetGifURL(p.getConfiguration(), keywords, &cursor)
+	gifURL, err := p.gifProvider.GetGifURL(keywords, &cursor)
 	if err != nil {
 		return nil, err
 	}
