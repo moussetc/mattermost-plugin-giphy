@@ -70,7 +70,8 @@ func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArg
 	}
 
 	post := p.generateGifPost(p.botId, keywords, gifURL, args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
-	post.Message = generateGifCaption(p.getConfiguration().DisplayMode, keywords, gifURL, p.gifProvider.GetAttributionMessage())
+	// Never use "full_url" display mode, as URL preview does not work inside an ephemeral message
+	post.Message = generateGifCaption("", keywords, gifURL, p.gifProvider.GetAttributionMessage())
 	post.Props = map[string]interface{}{
 		"attachments": generateShufflePostAttachments(keywords, gifURL, cursor, args.RootId),
 	}
