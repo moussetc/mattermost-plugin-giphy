@@ -12,11 +12,17 @@ import (
 
 // NewTenorProvider creates an instance of a GIF provider that uses the Tenor API
 func NewTenorProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition string) (GifProvider, *model.AppError) {
+	if errorGenerator == nil {
+		return nil, model.NewAppError("NewGfycatProvider", "errorGenerator cannot be nil for Giphy Provider", nil, "", http.StatusInternalServerError)
+	}
+	if httpClient == nil {
+		return nil, errorGenerator.FromMessage("httpClient cannot be nil for Giphy Provider")
+	}
 	if apiKey == "" {
-		return nil, errorGenerator.FromMessage("The API Key setting must be set for Tenor")
+		return nil, errorGenerator.FromMessage("apiKey cannot be empty for Tenor Provider")
 	}
 	if rendition == "" {
-		return nil, errorGenerator.FromMessage("The Rendition setting must be set for Tenor")
+		return nil, errorGenerator.FromMessage("rendition cannot be empty for Tenor Provider")
 	}
 
 	tenorProvider := Tenor{}

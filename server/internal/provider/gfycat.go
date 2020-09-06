@@ -13,8 +13,14 @@ import (
 
 // NewGfycatProvider creates an instance of a GIF provider that uses the GfyCat API
 func NewGfycatProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, rendition string) (GifProvider, *model.AppError) {
+	if errorGenerator == nil {
+		return nil, model.NewAppError("NewGfycatProvider", "errorGenerator cannot be nil for Gfycat Provider", nil, "", http.StatusInternalServerError)
+	}
+	if httpClient == nil {
+		return nil, errorGenerator.FromMessage("httpClient cannot be nil for Gfycat Provider")
+	}
 	if rendition == "" {
-		return nil, errorGenerator.FromMessage("The Rendition setting must be set for Gfycat")
+		return nil, errorGenerator.FromMessage("rendition cannot be empty for Gfycat Provider")
 	}
 
 	gfycatProvider := Gfycat{}
