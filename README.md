@@ -2,7 +2,28 @@
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
-A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands.
+A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands, available on the official Mattermost Plugin MarketPlace.
+
+## Usage
+
+### Plugin v1.4.0 & higher
+Use the command `/gif "<keywords>" "<custom caption>"` to search for a GIF and shuffle through GIFs until you find one you like.
+
+Example with `/gif "waving cat" "Hello !"` : 
+
+First choose a GIF, using the Shuffle button to see others GIFs: 
+
+![demo](assets/demo_preview.png)
+
+Then post the GIF you want using the Send button: 
+
+![demo](assets/demo_post.png).
+
+If you don't want to put a special caption, you can also just use `/gif <keywords>`.
+
+*If you prefer the `/gif` (post GIF without preview) / `/gifs` (preview and choose GIF before posting) as in the previous versions of the plugin, you can disable the 'Force GIF preview before posting' in the plugin configuration.*
+
+### Older versions
 
 - Send a GIF directly with `/gif <keywords>`: 
 
@@ -16,7 +37,7 @@ Use the following table to find the correct plugin version for each Mattermost s
 
 | Mattermost server | Plugin release | Incompatibility |
 | --- | --- | --- |
-| 5.20 and higher | v1.2.x+ | breaking plugin manifest change |
+| 5.20 and higher | v1.2.x and higher | breaking plugin manifest change |
 | 5.12 to 5.19 | v1.1.x | breaking plugin API change |
 | 5.10 to 5.11 | v1.0.x | buttons on ephemeral posts |
 | 5.2 to 5.9 | v0.2.0 | |
@@ -55,14 +76,15 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
         // [...]
         "Plugins": {
             "com.github.moussetc.mattermost.plugin.giphy": {
-		"displaymode": "embedded"
-		"provider": "<giphy or gfycat or tenor>",
+                "displaymode": "embedded",
+                "provider": "<giphy or gfycat or tenor>",
                 "apikey": "<your API key from Step 4. above, if you've choosen Giphy or Tenor as your GIF provider>", 
                 "language": "en",
                 "rating": "",
                 "rendition": "fixed_height_small",
-		"renditiongfycat": "100pxGif",
-		"renditiontenor": "mediumgif"
+                "renditiongfycat": "100pxGif",
+                "renditiontenor": "mediumgif",
+                "disablepostingwithoutpreview": true
             },
         },
         "PluginStates": {
