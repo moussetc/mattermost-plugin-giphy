@@ -23,7 +23,7 @@ func NewGfycatProvider(httpClient HTTPClient, errorGenerator pluginError.PluginE
 		return nil, errorGenerator.FromMessage("rendition cannot be empty for Gfycat Provider")
 	}
 
-	gfycatProvider := Gfycat{}
+	gfycatProvider := gfycat{}
 	gfycatProvider.httpClient = httpClient
 	gfycatProvider.errorGenerator = errorGenerator
 	gfycatProvider.rendition = rendition
@@ -31,8 +31,8 @@ func NewGfycatProvider(httpClient HTTPClient, errorGenerator pluginError.PluginE
 	return &gfycatProvider, nil
 }
 
-// Gfycat find GIFs using the GfyCat API
-type Gfycat struct {
+// gfycat find GIFs using the GfyCat API
+type gfycat struct {
 	abstractGifProvider
 }
 
@@ -45,12 +45,12 @@ type gfySearchResult struct {
 	Gfycats []map[string]*json.RawMessage `json:"gfycats"`
 }
 
-func (p *Gfycat) GetAttributionMessage() string {
+func (p *gfycat) GetAttributionMessage() string {
 	return "Powered by Gfycat"
 }
 
 // GetGifURL return the URL of a GIF that matches the requested keywords
-func (p *Gfycat) GetGifURL(request string, cursor *string) (string, *model.AppError) {
+func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLGfycat+"/gfycats/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate GfyCat search URL", err)

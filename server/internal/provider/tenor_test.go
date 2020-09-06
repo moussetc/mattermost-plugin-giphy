@@ -55,20 +55,20 @@ func TestNewTenorProvider(t *testing.T) {
 		} else {
 			assert.Nil(t, err, testCase.testLabel)
 			assert.NotNil(t, provider, testCase.testLabel)
-			assert.IsType(t, &Tenor{}, provider, testCase.testLabel)
-			assert.Equal(t, testCase.paramHTTPClient, provider.(*Tenor).httpClient, testCase.testLabel)
-			assert.Equal(t, testCase.paramErrorGenerator, provider.(*Tenor).errorGenerator, testCase.testLabel)
-			assert.Equal(t, testCase.paramAPIKey, provider.(*Tenor).apiKey, testCase.testLabel)
-			assert.Equal(t, testCase.paramLanguage, provider.(*Tenor).language, testCase.testLabel)
-			assert.Equal(t, testCase.expectedRating, provider.(*Tenor).rating, testCase.testLabel)
-			assert.Equal(t, testCase.paramRendition, provider.(*Tenor).rendition, testCase.testLabel)
+			assert.IsType(t, &tenor{}, provider, testCase.testLabel)
+			assert.Equal(t, testCase.paramHTTPClient, provider.(*tenor).httpClient, testCase.testLabel)
+			assert.Equal(t, testCase.paramErrorGenerator, provider.(*tenor).errorGenerator, testCase.testLabel)
+			assert.Equal(t, testCase.paramAPIKey, provider.(*tenor).apiKey, testCase.testLabel)
+			assert.Equal(t, testCase.paramLanguage, provider.(*tenor).language, testCase.testLabel)
+			assert.Equal(t, testCase.expectedRating, provider.(*tenor).rating, testCase.testLabel)
+			assert.Equal(t, testCase.paramRendition, provider.(*tenor).rendition, testCase.testLabel)
 		}
 	}
 }
 
-func generateTenorProviderForTest(mockHTTPResponse *http.Response) *Tenor {
+func generateTenorProviderForTest(mockHTTPResponse *http.Response) *tenor {
 	provider, _ := NewTenorProvider(NewMockHttpClient(mockHTTPResponse), test.MockErrorGenerator(), testTenorAPIKey, testTenorLanguage, testTenorRating, testTenorRendition)
-	return provider.(*Tenor)
+	return provider.(*tenor)
 }
 
 func generateMockConfigForTenorProvider() pluginConf.Configuration {
@@ -148,11 +148,11 @@ func TestTenorProviderErrorStatusResponseWithErrorMessage(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func generatTenorProviderForURLBuildingTests() (*Tenor, *MockHttpClient, string) {
+func generatTenorProviderForURLBuildingTests() (*tenor, *MockHttpClient, string) {
 	serverResponse := newServerResponseOK(defaultTenorResponseBody)
 	client := NewMockHttpClient(serverResponse)
 	provider, _ := NewTenorProvider(client, test.MockErrorGenerator(), testTenorAPIKey, testTenorLanguage, testTenorRating, testTenorRendition)
-	return provider.(*Tenor), client, ""
+	return provider.(*tenor), client, ""
 }
 
 func TestTenorProviderParameterRating(t *testing.T) {

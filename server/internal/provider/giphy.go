@@ -11,8 +11,8 @@ import (
 	"github.com/mattermost/mattermost-server/v5/model"
 )
 
-// Giphy find GIFs using the Giphy API
-type Giphy struct {
+// giphy find GIFs using the giphy API
+type giphy struct {
 	abstractGifProvider
 	apiKey string
 }
@@ -47,7 +47,7 @@ func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 		return nil, errorGenerator.FromMessage("rendition cannot be empty for Giphy Provider")
 	}
 
-	GiphyProvider := &Giphy{}
+	GiphyProvider := &giphy{}
 	GiphyProvider.httpClient = httpClient
 	GiphyProvider.errorGenerator = errorGenerator
 	GiphyProvider.apiKey = apiKey
@@ -58,11 +58,11 @@ func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 	return GiphyProvider, nil
 }
 
-func (p *Giphy) GetAttributionMessage() string {
+func (p *giphy) GetAttributionMessage() string {
 	return "Powered by Giphy"
 }
 
-func (p *Giphy) GetGifURL(request string, cursor *string) (string, *model.AppError) {
+func (p *giphy) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLGiphy+"/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate URL", err)

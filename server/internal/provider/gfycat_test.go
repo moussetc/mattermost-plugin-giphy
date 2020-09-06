@@ -38,10 +38,10 @@ func TestNewGfycatProvider(t *testing.T) {
 		} else {
 			assert.Nil(t, err, testCase.testLabel)
 			assert.NotNil(t, provider, testCase.testLabel)
-			assert.IsType(t, &Gfycat{}, provider)
-			assert.Equal(t, testCase.paramHTTPClient, provider.(*Gfycat).httpClient)
-			assert.Equal(t, testCase.paramErrorGenerator, provider.(*Gfycat).errorGenerator)
-			assert.Equal(t, testCase.paramRendition, provider.(*Gfycat).rendition)
+			assert.IsType(t, &gfycat{}, provider)
+			assert.Equal(t, testCase.paramHTTPClient, provider.(*gfycat).httpClient)
+			assert.Equal(t, testCase.paramErrorGenerator, provider.(*gfycat).errorGenerator)
+			assert.Equal(t, testCase.paramRendition, provider.(*gfycat).rendition)
 		}
 	}
 }

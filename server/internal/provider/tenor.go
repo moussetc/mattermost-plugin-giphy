@@ -25,7 +25,7 @@ func NewTenorProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 		return nil, errorGenerator.FromMessage("rendition cannot be empty for Tenor Provider")
 	}
 
-	tenorProvider := Tenor{}
+	tenorProvider := tenor{}
 	tenorProvider.httpClient = httpClient
 	tenorProvider.errorGenerator = errorGenerator
 	tenorProvider.apiKey = apiKey
@@ -36,8 +36,8 @@ func NewTenorProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 	return &tenorProvider, nil
 }
 
-// Tenor find GIFs using the Tenor API
-type Tenor struct {
+// tenor find GIFs using the tenor API
+type tenor struct {
 	abstractGifProvider
 	apiKey string
 }
@@ -60,12 +60,12 @@ type tenorSearchError struct {
 	Code  string `json:"code"`
 }
 
-func (p *Tenor) GetAttributionMessage() string {
+func (p *tenor) GetAttributionMessage() string {
 	return "Via Tenor"
 }
 
 // Return the URL of a GIF that matches the requested keywords
-func (p *Tenor) GetGifURL(request string, cursor *string) (string, *model.AppError) {
+func (p *tenor) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLTenor+"/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate URL", err)

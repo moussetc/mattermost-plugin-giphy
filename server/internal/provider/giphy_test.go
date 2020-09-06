@@ -49,20 +49,20 @@ func TestNewGiphyProvider(t *testing.T) {
 		} else {
 			assert.Nil(t, err, testCase.testLabel)
 			assert.NotNil(t, provider, testCase.testLabel)
-			assert.IsType(t, &Giphy{}, provider, testCase.testLabel)
-			assert.Equal(t, testCase.paramHTTPClient, provider.(*Giphy).httpClient, testCase.testLabel)
-			assert.Equal(t, testCase.paramErrorGenerator, provider.(*Giphy).errorGenerator, testCase.testLabel)
-			assert.Equal(t, testCase.paramAPIKey, provider.(*Giphy).apiKey, testCase.testLabel)
-			assert.Equal(t, testCase.paramLanguage, provider.(*Giphy).language, testCase.testLabel)
-			assert.Equal(t, testCase.paramRating, provider.(*Giphy).rating, testCase.testLabel)
-			assert.Equal(t, testCase.paramRendition, provider.(*Giphy).rendition, testCase.testLabel)
+			assert.IsType(t, &giphy{}, provider, testCase.testLabel)
+			assert.Equal(t, testCase.paramHTTPClient, provider.(*giphy).httpClient, testCase.testLabel)
+			assert.Equal(t, testCase.paramErrorGenerator, provider.(*giphy).errorGenerator, testCase.testLabel)
+			assert.Equal(t, testCase.paramAPIKey, provider.(*giphy).apiKey, testCase.testLabel)
+			assert.Equal(t, testCase.paramLanguage, provider.(*giphy).language, testCase.testLabel)
+			assert.Equal(t, testCase.paramRating, provider.(*giphy).rating, testCase.testLabel)
+			assert.Equal(t, testCase.paramRendition, provider.(*giphy).rendition, testCase.testLabel)
 		}
 	}
 }
 
-func generateGiphyProviderForTest(mockHTTPResponse *http.Response) *Giphy {
+func generateGiphyProviderForTest(mockHTTPResponse *http.Response) *giphy {
 	provider, _ := NewGiphyProvider(NewMockHttpClient(mockHTTPResponse), test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition)
-	return provider.(*Giphy)
+	return provider.(*giphy)
 }
 
 func TestGiphyProviderGetGifURLOK(t *testing.T) {
@@ -132,11 +132,11 @@ func TestGiphyProviderTooManyRequestStatusResponse(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func generateGiphyProviderForURLBuildingTests() (*Giphy, *MockHttpClient, string) {
+func generateGiphyProviderForURLBuildingTests() (*giphy, *MockHttpClient, string) {
 	serverResponse := newServerResponseOK(defaultGiphyResponseBody)
 	client := NewMockHttpClient(serverResponse)
 	provider, _ := NewGiphyProvider(client, test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition)
-	return provider.(*Giphy), client, ""
+	return provider.(*giphy), client, ""
 }
 
 func TestGiphyProviderParameterAPIKey(t *testing.T) {

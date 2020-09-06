@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net/http"
 	"path/filepath"
 
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
@@ -53,20 +52,7 @@ func (p *Plugin) OnConfigurationChange() error {
 		return errors.New("The Display Mode must be configured")
 	}
 
-	if configuration.Provider == "" {
-		return errors.New("The GIF provider must be configured")
-	}
-
-	var gifProvider provider.GifProvider
-	var err *model.AppError
-	switch configuration.Provider {
-	case "giphy":
-		gifProvider, err = provider.NewGiphyProvider(http.DefaultClient, p.errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.Rendition)
-	case "tenor":
-		gifProvider, err = provider.NewTenorProvider(http.DefaultClient, p.errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.RenditionTenor)
-	default:
-		gifProvider, err = provider.NewGfycatProvider(http.DefaultClient, p.errorGenerator, configuration.Rendition)
-	}
+	gifProvider, err := provider.GifProviderGenerator(*configuration, p.errorGenerator)
 	if err != nil {
 		return err
 	}
