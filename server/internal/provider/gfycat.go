@@ -57,7 +57,6 @@ func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppEr
 	}
 	q := req.URL.Query()
 	q.Add("search_text", request)
-	q.Add("count", "1")
 	if *cursor != "" {
 		q.Add("cursor", *cursor)
 	}
