@@ -17,6 +17,7 @@ import (
 
 const (
 	contextKeywords = "keywords"
+	contextCaption  = "caption"
 	contextGifURL   = "gifURL"
 	contextCursor   = "cursor"
 	contextRootId   = "rootId"

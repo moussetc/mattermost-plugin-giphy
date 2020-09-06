@@ -20,3 +20,10 @@ func (c *Configuration) Clone() *Configuration {
 	var clone = *c
 	return &clone
 }
+
+const (
+	// DisplayModeEmbedded display GIFs as Markdown embedded images
+	DisplayModeEmbedded = "embedded"
+	// DisplayModeFullURL displays GIFs as raw URLs using image preview
+	DisplayModeFullURL = "full_url"
+)

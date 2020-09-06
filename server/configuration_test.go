@@ -5,7 +5,9 @@ import (
 	"reflect"
 	"testing"
 
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	"github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
+	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
 
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest/mock"
@@ -19,6 +21,7 @@ func generateMocksForConfigurationTesting(displayMode, gifProvider string) *Plug
 	pluginConfig.DisplayMode = displayMode
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(pluginConfig))
 	p := Plugin{}
+	p.errorGenerator = test.MockErrorGenerator()
 	p.SetAPI(api)
 	setMockHelpers(&p)
 	return &p
@@ -43,14 +46,14 @@ func TestOnConfigurationChangeEmptyDisplayMode(t *testing.T) {
 }
 
 func TestOnConfigurationChangeEmptyProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("embedded", "")
+	p := generateMocksForConfigurationTesting(pluginConf.DisplayModeEmbedded, "")
 	err := p.OnConfigurationChange()
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "The GIF provider must be configured")
 }
 
 func TestOnConfigurationChangeGiphyProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("embedded", "giphy")
+	p := generateMocksForConfigurationTesting(pluginConf.DisplayModeEmbedded, "giphy")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)
@@ -59,7 +62,7 @@ func TestOnConfigurationChangeGiphyProvider(t *testing.T) {
 }
 
 func TestOnConfigurationChangeGfycatProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("embedded", "gfycat")
+	p := generateMocksForConfigurationTesting(pluginConf.DisplayModeEmbedded, "gfycat")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)
@@ -68,7 +71,7 @@ func TestOnConfigurationChangeGfycatProvider(t *testing.T) {
 }
 
 func TestOnConfigurationChangeTenorProvider(t *testing.T) {
-	p := generateMocksForConfigurationTesting("embedded", "tenor")
+	p := generateMocksForConfigurationTesting(pluginConf.DisplayModeEmbedded, "tenor")
 
 	err := p.OnConfigurationChange()
 	assert.Nil(t, err)

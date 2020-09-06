@@ -94,10 +94,11 @@ func TestExecuteCommandGifShuffleKOProviderError(t *testing.T) {
 
 func TestGenerateShufflePostAttachments(t *testing.T) {
 	keywords := "rain"
+	caption := "sad doctor"
 	gifURL := "https://test.fr/rain-gif"
 	cursor := "424242"
 	rootId := "42"
-	attachments := generateShufflePostAttachments(keywords, gifURL, cursor, rootId)
+	attachments := generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootId)
 	assert.NotNil(t, attachments)
 	assert.Len(t, attachments, 1)
 	attachment := attachments[0]
@@ -113,5 +114,39 @@ func TestGenerateShufflePostAttachments(t *testing.T) {
 		assert.Equal(t, context[contextGifURL], gifURL)
 		assert.Equal(t, context[contextCursor], cursor)
 		assert.Equal(t, context[contextRootId], rootId)
+	}
+}
+
+func TestParseCommandeLine(t *testing.T) {
+	testCases := []struct {
+		command          string
+		expectedError    bool
+		expectedKeywords string
+		expectedCaption  string
+	}{
+		{command: "", expectedError: true, expectedKeywords: "", expectedCaption: ""},
+		{command: "\"k1 k2 k3", expectedError: true, expectedKeywords: "", expectedCaption: ""},
+		{command: "k1 k2 k3\"", expectedError: true, expectedKeywords: "", expectedCaption: ""},
+		{command: "\"k1 k2 k3\" m1 m2 m3", expectedError: true, expectedKeywords: "", expectedCaption: ""},
+		{command: "\"k1 k2 k3\" \"m1 m2 m3", expectedError: true, expectedKeywords: "", expectedCaption: ""},
+		{command: "\"k1 k2 k3\" m1 m2 m3\"", expectedError: true, expectedKeywords: "", expectedCaption: ""},
+		{command: "\"\" \"m1 m2 m3\"", expectedError: true, expectedKeywords: "", expectedCaption: ""},
+		{command: "unique", expectedError: false, expectedKeywords: "unique", expectedCaption: ""},
+		{command: "k1 k2", expectedError: false, expectedKeywords: "k1 k2", expectedCaption: ""},
+		{command: "\"k1 k2 k3\"", expectedError: false, expectedKeywords: "k1 k2 k3", expectedCaption: ""},
+		{command: "unique \"m1 m2 m3\"", expectedError: false, expectedKeywords: "unique", expectedCaption: "m1 m2 m3"},
+		{command: "\"k1 k2 k3\" \"m1 m2 m3\"", expectedError: false, expectedKeywords: "k1 k2 k3", expectedCaption: "m1 m2 m3"},
+		{command: "\"We\nlike\nnew\nlines\" \"yes\nwe\ndo\"", expectedError: false, expectedKeywords: "We\nlike\nnew\nlines", expectedCaption: "yes\nwe\ndo"},
+		{command: "\"Unicode supporté\\? ça c'est fort\" \"héhéhé !\"", expectedError: false, expectedKeywords: "Unicode supporté\\? ça c'est fort", expectedCaption: "héhéhé !"},
+	}
+	for _, testCase := range testCases {
+		keywords, caption, err := parseCommandLine(testCase.command, triggerGif)
+		if testCase.expectedError {
+			assert.NotNil(t, err, "Testing: "+testCase.command)
+		} else {
+			assert.Nil(t, err, "Testing: "+testCase.command)
+		}
+		assert.Equal(t, testCase.expectedKeywords, keywords, "Testing: "+testCase.command)
+		assert.Equal(t, testCase.expectedCaption, caption, "Testing: "+testCase.command)
 	}
 }

@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/http"
 
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
+
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/mitchellh/mapstructure"
@@ -19,6 +21,7 @@ const (
 
 type integrationRequest struct {
 	Keywords string `mapstructure:"keywords"`
+	Caption  string `mapstructure:"caption"`
 	GifURL   string `mapstructure:"gifURL"`
 	Cursor   string `mapstructure:"cursor"`
 	RootId   string `mapstructure:"rootId"`
@@ -102,9 +105,6 @@ func parseRequest(r *http.Request) (*integrationRequest, error) {
 	if context.Cursor == "" {
 		return nil, errors.New("Missing " + contextCursor + " from action request context")
 	}
-	if context.RootId == "" {
-		return nil, errors.New("Missing " + contextRootId + " from action request context")
-	}
 	return &context, err
 }
 
@@ -138,9 +138,10 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		ChannelId: request.ChannelId,
 		UserId:    p.botId,
 		RootId:    request.RootId,
-		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
+		// Only embedded display mode works inside an ephemeral post
+		Message: generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
 		Props: map[string]interface{}{
-			"attachments": generateShufflePostAttachments(request.Keywords, shuffledGifURL, request.Cursor, request.RootId),
+			"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootId),
 		},
 		CreateAt: model.GetMillis(),
 		UpdateAt: model.GetMillis(),
@@ -154,7 +155,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 	post := &model.Post{
-		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.GifURL, p.gifProvider.GetAttributionMessage()),
+		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURL, p.gifProvider.GetAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 		RootId:    request.RootId,

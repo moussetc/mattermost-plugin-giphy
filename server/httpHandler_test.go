@@ -20,6 +20,7 @@ import (
 
 const (
 	testChannelId = "gifs-channel"
+	testCaption   = "Message prêt à tout"
 	testUserId    = "gif-user"
 	testPostId    = "skfqsldjhfkljhf"
 	testKeywords  = "kitty"
@@ -34,6 +35,7 @@ var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
 	PostId:    testPostId,
 	Context: map[string]interface{}{
 		contextGifURL:   testGifURL,
+		contextCaption:  testCaption,
 		contextKeywords: testKeywords,
 		contextCursor:   testCursor,
 		contextRootId:   testRootId,
@@ -42,7 +44,7 @@ var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
 
 func generateTestIntegrationRequest() *integrationRequest {
 	return &integrationRequest{
-		testGifURL, testKeywords, testCursor, testRootId, testPostActionIntegrationRequest,
+		testGifURL, testKeywords, testCaption, testCursor, testRootId, testPostActionIntegrationRequest,
 	}
 }
 
