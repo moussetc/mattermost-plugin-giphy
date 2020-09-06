@@ -362,6 +362,14 @@ const manifestStr = `
             "value": "uk"
           }
         ]
+      },
+      {
+        "key": "DisablePostingWithoutPreview",
+        "display_name": "Force GIF preview before posting (force /gifs)",
+        "type": "bool",
+        "help_text": "If deactivated, both /gif (no preview before posting) and /gifs (preview) will be available. This option is activated by default to prevent the accidental posting of inappropriate GIFs from a provider that does not allow content rating.",
+        "placeholder": "",
+        "default": true
       }
     ]
   }

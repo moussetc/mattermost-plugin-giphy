@@ -4,14 +4,18 @@ package configuration
 // configuration, as well as values computed from the configuration. Any public fields will be
 // deserialized from the Mattermost server configuration in OnConfigurationChange.
 type Configuration struct {
-	Provider        string
-	DisplayMode     string
-	Rating          string
-	Language        string
-	Rendition       string
-	RenditionGfycat string
-	RenditionTenor  string
-	APIKey          string
+	Provider                     string
+	DisplayMode                  string
+	Rating                       string
+	Language                     string
+	Rendition                    string
+	RenditionGfycat              string
+	RenditionTenor               string
+	APIKey                       string
+	DisablePostingWithoutPreview bool
+	// Computed fields:
+	CommandTriggerGif            string
+	CommandTriggerGifWithPreview string
 }
 
 // Clone shallow copies the configuration. Your implementation may require a deep copy if

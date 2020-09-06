@@ -336,6 +336,13 @@
             "value": "uk"
           }
         ]
+      },
+      {
+        "key": "DisablePostingWithoutPreview",
+        "type": "bool",
+        "display_name": "Force GIF preview before posting (force /gifs)",
+        "help_text": "If deactivated, both /gif (no preview before posting) and /gifs (preview) will be available. This option is activated by default to prevent the accidental posting of inappropriate GIFs from a provider that does not allow content rating.",
+        "default": true
       }
     ],
     "footer": "Powered by Giphy, Tenor and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"

@@ -21,32 +21,46 @@ const (
 )
 
 func (p *Plugin) RegisterCommands() error {
-	err := p.API.RegisterCommand(&model.Command{
-		Trigger:          triggerGif,
-		Description:      "Post a GIF matching your search",
-		DisplayName:      "Giphy Search",
-		AutoComplete:     true,
-		AutoCompleteDesc: "Post a GIF matching your search",
-		AutoCompleteHint: getHintMessage(triggerGif),
-	})
-	if err != nil {
-		return errors.Wrap(err, "Unable to define the following command: "+triggerGif)
+	unregisterErr := p.API.UnregisterCommand("", triggerGif)
+	if unregisterErr != nil {
+		p.API.LogWarn("Unable to unregister the " + triggerGif + " command" + unregisterErr.Error())
 	}
-	err = p.API.RegisterCommand(&model.Command{
-		Trigger:          triggerGifs,
-		Description:      "Preview a GIF",
-		DisplayName:      "Giphy Shuffle",
-		AutoComplete:     true,
-		AutoCompleteDesc: "Let you preview and shuffle a GIF before posting for real",
-		AutoCompleteHint: getHintMessage(triggerGifs),
-	})
-	if err != nil {
-		return errors.Wrap(err, "Unable to define the following command: "+triggerGifs)
+	unregisterErr = p.API.UnregisterCommand("", triggerGifs)
+	if unregisterErr != nil {
+		p.API.LogWarn("Unable to unregister the " + triggerGifs + " command" + unregisterErr.Error())
+	}
+
+	config := p.getConfiguration()
+	if config.CommandTriggerGif != "" {
+		err := p.API.RegisterCommand(&model.Command{
+			Trigger:          config.CommandTriggerGif,
+			Description:      "Post a GIF matching your search",
+			DisplayName:      "Giphy Search",
+			AutoComplete:     true,
+			AutoCompleteDesc: "Post a GIF matching your search",
+			AutoCompleteHint: getHintMessage(config.CommandTriggerGif),
+		})
+		if err != nil {
+			return errors.Wrap(err, "Unable to define the following command: "+config.CommandTriggerGif)
+		}
+	}
+	if config.CommandTriggerGifWithPreview != "" {
+		err := p.API.RegisterCommand(&model.Command{
+			Trigger:          config.CommandTriggerGifWithPreview,
+			Description:      "Preview a GIF",
+			DisplayName:      "Giphy Shuffle",
+			AutoComplete:     true,
+			AutoCompleteDesc: "Let you preview and shuffle a GIF before posting for real",
+			AutoCompleteHint: getHintMessage(config.CommandTriggerGifWithPreview),
+		})
+		if err != nil {
+			return errors.Wrap(err, "Unable to define the following command: "+config.CommandTriggerGifWithPreview)
+		}
 	}
 	return nil
 }
 
-func parseCommandLine(commandLine string, trigger string) (keywords string, caption string, err error) {
+func parseCommandLine(commandLine, trigger string) (keywords, caption string, err error) {
 	reg, err := regexp.Compile("^\\s*(?P<keywords>(\"([^\\s\"]+\\s*)+\")+|([^\\s\"]+\\s*)+)(?P<caption>\\s+\"(\\s*[^\\s\"]+\\s*)+\")?\\s*$")
 	if err != nil {
 		return "", "", errors.New("Could not compile regexp")
@@ -63,11 +77,7 @@ func parseCommandLine(commandLine string, trigger string) (keywords string, capt
 }
 
 // executeCommandGif returns a public post containing a matching GIF
-func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *model.AppError) {
-	keywords, caption, parseErr := parseCommandLine(command, triggerGif)
-	if parseErr != nil {
-		return nil, p.errorGenerator.FromMessage(parseErr.Error())
-	}
+func (p *Plugin) executeCommandGif(keywords, caption string) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor)
 	if errGif != nil {
@@ -78,13 +88,9 @@ func (p *Plugin) executeCommandGif(command string) (*model.CommandResponse, *mod
 	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, Text: text}, nil
 }
 
-// executeCommandGifShuffle returns an ephemeral (private) post with one GIF that can either be posted, shuffled or canceled
-func (p *Plugin) executeCommandGifShuffle(command string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+// executeCommandGifWithPreview returns an ephemeral post with one GIF that can either be posted, shuffled or canceled
+func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
-	keywords, caption, parseErr := parseCommandLine(command, triggerGifs)
-	if parseErr != nil {
-		return nil, p.errorGenerator.FromMessage(parseErr.Error())
-	}
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor)
 	if errGif != nil {
 		return nil, errGif

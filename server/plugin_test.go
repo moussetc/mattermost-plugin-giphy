@@ -20,14 +20,16 @@ import (
 
 func generateMockPluginConfig() pluginConf.Configuration {
 	return pluginConf.Configuration{
-		DisplayMode:     pluginConf.DisplayModeEmbedded,
-		Provider:        "giphy",
-		Language:        "fr",
-		Rating:          "",
-		Rendition:       "fixed_height_small",
-		RenditionTenor:  "tinygif",
-		RenditionGfycat: "gif100Px",
-		APIKey:          "defaultAPIKey",
+		DisplayMode:                  pluginConf.DisplayModeEmbedded,
+		Provider:                     "giphy",
+		Language:                     "fr",
+		Rating:                       "",
+		Rendition:                    "fixed_height_small",
+		RenditionTenor:               "tinygif",
+		RenditionGfycat:              "gif100Px",
+		APIKey:                       "defaultAPIKey",
+		CommandTriggerGif:            triggerGif,
+		CommandTriggerGifWithPreview: triggerGifs,
 	}
 }
 
@@ -56,6 +58,7 @@ func initMockAPI() (api *plugintest.API, p *Plugin) {
 	pluginConfig := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(pluginConfig))
 	p = &Plugin{}
+	p.configuration = &pluginConfig
 	p.SetAPI(api)
 	p.botId = "botId42"
 	p.httpHandler = &mockHTTPHandler{}
@@ -85,9 +88,11 @@ func TestOnActivateOK(t *testing.T) {
 	config := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
+	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
 	p := Plugin{}
 	p.SetAPI(api)
 	setMockHelpers(&p)
+	p.errorGenerator = test.MockErrorGenerator()
 
 	assert.Nil(t, p.OnActivate())
 }

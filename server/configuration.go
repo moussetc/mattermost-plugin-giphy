@@ -45,7 +45,6 @@ func (p *Plugin) OnConfigurationChange() error {
 	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
 		return errors.Wrap(err, "Failed to load plugin configuration")
 	}
-
 	p.setConfiguration(configuration)
 
 	if configuration.DisplayMode == "" {
@@ -57,6 +56,19 @@ func (p *Plugin) OnConfigurationChange() error {
 		return err
 	}
 	p.gifProvider = gifProvider
+	if configuration.DisablePostingWithoutPreview {
+		// Force preview
+		configuration.CommandTriggerGif = ""
+		configuration.CommandTriggerGifWithPreview = triggerGif
+	} else {
+		// Slack-like syntax
+		configuration.CommandTriggerGif = triggerGif
+		configuration.CommandTriggerGifWithPreview = triggerGifs
+	}
+	errRegister := p.RegisterCommands()
+	if errRegister != nil {
+		return errRegister
+	}
 
 	return p.defineBot(configuration.Provider)
 }

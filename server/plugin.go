@@ -39,7 +39,6 @@ type Plugin struct {
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
-	p.errorGenerator = pluginError.NewPluginErrorGenerator(manifest.Name)
 	if err := p.OnConfigurationChange(); err != nil {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}
@@ -49,11 +48,21 @@ func (p *Plugin) OnActivate() error {
 
 // ExecuteCommand dispatch the command based on the trigger word
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
-	if strings.HasPrefix(args.Command, "/"+triggerGifs) {
-		return p.executeCommandGifShuffle(args.Command, args)
+	config := p.getConfiguration()
+
+	if strings.HasPrefix(args.Command, "/"+config.CommandTriggerGifWithPreview) {
+		keywords, caption, parseErr := parseCommandLine(args.Command, config.CommandTriggerGifWithPreview)
+		if parseErr != nil {
+			return nil, p.errorGenerator.FromMessage(parseErr.Error())
+		}
+		return p.executeCommandGifWithPreview(keywords, caption, args)
 	}
-	if strings.HasPrefix(args.Command, "/"+triggerGif) {
-		return p.executeCommandGif(args.Command)
+	if strings.HasPrefix(args.Command, "/"+config.CommandTriggerGif) {
+		keywords, caption, parseErr := parseCommandLine(args.Command, config.CommandTriggerGif)
+		if parseErr != nil {
+			return nil, p.errorGenerator.FromMessage(parseErr.Error())
+		}
+		return p.executeCommandGif(keywords, caption)
 	}
 
 	return nil, p.errorGenerator.FromMessage("Command trigger " + args.Command + "is not supported by this plugin.")
