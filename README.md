@@ -6,7 +6,7 @@ A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash comm
 
 ## Usage
 
-### Plugin v1.4.0 & higher
+### Plugin v2.0.0 & higher
 Use the command `/gif "<keywords>" "<custom caption>"` to search for a GIF and shuffle through GIFs until you find one you like.
 
 Example with `/gif "waving cat" "Hello !"` : 

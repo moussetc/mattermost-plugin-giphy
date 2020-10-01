@@ -17,9 +17,9 @@ const manifestStr = `
   "description": "Add GIF slash commands from Giphy, Gfycat or Tenor",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
-  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/tag/v1.4.0",
+  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/tag/v2.0.0",
   "icon_path": "assets/icon.svg",
-  "version": "1.4.0",
+  "version": "2.0.0",
   "min_server_version": "5.20.0",
   "server": {
     "executables": {
