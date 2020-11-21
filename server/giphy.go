@@ -3,9 +3,10 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/mattermost/mattermost-server/v5/model"
 	"net/http"
 	"strconv"
+
+	"github.com/mattermost/mattermost-server/v5/model"
 )
 
 // giphyProvider get GIF URLs from the Giphy API without any external, out-of-date library
@@ -27,7 +28,7 @@ type giphySearchResult struct {
 }
 
 func (p *giphyProvider) getAttributionMessage() string {
-	return "Powered by Giphy"
+	return fmt.Sprintf("![GIPHY](/plugins/%s/public/powered-by-giphy.png)", manifest.Id)
 }
 
 // getGifURL return the URL of a GIF that matches the requested keywords
