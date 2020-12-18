@@ -1,10 +1,14 @@
 package main
 
 import (
+	"errors"
 	"net/http"
+
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/mitchellh/mapstructure"
 )
 
 // Contains what's related to handling HTTP requests directed to the plugin
@@ -16,10 +20,11 @@ const (
 )
 
 type integrationRequest struct {
-	GifURL   string
-	Keywords string
-	Cursor   string
-	RootId   string
+	Keywords string `mapstructure:"keywords"`
+	Caption  string `mapstructure:"caption"`
+	GifURL   string `mapstructure:"gifURL"`
+	Cursor   string `mapstructure:"cursor"`
+	RootId   string `mapstructure:"rootId"`
 	model.PostActionIntegrationRequest
 }
 
@@ -49,8 +54,10 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	request, ok := parseRequest(p.API, w, r)
-	if !ok {
+	request, err := parseRequest(r)
+	if err != nil {
+		p.API.LogWarn("Could not parse PostActionIntegrationRequest: "+err.Error(), nil)
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
@@ -79,53 +86,26 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func parseRequest(api plugin.API, w http.ResponseWriter, r *http.Request) (actionRequest *integrationRequest, ok bool) {
+func parseRequest(r *http.Request) (*integrationRequest, error) {
 	// Read data added by default for a button action
 	request := postActionIntegrationRequestFromJson(r.Body)
 	if request == nil {
-		api.LogWarn("Could not parse PostActionIntegrationRequest", nil)
-		w.WriteHeader(http.StatusBadRequest)
-		return nil, false
-	}
-	gifURL, ok := parseRequestValue(api, w, request, contextGifURL)
-	if !ok {
-		return nil, false
+		return nil, errors.New("request cannot be nil")
 	}
 
-	keywords, ok := parseRequestValue(api, w, request, contextKeywords)
-	if !ok {
-		return nil, false
+	context := integrationRequest{}
+	context.PostActionIntegrationRequest = *request
+	err := mapstructure.Decode(request.Context, &context)
+	if context.Keywords == "" {
+		return nil, errors.New("Missing " + contextKeywords + " from action request context")
 	}
-
-	cursor, ok := parseRequestValue(api, w, request, contextCursor)
-	if !ok {
-		return nil, false
+	if context.GifURL == "" {
+		return nil, errors.New("Missing " + contextGifURL + " from action request context")
 	}
-
-	rootId, ok := parseRequestValue(api, w, request, contextRootId)
-	if !ok {
-		return nil, false
+	if context.Cursor == "" {
+		return nil, errors.New("Missing " + contextCursor + " from action request context")
 	}
-
-	return &integrationRequest{gifURL, keywords, cursor, rootId, *request},
-		true
-}
-
-func parseRequestValue(api plugin.API, w http.ResponseWriter, request *model.PostActionIntegrationRequest, valueKey string) (string, bool) {
-	valueObj, ok := request.Context[valueKey]
-	if !ok {
-		notifyHandlerError(api, "Missing "+valueKey+" from action request context", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-		return "", false
-	}
-	valueStr, ok := valueObj.(string)
-	if !ok {
-		notifyHandlerError(api, "Value of "+valueKey+" should be a String", nil, request)
-		w.WriteHeader(http.StatusBadRequest)
-		return "", false
-	}
-
-	return valueStr, true
+	return &context, err
 }
 
 func writeResponse(httpStatus int, w http.ResponseWriter) {
@@ -146,7 +126,7 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, requ
 
 // Replace the GIF in the ephemeral shuffle post by a new one
 func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
-	shuffledGifURL, err := p.gifProvider.getGifURL(p.getConfiguration(), request.Keywords, &request.Cursor)
+	shuffledGifURL, err := p.gifProvider.GetGifURL(request.Keywords, &request.Cursor)
 	if err != nil {
 		notifyHandlerError(p.API, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)
@@ -158,9 +138,10 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		ChannelId: request.ChannelId,
 		UserId:    p.botId,
 		RootId:    request.RootId,
-		Message:   generateGifCaption(request.Keywords, shuffledGifURL, p.gifProvider.getAttributionMessage()),
+		// Only embedded display mode works inside an ephemeral post
+		Message: generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
 		Props: map[string]interface{}{
-			"attachments": generateShufflePostAttachments(request.Keywords, shuffledGifURL, request.Cursor, request.RootId),
+			"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootId),
 		},
 		CreateAt: model.GetMillis(),
 		UpdateAt: model.GetMillis(),
@@ -174,7 +155,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 	post := &model.Post{
-		Message:   generateGifCaption(request.Keywords, request.GifURL, p.gifProvider.getAttributionMessage()),
+		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURL, p.gifProvider.GetAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 		RootId:    request.RootId,

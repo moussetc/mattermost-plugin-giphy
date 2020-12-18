@@ -2,11 +2,11 @@
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
   "description": "Add GIF slash commands from Giphy, Gfycat or Tenor",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "min_server_version": "5.20.0",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
-  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/tag/v1.3.0",
+  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/tag/v2.0.0",
   "icon_path": "assets/icon.svg",
   "server": {
     "executables": {
@@ -18,6 +18,23 @@
   },
   "settings_schema": {
     "settings": [
+      {
+        "key": "DisplayMode",
+        "type": "radio",
+        "display_name": "Display the GIF as an",
+        "default": "embedded",
+        "options": [
+          {
+            "display_name": "Embedded image (the GIF cannot be collapsed)",
+            "value": "embedded"
+          },
+          {
+            "display_name": "Collapsable image preview (the full URL is displayed, requires links preview to be activated)",
+            "value": "full_url"
+          }
+        ],
+        "help_text": "It is not yet possible to collapse an embedded image in Mattermost: use the Full URL option if preferred and keep an eye on [this issue](https://github.com/moussetc/mattermost-plugin-giphy/issues/12).\n\n**To activate links preview**, go to System Console > Posts > Enable Link Previews."
+      },
       {
         "key": "Provider",
         "type": "radio",
@@ -319,6 +336,13 @@
             "value": "uk"
           }
         ]
+      },
+      {
+        "key": "DisablePostingWithoutPreview",
+        "type": "bool",
+        "display_name": "Force GIF preview before posting (force /gifs)",
+        "help_text": "If deactivated, both /gif (no preview before posting) and /gifs (preview) will be available. This option is activated by default to prevent the accidental posting of inappropriate GIFs from a provider that does not allow content rating.",
+        "default": true
       }
     ],
     "footer": "Powered by Giphy, Tenor and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"

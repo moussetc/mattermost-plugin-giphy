@@ -17,9 +17,9 @@ const manifestStr = `
   "description": "Add GIF slash commands from Giphy, Gfycat or Tenor",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
-  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/tag/v1.3.0",
+  "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/tag/v2.0.0",
   "icon_path": "assets/icon.svg",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "min_server_version": "5.20.0",
   "server": {
     "executables": {
@@ -33,6 +33,24 @@ const manifestStr = `
     "header": "",
     "footer": "Powered by Giphy, Tenor and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
     "settings": [
+      {
+        "key": "DisplayMode",
+        "display_name": "Display the GIF as an",
+        "type": "radio",
+        "help_text": "It is not yet possible to collapse an embedded image in Mattermost: use the Full URL option if preferred and keep an eye on [this issue](https://github.com/moussetc/mattermost-plugin-giphy/issues/12).\n\n**To activate links preview**, go to System Console \u003e Posts \u003e Enable Link Previews.",
+        "placeholder": "",
+        "default": "embedded",
+        "options": [
+          {
+            "display_name": "Embedded image (the GIF cannot be collapsed)",
+            "value": "embedded"
+          },
+          {
+            "display_name": "Collapsable image preview (the full URL is displayed, requires links preview to be activated)",
+            "value": "full_url"
+          }
+        ]
+      },
       {
         "key": "Provider",
         "display_name": "GIF Provider",
@@ -344,6 +362,14 @@ const manifestStr = `
             "value": "uk"
           }
         ]
+      },
+      {
+        "key": "DisablePostingWithoutPreview",
+        "display_name": "Force GIF preview before posting (force /gifs)",
+        "type": "bool",
+        "help_text": "If deactivated, both /gif (no preview before posting) and /gifs (preview) will be available. This option is activated by default to prevent the accidental posting of inappropriate GIFs from a provider that does not allow content rating.",
+        "placeholder": "",
+        "default": true
       }
     ]
   }

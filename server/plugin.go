@@ -1,9 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
+
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
+	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
+	provider "github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
@@ -13,6 +18,7 @@ import (
 
 const (
 	contextKeywords = "keywords"
+	contextCaption  = "caption"
 	contextGifURL   = "gifURL"
 	contextCursor   = "cursor"
 	contextRootId   = "rootId"
@@ -24,30 +30,18 @@ type Plugin struct {
 	plugin.MattermostPlugin
 
 	configurationLock sync.RWMutex
-	configuration     *configuration
+	configuration     *pluginConf.Configuration
 
-	gifProvider gifProvider
-	httpHandler pluginHTTPHandler
-	botId       string
-}
-
-// gifProvider exposes methods to get GIF URLs
-type gifProvider interface {
-	getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError)
-	getAttributionMessage() string
-}
-
-type HttpClient interface {
-	Do(req *http.Request) (*http.Response, error)
-	Get(s string) (*http.Response, error)
-}
-
-var getGifProviderHttpClient = func() HttpClient {
-	return http.DefaultClient
+	errorGenerator pluginError.PluginError
+	gifProvider    provider.GifProvider
+	httpHandler    pluginHTTPHandler
+	botId          string
+	rootURL        string
 }
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
+	p.rootURL = fmt.Sprintf("/plugins/%s", manifest.Id)
 	if err := p.OnConfigurationChange(); err != nil {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}
@@ -57,26 +51,27 @@ func (p *Plugin) OnActivate() error {
 
 // ExecuteCommand dispatch the command based on the trigger word
 func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
-	if strings.HasPrefix(args.Command, "/"+triggerGifs) {
-		return p.executeCommandGifShuffle(args.Command, args)
+	config := p.getConfiguration()
+
+	if strings.HasPrefix(args.Command, "/"+config.CommandTriggerGifWithPreview) {
+		keywords, caption, parseErr := parseCommandLine(args.Command, config.CommandTriggerGifWithPreview)
+		if parseErr != nil {
+			return nil, p.errorGenerator.FromMessage(parseErr.Error())
+		}
+		return p.executeCommandGifWithPreview(keywords, caption, args)
 	}
-	if strings.HasPrefix(args.Command, "/"+triggerGif) {
-		return p.executeCommandGif(args.Command)
+	if strings.HasPrefix(args.Command, "/"+config.CommandTriggerGif) {
+		keywords, caption, parseErr := parseCommandLine(args.Command, config.CommandTriggerGif)
+		if parseErr != nil {
+			return nil, p.errorGenerator.FromMessage(parseErr.Error())
+		}
+		return p.executeCommandGif(keywords, caption)
 	}
 
-	return nil, appError("Command trigger "+args.Command+"is not supported by this plugin.", nil)
+	return nil, p.errorGenerator.FromMessage("Command trigger " + args.Command + "is not supported by this plugin.")
 }
 
 // ServeHTTP serve the post actions for the shuffle command
 func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	p.handleHTTPRequest(w, r)
-}
-
-//appError generates a normalized error for this plugin
-func appError(message string, err error) *model.AppError {
-	errorMessage := ""
-	if err != nil {
-		errorMessage = err.Error()
-	}
-	return model.NewAppError(manifest.Name, message, nil, errorMessage, http.StatusBadRequest)
 }

@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -19,6 +20,7 @@ import (
 
 const (
 	testChannelId = "gifs-channel"
+	testCaption   = "Message prêt à tout"
 	testUserId    = "gif-user"
 	testPostId    = "skfqsldjhfkljhf"
 	testKeywords  = "kitty"
@@ -33,6 +35,7 @@ var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
 	PostId:    testPostId,
 	Context: map[string]interface{}{
 		contextGifURL:   testGifURL,
+		contextCaption:  testCaption,
 		contextKeywords: testKeywords,
 		contextCursor:   testCursor,
 		contextRootId:   testRootId,
@@ -41,7 +44,7 @@ var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
 
 func generateTestIntegrationRequest() *integrationRequest {
 	return &integrationRequest{
-		testGifURL, testKeywords, testCursor, testRootId, testPostActionIntegrationRequest,
+		testGifURL, testKeywords, testCaption, testCursor, testRootId, testPostActionIntegrationRequest,
 	}
 }
 
@@ -161,12 +164,11 @@ func TestHandleHTTPRequestKOUserNotAllowedToPostHere(t *testing.T) {
 }
 
 func TestParseRequestOK(t *testing.T) {
-	api := generateMockAPIForHandlers()
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 
-	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", URLSend, nil)
-	request, ok := parseRequest(api, w, r)
+	request, err := parseRequest(r)
+	assert.Nil(t, err)
 	assert.NotNil(t, request)
 	assert.Equal(t, request.ChannelId, testChannelId)
 	assert.Equal(t, request.UserId, testUserId)
@@ -174,24 +176,20 @@ func TestParseRequestOK(t *testing.T) {
 	assert.Equal(t, request.Keywords, testKeywords)
 	assert.Equal(t, request.Cursor, testCursor)
 	assert.Equal(t, request.RootId, testRootId)
-	assert.True(t, ok)
 }
 
 func TestParseRequestKOBadRequest(t *testing.T) {
-	api := generateMockAPIForHandlers()
 	postActionIntegrationRequestFromJson = func(body io.Reader) *model.PostActionIntegrationRequest { return nil }
 
-	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", URLSend, nil)
-	request, ok := parseRequest(api, w, r)
+	request, err := parseRequest(r)
 	assert.Nil(t, request)
-	assert.False(t, ok)
-	api.AssertCalled(t, "LogWarn", mock.MatchedBy(func(s string) bool { return strings.Contains(s, "parse") }), nil)
+	assert.NotNil(t, err)
+	assert.Contains(t, err.Error(), "cannot be nil")
 }
 
 func TestParseRequestKOMissingContext(t *testing.T) {
 	contextElements := [3]string{contextGifURL, contextKeywords, contextCursor}
-	api := generateMockAPIForHandlers()
 	for i := 0; i < len(contextElements); i++ {
 		context := map[string]interface{}{}
 		for j := 0; j < len(contextElements); j++ {
@@ -213,11 +211,10 @@ func TestParseRequestKOMissingContext(t *testing.T) {
 			assert.Contains(t, message, contextElements[i])
 		}
 
-		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", URLSend, nil)
-		request, ok := parseRequest(api, w, r)
+		request, err := parseRequest(r)
 		assert.Nil(t, request)
-		assert.False(t, ok)
+		assert.NotNil(t, err)
 	}
 }
 
@@ -324,7 +321,7 @@ func TestHandleSendOK(t *testing.T) {
 func TestHandleSendKOCreatePostError(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
-	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, appError("errorMessage", nil))
+	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, model.NewAppError("test", "id42", nil, "errorMessage", 42))
 	notifyHandlerError = func(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 		assert.Contains(t, message, "create")
 	}
@@ -343,7 +340,7 @@ func TestDefaultNotifyHandlerErrorOK(t *testing.T) {
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
 	api.On("LogWarn", mock.Anything, mock.Anything).Return(nil)
 	message := "oops"
-	err := appError(message, errors.New("strange failure"))
+	err := test.MockErrorGenerator().FromError(message, errors.New("strange failure"))
 	channelID := "42"
 	userID := "jane"
 	request := &model.PostActionIntegrationRequest{

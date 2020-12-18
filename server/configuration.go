@@ -3,48 +3,31 @@ package main
 import (
 	"path/filepath"
 
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
+	provider "github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
+
 	"github.com/pkg/errors"
 
 	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 )
 
-// configuration captures the plugin's external configuration as exposed in the Mattermost server
-// configuration, as well as values computed from the configuration. Any public fields will be
-// deserialized from the Mattermost server configuration in OnConfigurationChange.
-type configuration struct {
-	Provider        string
-	Rating          string
-	Language        string
-	Rendition       string
-	RenditionGfycat string
-	RenditionTenor  string
-	APIKey          string
-}
-
-// Clone shallow copies the configuration. Your implementation may require a deep copy if
-// your configuration has reference types.
-func (c *configuration) Clone() *configuration {
-	var clone = *c
-	return &clone
-}
-
 // getConfiguration retrieves the active configuration under lock, making it safe to use
 // concurrently. The active configuration may change underneath the client of this method, but
 // the struct returned by this API call is considered immutable.
-func (p *Plugin) getConfiguration() *configuration {
+func (p *Plugin) getConfiguration() *pluginConf.Configuration {
 	p.configurationLock.RLock()
 	defer p.configurationLock.RUnlock()
 
 	if p.configuration == nil {
-		return &configuration{}
+		return &pluginConf.Configuration{}
 	}
 
 	return p.configuration
 }
 
 // setConfiguration replaces the active configuration under lock.
-func (p *Plugin) setConfiguration(configuration *configuration) {
+func (p *Plugin) setConfiguration(configuration *pluginConf.Configuration) {
 	p.configurationLock.Lock()
 	defer p.configurationLock.Unlock()
 
@@ -57,30 +40,34 @@ func (p *Plugin) setConfiguration(configuration *configuration) {
 
 // OnConfigurationChange is invoked when configuration changes may have been made.
 func (p *Plugin) OnConfigurationChange() error {
-	var configuration = new(configuration)
+	var configuration = new(pluginConf.Configuration)
 	// Load the public configuration fields from the Mattermost server configuration.
 	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
 		return errors.Wrap(err, "Failed to load plugin configuration")
 	}
-
 	p.setConfiguration(configuration)
 
-	if configuration.Provider == "" {
-		return errors.New("The GIF provider must be configured")
+	if configuration.DisplayMode == "" {
+		return errors.New("The Display Mode must be configured")
 	}
-	switch configuration.Provider {
-	case "giphy":
-		if configuration.APIKey == "" {
-			return errors.New("The API Key setting must be set for Giphy")
-		}
-		p.gifProvider = &giphyProvider{}
-	case "tenor":
-		if configuration.APIKey == "" {
-			return errors.New("The API Key setting must be set for Tenor")
-		}
-		p.gifProvider = &tenorProvider{}
-	default:
-		p.gifProvider = &gfyCatProvider{}
+
+	gifProvider, err := provider.GifProviderGenerator(*configuration, p.errorGenerator, p.rootURL)
+	if err != nil {
+		return err
+	}
+	p.gifProvider = gifProvider
+	if configuration.DisablePostingWithoutPreview {
+		// Force preview
+		configuration.CommandTriggerGif = ""
+		configuration.CommandTriggerGifWithPreview = triggerGif
+	} else {
+		// Slack-like syntax
+		configuration.CommandTriggerGif = triggerGif
+		configuration.CommandTriggerGifWithPreview = triggerGifs
+	}
+	errRegister := p.RegisterCommands()
+	if errRegister != nil {
+		return errRegister
 	}
 
 	return p.defineBot(configuration.Provider)

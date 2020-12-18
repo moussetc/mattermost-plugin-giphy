@@ -2,7 +2,28 @@
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
-A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands.
+A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands, available on the official Mattermost Plugin MarketPlace.
+
+## Usage
+
+### Plugin v2.0.0 & higher
+Use the command `/gif "<keywords>" "<custom caption>"` to search for a GIF and shuffle through GIFs until you find one you like.
+
+Example with `/gif "waving cat" "Hello !"` : 
+
+First choose a GIF, using the Shuffle button to see others GIFs: 
+
+![demo](assets/demo_preview.png)
+
+Then post the GIF you want using the Send button: 
+
+![demo](assets/demo_post.png).
+
+If you don't want to put a special caption, you can also just use `/gif <keywords>`.
+
+*If you prefer the `/gif` (post GIF without preview) / `/gifs` (preview and choose GIF before posting) as in the previous versions of the plugin, you can disable the 'Force GIF preview before posting' in the plugin configuration.*
+
+### Older versions
 
 - Send a GIF directly with `/gif <keywords>`: 
 
@@ -16,7 +37,7 @@ Use the following table to find the correct plugin version for each Mattermost s
 
 | Mattermost server | Plugin release | Incompatibility |
 | --- | --- | --- |
-| 5.20 and higher | v1.2.x+ | breaking plugin manifest change |
+| 5.20 and higher | v1.2.x and higher | breaking plugin manifest change |
 | 5.12 to 5.19 | v1.1.x | breaking plugin API change |
 | 5.10 to 5.11 | v1.0.x | buttons on ephemeral posts |
 | 5.2 to 5.9 | v0.2.0 | |
@@ -32,7 +53,8 @@ Use the following table to find the correct plugin version for each Mattermost s
 4. Choose if you want to use Gfycat (default), GIPHY or Tenor (both of which requires an API key, see below).
 5. **If you've chosen Giphy or Tenor, configure the API key** as explained on the configuration page.
 6. You can also configure the following settings :
-    - display style
+    - display style (non-collapsable embedded image or collapsable full URL preview)
+    - rendition style (GIF size, quality, etc.)
     - rating (not available for Gfycat)
     - language (not available for Gfycat)
 7. **Activate the plugin** in the `System Console > Plugins Management > Management` page
@@ -40,13 +62,7 @@ Use the following table to find the correct plugin version for each Mattermost s
 If you are running Mattermost 5.15 or earlier, or do not have the Plugin Marketplace enabled, follow these steps:
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
 2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
-3. Go to the `System Console > Plugins > GIF commands` configuration page that appeared, and choose if you want to use Gfycat (default), GIPHY or Tenor (both of which requires an API key, see below).
-4. **If you've chosen Giphy or Tenor, configure the API key** as explained on the configuration page.
-5. You can also configure the following settings :
-    - display style
-    - rating (not available for Gfycat)
-    - language (not available for Gfycat)
-6. **Activate the plugin** in the `System Console > Plugins Management > Management` page
+3. Go to the `System Console > Plugins > GIF commands` and follow the same configuration steps as for the Marketplace install, displayed from Step 4. on the previous §.
 
 ### Configuration Notes in HA
 
@@ -60,13 +76,15 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
         // [...]
         "Plugins": {
             "com.github.moussetc.mattermost.plugin.giphy": {
-		"provider": "<giphy or gfycat or tenor>",
+                "displaymode": "embedded",
+                "provider": "<giphy or gfycat or tenor>",
                 "apikey": "<your API key from Step 4. above, if you've choosen Giphy or Tenor as your GIF provider>", 
                 "language": "en",
                 "rating": "",
                 "rendition": "fixed_height_small",
-		"renditiongfycat": "100pxGif",
-		"renditiontenor": "mediumgif"
+                "renditiongfycat": "100pxGif",
+                "renditiontenor": "mediumgif",
+                "disablepostingwithoutpreview": true
             },
         },
         "PluginStates": {
@@ -79,6 +97,7 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
 ```
 
 ## TROUBLESHOOTING
+
 ### I can't upload or activate the plugin 
 - Is your plugin version compatible with your server version? Check the Compatibility section in the README.
 - Make sure you have configured the SiteURL setting correctly in the Mattermost administration panel.
@@ -96,6 +115,7 @@ Start by checking the Mattermost logs (`yourURL/admin_console/logs`) for more de
 
 ### The picture doesn't load
 - Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY, Tenor or Gfycat. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
+- If the Display Mode configured is "Collapsable Image Preview", then the link previews option must be configured in the System Console (> Posts > Enable Link Previews). Do note that user can also change this option in their Account Settings. 
 
 ### There are no buttons on the shuffle message
 - Check your Mattermost version with the compatibility list at the top of this page.

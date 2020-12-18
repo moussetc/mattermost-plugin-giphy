@@ -7,30 +7,35 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mattermost/mattermost-server/v5/model"
+	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
+	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
 
 	"github.com/stretchr/testify/assert"
 
+	"github.com/mattermost/mattermost-server/v5/model"
 	"github.com/mattermost/mattermost-server/v5/plugin"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest"
 	"github.com/mattermost/mattermost-server/v5/plugin/plugintest/mock"
 )
 
-func generateMockPluginConfig() configuration {
-	return configuration{
-		Provider:        "giphy",
-		Language:        "fr",
-		Rating:          "",
-		Rendition:       "fixed_height_small",
-		RenditionTenor:  "tinygif",
-		RenditionGfycat: "gif100Px",
-		APIKey:          "defaultAPIKey",
+func generateMockPluginConfig() pluginConf.Configuration {
+	return pluginConf.Configuration{
+		DisplayMode:                  pluginConf.DisplayModeEmbedded,
+		Provider:                     "giphy",
+		Language:                     "fr",
+		Rating:                       "",
+		Rendition:                    "fixed_height_small",
+		RenditionTenor:               "tinygif",
+		RenditionGfycat:              "gif100Px",
+		APIKey:                       "defaultAPIKey",
+		CommandTriggerGif:            triggerGif,
+		CommandTriggerGifWithPreview: triggerGifs,
 	}
 }
 
-func mockLoadConfig(conf configuration) func(dest interface{}) error {
+func mockLoadConfig(conf pluginConf.Configuration) func(dest interface{}) error {
 	return func(dest interface{}) error {
-		*dest.(*configuration) = conf
+		*dest.(*pluginConf.Configuration) = conf
 		return nil
 	}
 }
@@ -51,11 +56,13 @@ func initMockAPI() (api *plugintest.API, p *Plugin) {
 	api = &plugintest.API{}
 
 	pluginConfig := generateMockPluginConfig()
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(pluginConfig))
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(pluginConfig))
 	p = &Plugin{}
+	p.configuration = &pluginConfig
 	p.SetAPI(api)
 	p.botId = "botId42"
 	p.httpHandler = &mockHTTPHandler{}
+	p.errorGenerator = test.MockErrorGenerator()
 	return api, p
 }
 
@@ -69,7 +76,7 @@ func TestOnActivateWithBadConfig(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
 	config.APIKey = ""
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	p := Plugin{}
 	p.SetAPI(api)
 
@@ -79,11 +86,13 @@ func TestOnActivateWithBadConfig(t *testing.T) {
 func TestOnActivateOK(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*main.configuration")).Return(mockLoadConfig(config))
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
+	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
 	p := Plugin{}
 	p.SetAPI(api)
 	setMockHelpers(&p)
+	p.errorGenerator = test.MockErrorGenerator()
 
 	assert.Nil(t, p.OnActivate())
 }
@@ -162,11 +171,11 @@ type mockGifProviderFail struct {
 	errorMessage string
 }
 
-func (m *mockGifProviderFail) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
-	return "", appError(m.errorMessage, errors.New(m.errorMessage))
+func (m *mockGifProviderFail) GetGifURL(request string, cursor *string) (string, *model.AppError) {
+	return "", (test.MockErrorGenerator()).FromError(m.errorMessage, errors.New(m.errorMessage))
 }
 
-func (m *mockGifProviderFail) getAttributionMessage() string {
+func (m *mockGifProviderFail) GetAttributionMessage() string {
 	return "test"
 }
 
@@ -175,10 +184,10 @@ type mockGifProvider struct {
 	mockURL string
 }
 
-func (m *mockGifProvider) getGifURL(config *configuration, request string, cursor *string) (string, *model.AppError) {
+func (m *mockGifProvider) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	return m.mockURL, nil
 }
 
-func (m *mockGifProvider) getAttributionMessage() string {
+func (m *mockGifProvider) GetAttributionMessage() string {
 	return "test"
 }
