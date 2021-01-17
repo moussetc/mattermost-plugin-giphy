@@ -7,11 +7,9 @@ A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash comm
 ## Usage
 
 ### Plugin v2.0.0 & higher
-Use the command `/gif "<keywords>" "<custom caption>"` to search for a GIF and shuffle through GIFs until you find one you like.
+Use the command `/gif "<keywords>" "<custom caption>"` to search for a GIF and shuffle through GIFs until you find one you like. You can also use `/gif <keywords>` if you don't want to add a custom caption.
 
-Example with `/gif "waving cat" "Hello !"` : 
-
-First choose a GIF, using the Shuffle button to see others GIFs: 
+Example: first choose a GIF with `/gif "waving cat" "Hello!"` and use the Shuffle button to browse others GIFs:
 
 ![demo](assets/demo_preview.png)
 
@@ -19,9 +17,7 @@ Then post the GIF you want using the Send button:
 
 ![demo](assets/demo_post.png).
 
-If you don't want to put a special caption, you can also just use `/gif <keywords>`.
-
-*If you prefer the `/gif` (post GIF without preview) / `/gifs` (preview and choose GIF before posting) as in the previous versions of the plugin, you can disable the 'Force GIF preview before posting' in the plugin configuration.*
+*If you prefer having both the `/gif` (post GIF without previewing!) AND `/gifs` (preview and choose GIF before posting) as in the previous versions of the plugin, you can disable the 'Force GIF preview before posting' in the plugin configuration.*
 
 ### Older versions
 
