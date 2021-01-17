@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
 <svg
    xmlns:dc="http://purl.org/dc/elements/1.1/"
    xmlns:cc="http://creativecommons.org/ns#"
@@ -14,8 +12,8 @@
    viewBox="0 0 150 150"
    id="svg2"
    version="1.1"
-   inkscape:version="0.91 r13725"
-   sodipodi:docname="mattermost-gif-plugin-icon.svg">
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)"
+   sodipodi:docname="icon-inkscape.svg">
   <defs
      id="defs4" />
   <sodipodi:namedview
@@ -26,10 +24,10 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.34"
-     inkscape:cx="35.544557"
+     inkscape:cx="-40.310144"
      inkscape:cy="132.85715"
      inkscape:document-units="px"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="false"
      fit-margin-top="0"
      fit-margin-left="0"
@@ -39,10 +37,11 @@
      borderlayer="false"
      units="px"
      inkscape:window-width="1920"
-     inkscape:window-height="1003"
-     inkscape:window-x="-9"
-     inkscape:window-y="-9"
-     inkscape:window-maximized="1" />
+     inkscape:window-height="1006"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:document-rotation="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -51,7 +50,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -72,15 +71,14 @@
      inkscape:label="Layer 2">
     <text
        xml:space="preserve"
-       style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       x="16.239317"
-       y="98.290604"
-       id="text4158"
-       sodipodi:linespacing="125%"><tspan
+       style="font-style:normal;font-weight:normal;font-size:9.32811px;line-height:0%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.777343px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="16.577671"
+       y="92.759407"
+       id="text4158"><tspan
          sodipodi:role="line"
          id="tspan4160"
-         x="16.239317"
-         y="98.290604"
-         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:81.25px;font-family:Calibri;-inkscape-font-specification:'Calibri Bold';fill:#3397cd;fill-opacity:1">/gif</tspan></text>
+         x="16.577671"
+         y="92.759407"
+         style="font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;font-size:63.1591px;line-height:1.25;font-family:Calibri;-inkscape-font-specification:'Calibri Bold';fill:#3397cd;fill-opacity:1;stroke-width:0.777343px">/gif</tspan></text>
   </g>
 </svg>
