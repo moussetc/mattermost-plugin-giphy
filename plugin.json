@@ -46,11 +46,11 @@
             "value": "gfycat"
           },
           {
-            "display_name": "GIPHY (API Key required below):",
+            "display_name": "GIPHY (API Key required below)",
             "value": "giphy"
           },
           {
-            "display_name": "Tenor (API Key required below):",
+            "display_name": "Tenor (API Key required below)",
             "value": "tenor"
           }
         ]
