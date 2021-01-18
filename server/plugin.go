@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	"sync"
@@ -35,10 +36,12 @@ type Plugin struct {
 	gifProvider    provider.GifProvider
 	httpHandler    pluginHTTPHandler
 	botId          string
+	rootURL        string
 }
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
+	p.rootURL = fmt.Sprintf("/plugins/%s", manifest.Id)
 	if err := p.OnConfigurationChange(); err != nil {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}

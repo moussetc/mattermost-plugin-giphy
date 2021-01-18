@@ -16,6 +16,7 @@ const (
 	testGiphyLanguage  = "fr"
 	testGiphyRating    = "R"
 	testGiphyRendition = "fixed_height_small"
+	testRootURL        = "/test"
 )
 
 func TestNewGiphyProvider(t *testing.T) {
@@ -42,7 +43,7 @@ func TestNewGiphyProvider(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		provider, err := NewGiphyProvider(testCase.paramHTTPClient, testCase.paramErrorGenerator, testCase.paramAPIKey, testCase.paramLanguage, testCase.paramRating, testCase.paramRendition)
+		provider, err := NewGiphyProvider(testCase.paramHTTPClient, testCase.paramErrorGenerator, testCase.paramAPIKey, testCase.paramLanguage, testCase.paramRating, testCase.paramRendition, testRootURL)
 		if testCase.expectedError {
 			assert.NotNil(t, err, testCase.testLabel)
 			assert.Nil(t, provider, testCase.testLabel)
@@ -61,7 +62,7 @@ func TestNewGiphyProvider(t *testing.T) {
 }
 
 func generateGiphyProviderForTest(mockHTTPResponse *http.Response) *giphy {
-	provider, _ := NewGiphyProvider(NewMockHttpClient(mockHTTPResponse), test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition)
+	provider, _ := NewGiphyProvider(NewMockHttpClient(mockHTTPResponse), test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition, testRootURL)
 	return provider.(*giphy)
 }
 
@@ -135,7 +136,7 @@ func TestGiphyProviderTooManyRequestStatusResponse(t *testing.T) {
 func generateGiphyProviderForURLBuildingTests() (*giphy, *MockHttpClient, string) {
 	serverResponse := newServerResponseOK(defaultGiphyResponseBody)
 	client := NewMockHttpClient(serverResponse)
-	provider, _ := NewGiphyProvider(client, test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition)
+	provider, _ := NewGiphyProvider(client, test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition, testRootURL)
 	return provider.(*giphy), client, ""
 }
 

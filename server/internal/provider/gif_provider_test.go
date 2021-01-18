@@ -32,7 +32,7 @@ func TestDefaultGifProviderGenerator(t *testing.T) {
 			RenditionGfycat: testGfycatRendition,
 			RenditionTenor:  testTenorRendition,
 		}
-		provider, err := defaultGifProviderGenerator(testConfig, test.MockErrorGenerator())
+		provider, err := defaultGifProviderGenerator(testConfig, test.MockErrorGenerator(), "/test")
 		if testCase.expectedError {
 			assert.NotNil(t, err, testCase.testLabel)
 			assert.Nil(t, provider, testCase.testLabel)

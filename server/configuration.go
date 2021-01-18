@@ -51,7 +51,7 @@ func (p *Plugin) OnConfigurationChange() error {
 		return errors.New("The Display Mode must be configured")
 	}
 
-	gifProvider, err := provider.GifProviderGenerator(*configuration, p.errorGenerator)
+	gifProvider, err := provider.GifProviderGenerator(*configuration, p.errorGenerator, p.rootURL)
 	if err != nil {
 		return err
 	}

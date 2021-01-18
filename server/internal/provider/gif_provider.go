@@ -37,13 +37,13 @@ type abstractGifProvider struct {
 	rendition      string
 }
 
-var GifProviderGenerator = func(configuration pluginConf.Configuration, errorGenerator pluginError.PluginError) (gifProvider GifProvider, err *model.AppError) {
+func defaultGifProviderGenerator(configuration pluginConf.Configuration, errorGenerator pluginError.PluginError, rootURL string) (gifProvider GifProvider, err *model.AppError) {
 	if configuration.Provider == "" {
 		return nil, errorGenerator.FromMessage("The GIF provider must be configured")
 	}
 	switch configuration.Provider {
 	case "giphy":
-		gifProvider, err = NewGiphyProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.Rendition)
+		gifProvider, err = NewGiphyProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.Rendition, rootURL)
 	case "tenor":
 		gifProvider, err = NewTenorProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.RenditionTenor)
 	default:
@@ -52,17 +52,4 @@ var GifProviderGenerator = func(configuration pluginConf.Configuration, errorGen
 	return gifProvider, err
 }
 
-func defaultGifProviderGenerator(configuration pluginConf.Configuration, errorGenerator pluginError.PluginError) (gifProvider GifProvider, err *model.AppError) {
-	if configuration.Provider == "" {
-		return nil, errorGenerator.FromMessage("The GIF provider must be configured")
-	}
-	switch configuration.Provider {
-	case "giphy":
-		gifProvider, err = NewGiphyProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.Rendition)
-	case "tenor":
-		gifProvider, err = NewTenorProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.RenditionTenor)
-	default:
-		gifProvider, err = NewGfycatProvider(http.DefaultClient, errorGenerator, configuration.Rendition)
-	}
-	return gifProvider, err
-}
+var GifProviderGenerator = defaultGifProviderGenerator

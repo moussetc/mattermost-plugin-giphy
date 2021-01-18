@@ -2,7 +2,7 @@ os: linux
 dist: trusty
 language: go
 go:
-- "1.14.x"
+- "1.14.6"
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 env:

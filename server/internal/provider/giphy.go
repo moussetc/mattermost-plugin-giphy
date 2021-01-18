@@ -14,7 +14,8 @@ import (
 // giphy find GIFs using the giphy API
 type giphy struct {
 	abstractGifProvider
-	apiKey string
+	apiKey  string
+	rootURL string
 }
 
 const (
@@ -33,7 +34,7 @@ type GiphySearchResult struct {
 }
 
 // NewGiphyProvider creates an instance of a GIF provider that uses the Giphy API
-func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition string) (GifProvider, *model.AppError) {
+func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition, rootURL string) (GifProvider, *model.AppError) {
 	if errorGenerator == nil {
 		return nil, model.NewAppError("NewGfycatProvider", "errorGenerator cannot be nil for Giphy Provider", nil, "", http.StatusInternalServerError)
 	}
@@ -46,6 +47,9 @@ func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 	if rendition == "" {
 		return nil, errorGenerator.FromMessage("rendition cannot be empty for Giphy Provider")
 	}
+	if rootURL == "" {
+		return nil, errorGenerator.FromMessage("internal error: rootURL must be set")
+	}
 
 	GiphyProvider := &giphy{}
 	GiphyProvider.httpClient = httpClient
@@ -54,12 +58,13 @@ func NewGiphyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 	GiphyProvider.language = language
 	GiphyProvider.rating = rating
 	GiphyProvider.rendition = rendition
+	GiphyProvider.rootURL = rootURL
 
 	return GiphyProvider, nil
 }
 
 func (p *giphy) GetAttributionMessage() string {
-	return "Powered by Giphy"
+	return fmt.Sprintf("![GIPHY](%s/public/powered-by-giphy.png)", p.rootURL)
 }
 
 func (p *giphy) GetGifURL(request string, cursor *string) (string, *model.AppError) {

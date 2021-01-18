@@ -114,7 +114,7 @@ func getHintMessage(trigger string) string {
 func generateGifCaption(displayMode, keywords, caption, gifURL, attributionMessage string) string {
 	captionOrKeywords := caption
 	if caption == "" {
-		captionOrKeywords = fmt.Sprintf("**/gif [%s](%s)**", keywords, gifURL)
+		captionOrKeywords = fmt.Sprintf("/gif **%s**", keywords)
 	}
 	if displayMode == pluginConf.DisplayModeFullURL {
 		return fmt.Sprintf("%s \n\n%s *%s*", captionOrKeywords, gifURL, attributionMessage)
