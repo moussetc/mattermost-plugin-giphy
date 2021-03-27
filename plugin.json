@@ -65,8 +65,12 @@
         "key": "Rating",
         "type": "dropdown",
         "display_name": "Content Rating (GIPHY and Tenor only):",
-        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering.",
+        "help_text": "Choose a MPAA-style rating",
         "options": [
+          {
+            "display_name": "No rating (no content filtering)",
+            "value": ""
+          },
           {
             "display_name": "G",
             "value": "g"
