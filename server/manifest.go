@@ -37,7 +37,7 @@ const manifestStr = `
         "key": "DisplayMode",
         "display_name": "Display the GIF as:",
         "type": "radio",
-        "help_text": "It is not yet possible to collapse an embedded image in Mattermost: use the Full URL option if preferred and keep an eye on [this issue](https://github.com/moussetc/mattermost-plugin-giphy/issues/12).\n\n To enable link previews, go to **System Console \u003e Site Configuration \u003e Posts \u003e Enable Link Previews**.",
+        "help_text": "It is not yet possible to collapse an embedded image in Mattermost: use the Full URL option if preferred and keep an eye on [this issue](https://mattermost.atlassian.net/browse/MM-12290).\n\n To enable link previews, go to **System Console \u003e Site Configuration \u003e Posts \u003e Enable Link Previews**.",
         "placeholder": "",
         "default": "embedded",
         "options": [
