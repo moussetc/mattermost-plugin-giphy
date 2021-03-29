@@ -141,9 +141,9 @@ func generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootId st
 	}
 
 	actions := []*model.PostAction{}
-	actions = append(actions, generateButton("Cancel", URLCancel, actionContext))
-	actions = append(actions, generateButton("Shuffle", URLShuffle, actionContext))
-	actions = append(actions, generateButton("Send", URLSend, actionContext))
+	actions = append(actions, generateButton("Cancel", URLCancel, "default", actionContext))
+	actions = append(actions, generateButton("Shuffle", URLShuffle, "default", actionContext))
+	actions = append(actions, generateButton("Send", URLSend, "primary", actionContext))
 
 	attachments := []*model.SlackAttachment{}
 	attachments = append(attachments, &model.SlackAttachment{
@@ -154,10 +154,11 @@ func generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootId st
 }
 
 // Generate an attachment for an action Button that will point to a plugin HTTP handler
-func generateButton(name string, urlAction string, context map[string]interface{}) *model.PostAction {
+func generateButton(name string, urlAction string, style string, context map[string]interface{}) *model.PostAction {
 	return &model.PostAction{
-		Name: name,
-		Type: model.POST_ACTION_TYPE_BUTTON,
+		Name:  name,
+		Type:  model.POST_ACTION_TYPE_BUTTON,
+		Style: style,
 		Integration: &model.PostActionIntegration{
 			URL:     fmt.Sprintf("/plugins/%s%s", manifest.Id, urlAction),
 			Context: context,

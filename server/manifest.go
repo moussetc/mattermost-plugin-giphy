@@ -20,7 +20,7 @@ const manifestStr = `
   "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/v2.1.0",
   "icon_path": "assets/icon.svg",
   "version": "2.1.0",
-  "min_server_version": "5.20.0",
+  "min_server_version": "5.24.0",
   "server": {
     "executables": {
       "linux-amd64": "server/dist/plugin-linux-amd64",
@@ -31,13 +31,13 @@ const manifestStr = `
   },
   "settings_schema": {
     "header": "",
-    "footer": "Powered by Giphy, Tenor and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
+    "footer": "Powered by GIPHY, Tenor ,and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n",
     "settings": [
       {
         "key": "DisplayMode",
-        "display_name": "Display the GIF as an",
+        "display_name": "Display the GIF as:",
         "type": "radio",
-        "help_text": "It is not yet possible to collapse an embedded image in Mattermost: use the Full URL option if preferred and keep an eye on [this issue](https://github.com/moussetc/mattermost-plugin-giphy/issues/12).\n\n**To activate links preview**, go to System Console \u003e Posts \u003e Enable Link Previews.",
+        "help_text": "It is not yet possible to collapse an embedded image in Mattermost: use the Full URL option if preferred and keep an eye on [this issue](https://github.com/moussetc/mattermost-plugin-giphy/issues/12).\n\n To enable link previews, go to **System Console \u003e Site Configuration \u003e Posts \u003e Enable Link Previews**.",
         "placeholder": "",
         "default": "embedded",
         "options": [
@@ -46,14 +46,14 @@ const manifestStr = `
             "value": "embedded"
           },
           {
-            "display_name": "Collapsable image preview (the full URL is displayed, requires links preview to be activated)",
+            "display_name": "Collapsible image preview (the full URL is displayed, requires link previews to be enabled)",
             "value": "full_url"
           }
         ]
       },
       {
         "key": "Provider",
-        "display_name": "GIF Provider",
+        "display_name": "GIF Provider:",
         "type": "radio",
         "help_text": "",
         "placeholder": "",
@@ -75,15 +75,15 @@ const manifestStr = `
       },
       {
         "key": "APIKey",
-        "display_name": "Giphy/Tenor API Key",
+        "display_name": "GIPHY/Tenor API Key:",
         "type": "text",
-        "help_text": "Configure your own API Key (not required for Gfycat). To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://tenor.com/developer/keyregistration).",
+        "help_text": "Configure your own API key (not required for Gfycat). To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://tenor.com/developer/keyregistration).",
         "placeholder": "",
         "default": null
       },
       {
         "key": "Rating",
-        "display_name": "Content Rating (GIPHY\u0026Tenor only)",
+        "display_name": "Content Rating (GIPHY and Tenor only):",
         "type": "dropdown",
         "help_text": "Choose the MPAA-style rating or leave empty to disable filtering.",
         "placeholder": "",
@@ -109,9 +109,9 @@ const manifestStr = `
       },
       {
         "key": "RenditionGfycat",
-        "display_name": "Gfycat display style",
+        "display_name": "Gfycat display style:",
         "type": "dropdown",
-        "help_text": "Select the style to display GIFs from Gfycat (more info [here](https://developers.gfycat.com/api/#best-format-to-use))",
+        "help_text": "Select the style to display GIFs from Gfycat (more info [here](https://developers.gfycat.com/api/#best-format-to-use)).",
         "placeholder": "",
         "default": "gif100px",
         "options": [
@@ -120,26 +120,26 @@ const manifestStr = `
             "value": "gif100px"
           },
           {
-            "display_name": "Weight \u003c= 1Mb",
+            "display_name": "Weight \u003c= 1mb.",
             "value": "max1mbGif"
           },
           {
-            "display_name": "Weight \u003c= 2Mb",
+            "display_name": "Weight \u003c= 2mb.",
             "value": "max2mbGif"
           },
           {
-            "display_name": "Weight \u003c= 5Mb",
+            "display_name": "Weight \u003c= 5mb.",
             "value": "max5mbGif"
           },
           {
-            "display_name": "Static preview image",
+            "display_name": "Static preview image.",
             "value": "posterUrl"
           }
         ]
       },
       {
         "key": "Rendition",
-        "display_name": "GIPHY display style",
+        "display_name": "GIPHY display style:",
         "type": "dropdown",
         "help_text": "Select the style to display GIFs from GIPHY (more info [here](https://developers.giphy.com/docs/optional-settings/#rendition-guide)).",
         "placeholder": "",
@@ -150,7 +150,7 @@ const manifestStr = `
             "value": "fixed_height"
           },
           {
-            "display_name": "Static preview image for fixed_height",
+            "display_name": "Static preview image for fixed_height.",
             "value": "fixed_height_still"
           },
           {
@@ -158,7 +158,7 @@ const manifestStr = `
             "value": "fixed_height_small"
           },
           {
-            "display_name": "Static preview image for fixed_height_small",
+            "display_name": "Static preview image for fixed_height_small.",
             "value": "fixed_height_small_still"
           },
           {
@@ -166,15 +166,15 @@ const manifestStr = `
             "value": "fixed_width"
           },
           {
-            "display_name": "Static preview image for fixed_width",
+            "display_name": "Static preview image for fixed_width.",
             "value": "fixed_width_still"
           },
           {
-            "display_name": "Width set to 100px. Good for mobile keyboards",
+            "display_name": "Width set to 100px. Good for mobile keyboards.",
             "value": "fixed_width_small"
           },
           {
-            "display_name": "Static preview image for fixed_width_small",
+            "display_name": "Static preview image for fixed_width_small.",
             "value": "fixed_width_small_still"
           },
           {
@@ -186,7 +186,7 @@ const manifestStr = `
             "value": "downsized_large"
           },
           {
-            "display_name": "Static preview image for downsized",
+            "display_name": "Static preview image for downsized.",
             "value": "downsized_still"
           },
           {
@@ -194,7 +194,7 @@ const manifestStr = `
             "value": "original"
           },
           {
-            "display_name": "Preview image for original",
+            "display_name": "Preview image for original.",
             "value": "original_still"
           },
           {
@@ -205,29 +205,29 @@ const manifestStr = `
       },
       {
         "key": "RenditionTenor",
-        "display_name": "Tenor display style",
+        "display_name": "Tenor display style:",
         "type": "dropdown",
-        "help_text": "Select the style to display GIFs from Tenor (more info [here](https://tenor.com/gifapi/documentation#responseobjects-gifformat))",
+        "help_text": "Select the style to display GIFs from Tenor (more info [here](https://tenor.com/gifapi/documentation#responseobjects-gifformat)).",
         "placeholder": "",
         "default": "mediumgif",
         "options": [
           {
-            "display_name": "Original: High quality GIF format, largest file size available, use this size for GIF shares on desktop",
+            "display_name": "Original: High quality GIF format, largest file size available. Use this size for GIF shares on desktop.",
             "value": "gif"
           },
           {
-            "display_name": "Medium: Small reduction in size of the original format",
+            "display_name": "Medium: Small reduction in size of the original format.",
             "value": "mediumgif"
           },
           {
-            "display_name": "Tiny: reduced size of the original format, up to 220 pixels wide, good for mobile",
+            "display_name": "Tiny: Reduced size of the original format, up to 220px wide. Good for mobile.",
             "value": "tinygif"
           }
         ]
       },
       {
         "key": "Language (GIPHY\u0026Tenor only)",
-        "display_name": "Language",
+        "display_name": "Language:",
         "type": "dropdown",
         "help_text": "Select the language used to search GIFs (more info [here](https://developers.giphy.com/docs/optional-settings/#language-support)).",
         "placeholder": "",
@@ -365,7 +365,7 @@ const manifestStr = `
       },
       {
         "key": "DisablePostingWithoutPreview",
-        "display_name": "Force GIF preview before posting (force /gifs)",
+        "display_name": "Force GIF preview before posting (force /gifs):",
         "type": "bool",
         "help_text": "If deactivated, both /gif (no preview before posting) and /gifs (preview) will be available. This option is activated by default to prevent the accidental posting of inappropriate GIFs from a provider that does not allow content rating.",
         "placeholder": "",
