@@ -85,10 +85,14 @@ const manifestStr = `
         "key": "Rating",
         "display_name": "Content Rating (GIPHY and Tenor only):",
         "type": "dropdown",
-        "help_text": "Choose the MPAA-style rating or leave empty to disable filtering.",
+        "help_text": "Choose a MPAA-style rating",
         "placeholder": "",
         "default": null,
         "options": [
+          {
+            "display_name": "No rating (no content filtering)",
+            "value": ""
+          },
           {
             "display_name": "G",
             "value": "g"

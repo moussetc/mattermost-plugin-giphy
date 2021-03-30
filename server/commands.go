@@ -99,9 +99,9 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 	post := p.generateGifPost(p.botId, keywords, caption, gifURL, args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
 	// Only embedded display mode works inside an ephemeral post
 	post.Message = generateGifCaption(pluginConf.DisplayModeEmbedded, keywords, caption, gifURL, p.gifProvider.GetAttributionMessage())
-	post.Props = map[string]interface{}{
+	post.SetProps(map[string]interface{}{
 		"attachments": generateShufflePostAttachments(keywords, caption, gifURL, cursor, args.RootId),
-	}
+	})
 	p.API.SendEphemeralPost(args.UserId, post)
 
 	return &model.CommandResponse{}, nil

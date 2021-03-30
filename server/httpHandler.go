@@ -132,21 +132,19 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		writeResponse(http.StatusServiceUnavailable, w)
 		return
 	}
-
 	post := &model.Post{
 		Id:        request.PostId,
 		ChannelId: request.ChannelId,
 		UserId:    p.botId,
 		RootId:    request.RootId,
 		// Only embedded display mode works inside an ephemeral post
-		Message: generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
-		Props: map[string]interface{}{
-			"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootId),
-		},
+		Message:  generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
 		CreateAt: model.GetMillis(),
 		UpdateAt: model.GetMillis(),
 	}
-
+	post.SetProps(map[string]interface{}{
+		"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootId),
+	})
 	p.API.UpdateEphemeralPost(request.UserId, post)
 	writeResponse(http.StatusOK, w)
 }
@@ -178,12 +176,13 @@ func defaultNotifyHandlerError(api plugin.API, message string, err *model.AppErr
 	} else {
 		fullMessage = message
 	}
-	api.SendEphemeralPost(request.UserId, &model.Post{
+	post := &model.Post{
 		Message:   "*" + fullMessage + "*",
 		ChannelId: request.ChannelId,
-		Props: map[string]interface{}{
-			"sent_by_plugin": true,
-		},
+	}
+	post.SetProps(map[string]interface{}{
+		"sent_by_plugin": true,
 	})
+	api.SendEphemeralPost(request.UserId, post)
 	api.LogWarn(message, err)
 }
