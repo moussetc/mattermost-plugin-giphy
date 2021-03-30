@@ -142,8 +142,8 @@ func generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootId st
 
 	actions := []*model.PostAction{}
 	actions = append(actions, generateButton("Cancel", URLCancel, "default", actionContext))
-	actions = append(actions, generateButton("Shuffle", URLShuffle, "default", actionContext))
-	actions = append(actions, generateButton("Send", URLSend, "primary", actionContext))
+	actions = append(actions, generateButton("Shuffle", URLShuffle, "primary", actionContext))
+	actions = append(actions, generateButton("Send", URLSend, "good", actionContext))
 
 	attachments := []*model.SlackAttachment{}
 	attachments = append(attachments, &model.SlackAttachment{
