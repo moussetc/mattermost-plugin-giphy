@@ -65,7 +65,7 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 		if parseErr != nil {
 			return nil, p.errorGenerator.FromMessage(parseErr.Error())
 		}
-		return p.executeCommandGif(keywords, caption)
+		return p.executeCommandGif(keywords, caption, args)
 	}
 
 	return nil, p.errorGenerator.FromMessage("Command trigger " + args.Command + "is not supported by this plugin.")

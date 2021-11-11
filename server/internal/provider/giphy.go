@@ -67,6 +67,7 @@ func (p *giphy) GetAttributionMessage() string {
 	return fmt.Sprintf("![GIPHY](%s/public/powered-by-giphy.png)", p.rootURL)
 }
 
+// Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
 func (p *giphy) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLGiphy+"/search", nil)
 	if err != nil {
@@ -111,7 +112,7 @@ func (p *giphy) GetGifURL(request string, cursor *string) (string, *model.AppErr
 		return "", p.errorGenerator.FromError("Could not parse Giphy search response body", err)
 	}
 	if len(response.Data) < 1 {
-		return "", p.errorGenerator.FromMessage("No more GIF results for this search!")
+		return "", nil
 	}
 	gif := response.Data[0]
 	url := gif.Images[p.rendition].URL

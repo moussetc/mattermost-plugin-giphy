@@ -184,6 +184,10 @@ type mockGifProvider struct {
 	mockURL string
 }
 
+func NewMockGifProvider() *mockGifProvider {
+	return &mockGifProvider{"fakeURL"}
+}
+
 func (m *mockGifProvider) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	return m.mockURL, nil
 }

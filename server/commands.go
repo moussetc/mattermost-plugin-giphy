@@ -77,11 +77,14 @@ func parseCommandLine(commandLine, trigger string) (keywords, caption string, er
 }
 
 // executeCommandGif returns a public post containing a matching GIF
-func (p *Plugin) executeCommandGif(keywords, caption string) (*model.CommandResponse, *model.AppError) {
+func (p *Plugin) executeCommandGif(keywords, caption string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor)
 	if errGif != nil {
 		return nil, errGif
+	}
+	if gifURL == "" {
+		return p.handleNoGifFound(keywords, args)
 	}
 
 	text := generateGifCaption(p.getConfiguration().DisplayMode, keywords, caption, gifURL, p.gifProvider.GetAttributionMessage())
@@ -95,6 +98,9 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 	if errGif != nil {
 		return nil, errGif
 	}
+	if gifURL == "" {
+		return p.handleNoGifFound(keywords, args)
+	}
 
 	post := p.generateGifPost(p.botId, keywords, caption, gifURL, args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
 	// Only embedded display mode works inside an ephemeral post
@@ -102,6 +108,20 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 	post.SetProps(map[string]interface{}{
 		"attachments": generateShufflePostAttachments(keywords, caption, gifURL, cursor, args.RootId),
 	})
+	p.API.SendEphemeralPost(args.UserId, post)
+
+	return &model.CommandResponse{}, nil
+}
+
+func (p *Plugin) handleNoGifFound(keywords string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+	// Create ephemeral post directly rather than with CommandResponse, so the bot can be the author
+	post := &model.Post{
+		Message:   "No GIFs found for '" + keywords + "'",
+		UserId:    p.botId,
+		ChannelId: args.ChannelId,
+		RootId:    args.RootId,
+	}
+
 	p.API.SendEphemeralPost(args.UserId, post)
 
 	return &model.CommandResponse{}, nil

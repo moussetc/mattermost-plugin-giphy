@@ -4,7 +4,6 @@ import (
 	"net/http"
 	"testing"
 
-	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
 
@@ -71,16 +70,7 @@ func generateTenorProviderForTest(mockHTTPResponse *http.Response) *tenor {
 	return provider.(*tenor)
 }
 
-func generateMockConfigForTenorProvider() pluginConf.Configuration {
-	return pluginConf.Configuration{
-		APIKey:         "defaultAPIKey",
-		Rating:         "",
-		Language:       "fr",
-		RenditionTenor: "mediumgif",
-	}
-}
-
-func TestTenorProviderGetGifURLOK(t *testing.T) {
+func TestTenorProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK(defaultTenorResponseBody))
 	p.rendition = "tinygif"
 	cursor := ""
@@ -90,7 +80,7 @@ func TestTenorProviderGetGifURLOK(t *testing.T) {
 	assert.Equal(t, url, "https://fakeurl/tinygif.gif")
 }
 
-func TestTenorProviderGetGifURLEmptyBody(t *testing.T) {
+func TestTenorProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK(""))
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
@@ -99,7 +89,7 @@ func TestTenorProviderGetGifURLEmptyBody(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestTenorProviderGetGifURLParseError(t *testing.T) {
+func TestTenorProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK("This is not a valid JSON response"))
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
@@ -107,16 +97,15 @@ func TestTenorProviderGetGifURLParseError(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestTenorProviderEmptyGIFList(t *testing.T) {
+func TestTenorProviderGetGifURLShouldReturnEmptyUrlWhenSearchReturnNoResult(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK("{ \"weburl\": \"https://fakeurl/casdfsdfsdfsdfsdfst-gifs\", \"results\": [], \"next\": \"0\" }"))
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "No more GIF result")
+	assert.Nil(t, err)
 	assert.Empty(t, url)
 }
 
-func TestTenorProviderEmptyURLForRendition(t *testing.T) {
+func TestTenorProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK(defaultTenorResponseBody))
 	p.rendition = "NotExistingDisplayStyle"
 	cursor := ""
@@ -127,7 +116,7 @@ func TestTenorProviderEmptyURLForRendition(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestTenorProviderErrorStatusResponseWithoutErrorMessage(t *testing.T) {
+func TestTenorProviderGetGifURLShouldFailWhenSearchBadStatusWithoutMessage(t *testing.T) {
 	serverResponse := newServerResponseKO(400)
 	p := generateTenorProviderForTest(serverResponse)
 	cursor := ""
@@ -137,7 +126,7 @@ func TestTenorProviderErrorStatusResponseWithoutErrorMessage(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestTenorProviderErrorStatusResponseWithErrorMessage(t *testing.T) {
+func TestTenorProviderGetGifURLShouldFailWhenSearchBadStatusWithMessage(t *testing.T) {
 	serverResponse := newServerResponseKOWithBody(429, "{ \"error\": \"Please use a registered API Key\" }")
 	p := generateTenorProviderForTest(serverResponse)
 	cursor := ""
@@ -155,7 +144,7 @@ func generatTenorProviderForURLBuildingTests() (*tenor, *MockHttpClient, string)
 	return provider.(*tenor), client, ""
 }
 
-func TestTenorProviderParameterRating(t *testing.T) {
+func TestTenorProviderGetGifURLShouldApplyRatingFilterWhenSet(t *testing.T) {
 	p, client, cursor := generatTenorProviderForURLBuildingTests()
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.Contains(t, req.URL.RawQuery, "contentfilter=off")
@@ -166,7 +155,7 @@ func TestTenorProviderParameterRating(t *testing.T) {
 	assert.True(t, client.lastRequestPassTest)
 }
 
-func TestTenorProviderParameterLanguageEmpty(t *testing.T) {
+func TestTenorProviderGetGifURLShouldApplyLanguageFilterWhenUnset(t *testing.T) {
 	p, client, cursor := generatTenorProviderForURLBuildingTests()
 	p.language = ""
 	client.testRequestFunc = func(req *http.Request) bool {
@@ -178,7 +167,7 @@ func TestTenorProviderParameterLanguageEmpty(t *testing.T) {
 	assert.True(t, client.lastRequestPassTest)
 }
 
-func TestTenorProviderParameterLanguageProvided(t *testing.T) {
+func TestTenorProviderGetGifURLShouldApplyLanguageFilterWhenSet(t *testing.T) {
 	p, client, cursor := generatTenorProviderForURLBuildingTests()
 	p.language = "Moldovalaque"
 	client.testRequestFunc = func(req *http.Request) bool {

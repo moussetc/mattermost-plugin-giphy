@@ -49,7 +49,7 @@ func (p *gfycat) GetAttributionMessage() string {
 	return "Powered by Gfycat"
 }
 
-// GetGifURL return the URL of a GIF that matches the requested keywords
+// Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
 func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLGfycat+"/gfycats/search", nil)
 	if err != nil {
@@ -81,7 +81,7 @@ func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppEr
 		return "", p.errorGenerator.FromError("Could not parse Gfycat search response body", err)
 	}
 	if len(response.Gfycats) < 1 {
-		return "", p.errorGenerator.FromMessage("No more GIF results for this search!")
+		return "", nil
 	}
 	gif := response.Gfycats[0]
 	urlNode, ok := gif[p.rendition]

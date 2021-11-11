@@ -64,7 +64,7 @@ func (p *tenor) GetAttributionMessage() string {
 	return "Via Tenor"
 }
 
-// Return the URL of a GIF that matches the requested keywords
+// Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
 func (p *tenor) GetGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLTenor+"/search", nil)
 	if err != nil {
@@ -113,7 +113,7 @@ func (p *tenor) GetGifURL(request string, cursor *string) (string, *model.AppErr
 		return "", p.errorGenerator.FromError("Could not parse Tenor search response body", err)
 	}
 	if len(response.Results) < 1 || len(response.Results[0].Media) < 1 {
-		return "", p.errorGenerator.FromMessage("No more GIF results for this search!")
+		return "", nil
 	}
 	gif := response.Results[0].Media[0]
 	url := gif[p.rendition].URL

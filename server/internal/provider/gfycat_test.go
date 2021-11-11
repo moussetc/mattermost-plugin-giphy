@@ -46,8 +46,8 @@ func TestNewGfycatProvider(t *testing.T) {
 	}
 }
 
-func TestGfycatProviderGetGifURLOK(t *testing.T) {
-	p, err := NewGfycatProvider(NewMockHttpClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), testGfycatRendition)
+func TestGfycatProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
+	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.Nil(t, err)
@@ -55,8 +55,8 @@ func TestGfycatProviderGetGifURLOK(t *testing.T) {
 	assert.Equal(t, url, "url")
 }
 
-func TestGfycatProviderGetGifURLEmptyBody(t *testing.T) {
-	p, err := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("")), test.MockErrorGenerator(), testGfycatRendition)
+func TestGfycatProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
+	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.NotNil(t, err)
@@ -64,26 +64,25 @@ func TestGfycatProviderGetGifURLEmptyBody(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestGfycatProviderGetGifURLParseError(t *testing.T) {
-	p, err := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("Hello world")), test.MockErrorGenerator(), testGfycatRendition)
+func TestGfycatProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
+	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("Hello world")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.NotNil(t, err)
 	assert.Empty(t, url)
 }
 
-func TestGfycatProviderEmptyGIFList(t *testing.T) {
-	p, err := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("{\"data\": [] }")), test.MockErrorGenerator(), testGfycatRendition)
+func TestGfycatProviderGetGifURLShouldReturnEmptyUrlWhenSearchReturnNoResult(t *testing.T) {
+	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("{\"data\": [] }")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "No more GIF result")
+	assert.Nil(t, err)
 	assert.Empty(t, url)
 }
 
-func TestGfycatProviderEmptyURLForRendition(t *testing.T) {
+func TestGfycatProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 	badRendition := "NotExistingDisplayStyle"
-	p, err := NewGfycatProvider(NewMockHttpClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), badRendition)
+	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), badRendition)
 
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
@@ -93,9 +92,9 @@ func TestGfycatProviderEmptyURLForRendition(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestGfycatProviderErrorStatusResponse(t *testing.T) {
+func TestGfycatProviderGetGifURLShouldFailWhenSearchBadStatus(t *testing.T) {
 	serverResponse := newServerResponseKO(400)
-	p, err := NewGfycatProvider(NewMockHttpClient(serverResponse), test.MockErrorGenerator(), testGfycatRendition)
+	p, _ := NewGfycatProvider(NewMockHttpClient(serverResponse), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.NotNil(t, err)
@@ -111,7 +110,7 @@ func generateGfycatProviderForURLBuildingTests() (p GifProvider, client *MockHtt
 	return p, client, cursor
 }
 
-func TestGfycatProviderParameterCursorEmpty(t *testing.T) {
+func TestGfycatProviderGetGifURLWhenCursorIsEmpty(t *testing.T) {
 	p, client, cursor := generateGfycatProviderForURLBuildingTests()
 
 	// Cursor : optional
@@ -126,11 +125,11 @@ func TestGfycatProviderParameterCursorEmpty(t *testing.T) {
 	assert.Equal(t, "mockCursor", cursor)
 }
 
-func TestGfycatProviderParameterCursorZero(t *testing.T) {
-	p, client, cursor := generateGfycatProviderForURLBuildingTests()
+func TestGfycatProviderGetGifURLWhenCursorIsSet(t *testing.T) {
+	p, client, _ := generateGfycatProviderForURLBuildingTests()
 
 	// Initial value
-	cursor = "sdfjhsdjk"
+	cursor := "sdfjhsdjk"
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.Contains(t, req.URL.RawQuery, "cursor="+cursor)
 		return true

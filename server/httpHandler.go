@@ -39,7 +39,7 @@ type (
 
 var postActionIntegrationRequestFromJson = model.PostActionIntegrationRequestFromJson
 
-var notifyHandlerError = defaultNotifyHandlerError
+var notifyUserOfError = defaultNotifyUserOfError
 
 func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
@@ -102,9 +102,6 @@ func parseRequest(r *http.Request) (*integrationRequest, error) {
 	if context.GifURL == "" {
 		return nil, errors.New("Missing " + contextGifURL + " from action request context")
 	}
-	if context.Cursor == "" {
-		return nil, errors.New("Missing " + contextCursor + " from action request context")
-	}
 	return &context, err
 }
 
@@ -126,10 +123,18 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, requ
 
 // Replace the GIF in the ephemeral shuffle post by a new one
 func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+	if request.Cursor == "" {
+		notifyUserOfError(p.API, p.botId, "No more GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
+		return
+	}
 	shuffledGifURL, err := p.gifProvider.GetGifURL(request.Keywords, &request.Cursor)
 	if err != nil {
-		notifyHandlerError(p.API, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
+		notifyUserOfError(p.API, p.botId, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)
+		return
+	}
+	if shuffledGifURL == "" {
+		notifyUserOfError(p.API, p.botId, "No GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
 	post := &model.Post{
@@ -160,7 +165,7 @@ func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, reques
 	}
 	_, err := p.API.CreatePost(post)
 	if err != nil {
-		notifyHandlerError(p.API, "Unable to create post : ", err, &request.PostActionIntegrationRequest)
+		notifyUserOfError(p.API, p.botId, "Unable to create post : ", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusInternalServerError, w)
 		return
 	}
@@ -168,21 +173,24 @@ func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, reques
 	writeResponse(http.StatusOK, w)
 }
 
-// Informs the user of an error that occured in a button handler (no direct response possible so it use ephemeral messages), and also logs it
-func defaultNotifyHandlerError(api plugin.API, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
-	fullMessage := manifest.Name + ":"
+// Informs the user of an error (domain error with message, or technical error with err) that occured in a button handler, and logs it if it's technical
+func defaultNotifyUserOfError(api plugin.API, botId string, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
+	fullMessage := message
 	if err != nil {
 		fullMessage = err.Message
-	} else {
-		fullMessage = message
 	}
 	post := &model.Post{
 		Message:   "*" + fullMessage + "*",
 		ChannelId: request.ChannelId,
+		UserId:    botId,
 	}
 	post.SetProps(map[string]interface{}{
 		"sent_by_plugin": true,
 	})
 	api.SendEphemeralPost(request.UserId, post)
-	api.LogWarn(message, err)
+
+	// Only log technical errors
+	if err != nil {
+		api.LogWarn(message, err)
+	}
 }

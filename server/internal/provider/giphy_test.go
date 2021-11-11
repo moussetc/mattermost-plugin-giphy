@@ -66,7 +66,7 @@ func generateGiphyProviderForTest(mockHTTPResponse *http.Response) *giphy {
 	return provider.(*giphy)
 }
 
-func TestGiphyProviderGetGifURLOK(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 	p := generateGiphyProviderForTest(newServerResponseOK(defaultGiphyResponseBody))
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
@@ -75,7 +75,7 @@ func TestGiphyProviderGetGifURLOK(t *testing.T) {
 	assert.Equal(t, url, "url")
 }
 
-func TestGiphyProviderGetGifURLEmptyBody(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
 	p := generateGiphyProviderForTest(newServerResponseOK(""))
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
@@ -84,7 +84,7 @@ func TestGiphyProviderGetGifURLEmptyBody(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestGiphyProviderGetGifURLParseError(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
 	p := generateGiphyProviderForTest(newServerResponseOK("This is not a valid JSON response"))
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
@@ -92,16 +92,15 @@ func TestGiphyProviderGetGifURLParseError(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestGiphyProviderEmptyGIFList(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldReturnEmptyUrlWhenSearchReturnNoResult(t *testing.T) {
 	p := generateGiphyProviderForTest(newServerResponseOK("{\"data\": [] }"))
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
-	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "No more GIF")
+	assert.Nil(t, err)
 	assert.Empty(t, url)
 }
 
-func TestGiphyProviderEmptyURLForRendition(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 	p := generateGiphyProviderForTest(newServerResponseOK(defaultGiphyResponseBody))
 	p.rendition = "unknown_rendition_style"
 	cursor := ""
@@ -112,7 +111,7 @@ func TestGiphyProviderEmptyURLForRendition(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestGiphyProviderErrorStatusResponse(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldFailWhenSearchBadStatus(t *testing.T) {
 	serverResponse := newServerResponseKO(400)
 	p := generateGiphyProviderForTest(serverResponse)
 	cursor := ""
@@ -122,7 +121,7 @@ func TestGiphyProviderErrorStatusResponse(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func TestGiphyProviderTooManyRequestStatusResponse(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldFailWhenSearchTooManyRequestStatus(t *testing.T) {
 	serverResponse := newServerResponseKO(429)
 	p := generateGiphyProviderForTest(serverResponse)
 	cursor := ""
@@ -154,7 +153,7 @@ func TestGiphyProviderParameterAPIKey(t *testing.T) {
 	assert.True(t, client.lastRequestPassTest)
 }
 
-func TestGiphyProviderParameterCursorEmpty(t *testing.T) {
+func TestGiphyProviderGetGifURLWhenCursorIsEmpty(t *testing.T) {
 	p, client, cursor := generateGiphyProviderForURLBuildingTests()
 
 	// Cursor : optional
@@ -169,7 +168,7 @@ func TestGiphyProviderParameterCursorEmpty(t *testing.T) {
 	assert.Equal(t, "1", cursor)
 }
 
-func TestGiphyProviderParameterCursorZero(t *testing.T) {
+func TestGiphyProviderGetGifURLWhenCursorIsZero(t *testing.T) {
 	p, client, cursor := generateGiphyProviderForURLBuildingTests()
 
 	// Initial value : 0
@@ -184,7 +183,7 @@ func TestGiphyProviderParameterCursorZero(t *testing.T) {
 	assert.Equal(t, "1", cursor)
 }
 
-func TestGiphyProviderParameterCursorNotANumber(t *testing.T) {
+func TestGiphyProviderGetGifURLWhenCursorIsNotANumber(t *testing.T) {
 	p, client, cursor := generateGiphyProviderForURLBuildingTests()
 
 	// Initial value : not a number, that should be ignored
@@ -199,7 +198,7 @@ func TestGiphyProviderParameterCursorNotANumber(t *testing.T) {
 	assert.Equal(t, "1", cursor)
 }
 
-func TestGiphyProviderParameterRatingEmpty(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldApplyRatingFilterWhenUnset(t *testing.T) {
 	p, client, cursor := generateGiphyProviderForURLBuildingTests()
 	p.rating = ""
 	client.testRequestFunc = func(req *http.Request) bool {
@@ -211,7 +210,7 @@ func TestGiphyProviderParameterRatingEmpty(t *testing.T) {
 	assert.True(t, client.lastRequestPassTest)
 }
 
-func TestGiphyProviderParameterRatingProvided(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldApplyRatingFilterWhenSet(t *testing.T) {
 	p, client, cursor := generateGiphyProviderForURLBuildingTests()
 	p.rating = "RATING"
 	client.testRequestFunc = func(req *http.Request) bool {
@@ -223,7 +222,7 @@ func TestGiphyProviderParameterRatingProvided(t *testing.T) {
 	assert.True(t, client.lastRequestPassTest)
 }
 
-func TestGiphyProviderParameterLanguageEmpty(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldApplyLanguageFilterWhenUnset(t *testing.T) {
 	p, client, cursor := generateGiphyProviderForURLBuildingTests()
 	p.language = ""
 	client.testRequestFunc = func(req *http.Request) bool {
@@ -235,7 +234,7 @@ func TestGiphyProviderParameterLanguageEmpty(t *testing.T) {
 	assert.True(t, client.lastRequestPassTest)
 }
 
-func TestGiphyProviderParameterLanguageProvided(t *testing.T) {
+func TestGiphyProviderGetGifURLShouldApplyLanguageFilterWhenSet(t *testing.T) {
 	p, client, cursor := generateGiphyProviderForURLBuildingTests()
 	p.language = "Moldovalaque"
 	client.testRequestFunc = func(req *http.Request) bool {
