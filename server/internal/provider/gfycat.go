@@ -40,7 +40,7 @@ const (
 	baseURLGfycat = "https://api.gfycat.com/v1"
 )
 
-type pageCursor struct {
+type gfyPageCursor struct {
 	CursorForPage  string `json:"cursorForPage"`
 	PositionInPage int    `json:"positionInPage"`
 }
@@ -68,7 +68,7 @@ func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppEr
 	 * => instead of using "count=1" (and get possibly empty result if the cursor points to a private GIF), we
 	 * get a whole page of GIFs and iterate manually a cursor within this page.
 	**/
-	var pageCursor pageCursor = pageCursor{CursorForPage: "", PositionInPage: 0}
+	var pageCursor gfyPageCursor = gfyPageCursor{CursorForPage: "", PositionInPage: 0}
 	if cursor != nil && *cursor != "" {
 		if err := json.Unmarshal([]byte(*cursor), &pageCursor); err != nil {
 			return "", p.errorGenerator.FromError("Could not unserialize Gfycat cursor", err)
