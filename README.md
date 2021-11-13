@@ -1,4 +1,4 @@
-# Mattermost GIF commands plugin (ex-'GIPHY plugin') [![Build status](https://travis-ci.org/moussetc/mattermost-plugin-giphy.svg?branch=master)](https://travis-ci.com/github/moussetc/mattermost-plugin-giphy)
+# Mattermost GIF commands plugin (ex-'GIPHY plugin') ![Build Status](https://github.com/moussetc/mattermost-plugin-giphy/actions/workflows/makefile.yml/badge.svg)
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
