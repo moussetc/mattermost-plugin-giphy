@@ -139,7 +139,7 @@ func generateGifCaption(displayMode, keywords, caption, gifURL, attributionMessa
 		captionOrKeywords = fmt.Sprintf("/gif **%s**", keywords)
 	}
 	if displayMode == pluginConf.DisplayModeFullURL {
-		return fmt.Sprintf("%s \n*%s*\n%s", captionOrKeywords, gifURL, attributionMessage)
+		return fmt.Sprintf("%s \n\n*%s*\n\n%s", captionOrKeywords, gifURL, attributionMessage)
 	}
 	return fmt.Sprintf("%s \n\n*%s* \n\n![GIF for '%s'](%s)", captionOrKeywords, attributionMessage, keywords, gifURL)
 }
