@@ -40,6 +40,11 @@ const (
 	baseURLGfycat = "https://api.gfycat.com/v1"
 )
 
+type pageCursor struct {
+	CursorForPage  string `json:"cursorForPage"`
+	PositionInPage int    `json:"positionInPage"`
+}
+
 type gfySearchResult struct {
 	Cursor  string                        `json:"cursor"`
 	Gfycats []map[string]*json.RawMessage `json:"gfycats"`
@@ -51,14 +56,33 @@ func (p *gfycat) GetAttributionMessage() string {
 
 // Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
 func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppError) {
+	/**
+	 * Known quirks of the Gfycat API
+	 * - "count" parameter is applied _before_ any filtering (private GIF, etc.) so if you ask
+	 *   for N you only know will get a "page" of *at most* N, regardless of if GIFs remains
+	 *   in the next "pages". Source:
+	 *   https://www.reddit.com/r/gfycat/comments/ijjq5n/api_why_a_request_with_count1_returns_0_results/
+	 *
+	 * - the cursor property applies to the whole "page"
+	 *
+	 * => instead of using "count=1" (and get possibly empty result if the cursor points to a private GIF), we
+	 * get a whole page of GIFs and iterate manually a cursor within this page.
+	**/
+	var pageCursor pageCursor = pageCursor{CursorForPage: "", PositionInPage: 0}
+	if cursor != nil && *cursor != "" {
+		if err := json.Unmarshal([]byte(*cursor), &pageCursor); err != nil {
+			return "", p.errorGenerator.FromError("Could not unserialize Gfycat cursor", err)
+		}
+	}
+
 	req, err := http.NewRequest("GET", baseURLGfycat+"/gfycats/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate GfyCat search URL", err)
 	}
 	q := req.URL.Query()
 	q.Add("search_text", request)
-	if *cursor != "" {
-		q.Add("cursor", *cursor)
+	if pageCursor.CursorForPage != "" {
+		q.Add("cursor", pageCursor.CursorForPage)
 	}
 	req.URL.RawQuery = q.Encode()
 	req.Header.Add("Accept", "application/json")
@@ -83,7 +107,7 @@ func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppEr
 	if len(response.Gfycats) < 1 {
 		return "", nil
 	}
-	gif := response.Gfycats[0]
+	gif := response.Gfycats[pageCursor.PositionInPage]
 	urlNode, ok := gif[p.rendition]
 	if !ok {
 		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + p.rendition + "\" in the response")
@@ -107,6 +131,29 @@ func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppEr
 	if url == "" {
 		return "", p.errorGenerator.FromMessage("An empty URL was returned for display style \"" + p.rendition + "\"")
 	}
-	*cursor = response.Cursor
+
+	noMoreResults := false
+	if len(response.Gfycats) > pageCursor.PositionInPage+1 {
+		// Next GIF will be in same page
+		pageCursor.PositionInPage++
+	} else {
+		if response.Cursor != "" {
+			// Next GIF will be in next page
+			pageCursor.CursorForPage = response.Cursor
+			pageCursor.PositionInPage = 0
+		} else {
+			noMoreResults = true
+		}
+	}
+	if noMoreResults {
+		*cursor = ""
+	} else {
+		nextCursor, err := json.Marshal(pageCursor)
+		if err != nil {
+			return "", p.errorGenerator.FromError("Could not serialize Gfycat cursor", err)
+		}
+
+		*cursor = string(nextCursor)
+	}
 	return url, nil
 }

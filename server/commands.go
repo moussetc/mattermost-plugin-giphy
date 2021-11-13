@@ -81,6 +81,7 @@ func (p *Plugin) executeCommandGif(keywords, caption string, args *model.Command
 	cursor := ""
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor)
 	if errGif != nil {
+		p.API.LogWarn("Error while trying to get GIF URL: " + errGif.Error())
 		return nil, errGif
 	}
 	if gifURL == "" {
@@ -96,6 +97,7 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 	cursor := ""
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor)
 	if errGif != nil {
+		p.API.LogWarn("Error while trying to get GIF URL: " + errGif.Error())
 		return nil, errGif
 	}
 	if gifURL == "" {

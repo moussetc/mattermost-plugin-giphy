@@ -83,15 +83,17 @@ func TestExecuteCommandGifShouldSendEphemeralPostWhenSearchReturnsNoResult(t *te
 		}))
 }
 
-func TestExecuteCommandGifShouldFailWhenSearchFails(t *testing.T) {
-	_, p := initMockAPI()
+func TestExecuteCommandGifShouldLogAndFailWhenSearchFails(t *testing.T) {
+	api, p := initMockAPI()
 	errorMessage := "ARGHHHH"
 	p.gifProvider = &mockGifProviderFail{errorMessage}
+	api.On("LogWarn", mock.AnythingOfType("string")).Return(nil)
 
 	response, err := p.executeCommandGif("mayhem", "guy", testArgs)
 	assert.NotNil(t, err)
 	assert.Empty(t, response)
 	assert.Contains(t, err.DetailedError, errorMessage)
+	api.AssertNumberOfCalls(t, "LogWarn", 1)
 }
 
 func TestExecuteCommandGifWithPreviewShouldPostAnEphemeralGifPostWhenSearchSucceeds(t *testing.T) {
@@ -136,15 +138,17 @@ func TestExecuteCommandGifWithPreviewShouldReturnEphemeralResponseWhenSearchRetu
 		}))
 }
 
-func TestExecuteCommandGifWithPreviewShouldFailWhenSearchFails(t *testing.T) {
-	p := Plugin{}
+func TestExecuteCommandGifWithPreviewShouldLogAndFailWhenSearchFails(t *testing.T) {
+	api, p := initMockAPI()
 	p.gifProvider = &mockGifProviderFail{"mockError"}
+	api.On("LogWarn", mock.AnythingOfType("string")).Return(nil)
 
 	response, err := p.executeCommandGifWithPreview("hello", "", nil)
 
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "mockError")
 	assert.Nil(t, response)
+	api.AssertNumberOfCalls(t, "LogWarn", 1)
 }
 
 func TestGenerateShufflePostAttachments(t *testing.T) {

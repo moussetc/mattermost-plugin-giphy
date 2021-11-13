@@ -130,8 +130,9 @@ func TestExecuteShuffleCommandToReturnCommandResponse(t *testing.T) {
 	assert.NotNil(t, response)
 }
 
-func TestExecuteCommandToReturUnableToGetGIFError(t *testing.T) {
-	_, p := initMockAPI()
+func TestExecuteCommandFailWhenCommandHandlerFails(t *testing.T) {
+	api, p := initMockAPI()
+	api.On("LogWarn", mock.AnythingOfType("string")).Return(nil)
 
 	errorMessage := "ARGHHHH"
 	p.gifProvider = &mockGifProviderFail{errorMessage}
