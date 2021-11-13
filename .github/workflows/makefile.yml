@@ -1,0 +1,26 @@
+name: Makefile CI
+
+on:
+  push:
+    branches: [ '*/*' ]
+  pull_request:
+    branches: [ '*/*' ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    
+    - name: Setup Go environment
+      uses: actions/setup-go@v2.1.4
+      with:
+        # The Go version to download (if necessary) and use. Supports semver spec and ranges.
+        go-version: 1.16.7
+        # Whether to download only stable versions
+        stable: true
+
+    - name: Build
+      run: make
