@@ -1,6 +1,7 @@
 GO ?= $(shell command -v go 2> /dev/null)
 NPM ?= $(shell command -v npm 2> /dev/null)
 CURL ?= $(shell command -v curl 2> /dev/null)
+
 MANIFEST_FILE ?= plugin.json
 export GO111MODULE=on
 
@@ -57,7 +58,7 @@ ifneq ($(HAS_SERVER),)
 	@# Workaroung because you can't install binaries without adding them to go.mod 
 	env GO111MODULE=off $(GO) get golang.org/x/tools/go/analysis/passes/shadow/cmd/shadow
 	$(GO) vet ./server/...
-	$(GO) vet -vettool=$(GOPATH)/bin/shadow ./server/...
+	$(GO) vet -vettool=$${GOPATH:-"${HOME}/go"}/bin/shadow ./server/...
 	@echo Govet success
 endif
 
