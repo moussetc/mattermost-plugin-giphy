@@ -5,9 +5,10 @@ import (
 	"regexp"
 	"strings"
 
+	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 
 	"github.com/pkg/errors"
 )
@@ -86,7 +87,7 @@ func (p *Plugin) executeCommandGif(keywords, caption string, args *model.Command
 	}
 
 	text := generateGifCaption(p.getConfiguration().DisplayMode, keywords, caption, gifURL, p.gifProvider.GetAttributionMessage())
-	return &model.CommandResponse{ResponseType: model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, Text: text}, nil
+	return &model.CommandResponse{ResponseType: model.CommandResponseTypeInChannel, Text: text}, nil
 }
 
 // executeCommandGifWithPreview returns an ephemeral post with one GIF that can either be posted, shuffled or canceled
@@ -133,12 +134,12 @@ func getHintMessage(trigger string) string {
 func generateGifCaption(displayMode, keywords, caption, gifURL, attributionMessage string) string {
 	captionOrKeywords := caption
 	if caption == "" {
-		captionOrKeywords = fmt.Sprintf("/gif **%s**", keywords)
+		captionOrKeywords = fmt.Sprintf("**/gif [%s](%s)**", keywords, gifURL)
 	}
 	if displayMode == pluginConf.DisplayModeFullURL {
-		return fmt.Sprintf("%s \n\n*%s*\n\n%s", captionOrKeywords, gifURL, attributionMessage)
+		return fmt.Sprintf("%s \n*%s*\n%s", captionOrKeywords, gifURL, attributionMessage)
 	}
-	return fmt.Sprintf("%s \n\n*%s* \n\n![GIF for '%s'](%s)", captionOrKeywords, attributionMessage, keywords, gifURL)
+	return fmt.Sprintf("%s \n*%s* \n![GIF for '%s'](%s)", captionOrKeywords, attributionMessage, keywords, gifURL)
 }
 
 func (p *Plugin) generateGifPost(userID, keywords, caption, gifURL, channelID, rootID, attributionMessage string) *model.Post {
@@ -176,10 +177,10 @@ func generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootID st
 func generateButton(name string, urlAction string, style string, context map[string]interface{}) *model.PostAction {
 	return &model.PostAction{
 		Name:  name,
-		Type:  model.POST_ACTION_TYPE_BUTTON,
+		Type:  model.PostActionTypeButton,
 		Style: style,
 		Integration: &model.PostActionIntegration{
-			URL:     fmt.Sprintf("/plugins/%s%s", manifest.Id, urlAction),
+			URL:     fmt.Sprintf("/plugins/%s%s", manifest.Manifest.Id, urlAction),
 			Context: context,
 		},
 	}

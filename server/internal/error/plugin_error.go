@@ -3,7 +3,7 @@ package error
 import (
 	"net/http"
 
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 )
 
 // PluginError create appErrors enriched with plugin name for better logging

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	manifest "github.com/moussetc/mattermost-plugin-giphy"
 
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 
@@ -10,6 +10,6 @@ import (
 
 func main() {
 	p := Plugin{}
-	p.errorGenerator = pluginError.NewPluginErrorGenerator(manifest.Name)
+	p.errorGenerator = pluginError.NewPluginErrorGenerator(manifest.Manifest.Name)
 	plugin.ClientMain(&p)
 }

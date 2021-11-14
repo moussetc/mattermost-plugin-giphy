@@ -6,7 +6,7 @@ import (
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 )
 
 // GifProvider exposes methods to get GIF from an API

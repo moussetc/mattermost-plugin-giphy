@@ -1,13 +1,15 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"net/http"
 
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 
-	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -37,8 +39,6 @@ type (
 	defaultHTTPHandler struct{}
 )
 
-var postActionIntegrationRequestFromJson = model.PostActionIntegrationRequestFromJson
-
 var notifyUserOfError = defaultNotifyUserOfError
 
 func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
@@ -65,11 +65,11 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "The user of the request should match the authenticated user", http.StatusBadRequest)
 		return
 	}
-	if !p.API.HasPermissionToChannel(request.UserId, request.ChannelId, model.PERMISSION_READ_CHANNEL) {
+	if !p.API.HasPermissionToChannel(request.UserId, request.ChannelId, model.PermissionReadChannel) {
 		http.Error(w, "The user is not allowed to read this channel", http.StatusForbidden)
 		return
 	}
-	if !p.API.HasPermissionToChannel(request.UserId, request.ChannelId, model.PERMISSION_CREATE_POST) {
+	if !p.API.HasPermissionToChannel(request.UserId, request.ChannelId, model.PermissionCreatePost) {
 		http.Error(w, "The user is not allowed to post in this channel", http.StatusForbidden)
 		return
 	}
@@ -88,13 +88,18 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 
 func parseRequest(r *http.Request) (*integrationRequest, error) {
 	// Read data added by default for a button action
-	request := postActionIntegrationRequestFromJson(r.Body)
-	if request == nil {
-		return nil, errors.New("request cannot be nil")
+	body, readErr := ioutil.ReadAll(r.Body)
+	if readErr != nil {
+		return nil, readErr
+	}
+	var request model.PostActionIntegrationRequest
+	jsonErr := json.Unmarshal(body, &request)
+	if jsonErr != nil {
+		return nil, jsonErr
 	}
 
 	context := integrationRequest{}
-	context.PostActionIntegrationRequest = *request
+	context.PostActionIntegrationRequest = request
 	err := mapstructure.Decode(request.Context, &context)
 	if context.Keywords == "" {
 		return nil, errors.New("missing " + contextKeywords + " from action request context")
@@ -111,7 +116,10 @@ func writeResponse(httpStatus int, w http.ResponseWriter) {
 		// Return the object the MM server expects in case of 200 status
 		response := &model.PostActionIntegrationResponse{}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write(response.ToJson())
+		json, jsonErr := json.Marshal(response)
+		if jsonErr != nil {
+			_, _ = w.Write(json)
+		}
 	}
 }
 

@@ -7,7 +7,7 @@ import (
 
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 
-	"github.com/mattermost/mattermost-server/v5/model"
+	"github.com/mattermost/mattermost-server/v6/model"
 )
 
 // NewTenorProvider creates an instance of a GIF provider that uses the Tenor API

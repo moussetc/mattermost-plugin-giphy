@@ -33,7 +33,8 @@ Use the following table to find the correct plugin version for each Mattermost s
 
 | Mattermost server | Plugin release | Incompatibility |
 | --- | --- | --- |
-| 5.20 and higher | v1.2.x and higher | breaking plugin manifest change |
+| 6.0 and higher | v2.0.x and higher | breaking plugin API changes |
+| 5.20 to 5.39 | v1.2.x and higher | breaking plugin manifest change |
 | 5.12 to 5.19 | v1.1.x | breaking plugin API change |
 | 5.10 to 5.11 | v1.0.x | buttons on ephemeral posts |
 | 5.2 to 5.9 | v0.2.0 | |

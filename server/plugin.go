@@ -6,12 +6,13 @@ import (
 	"strings"
 	"sync"
 
+	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 	provider "github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
 
-	"github.com/mattermost/mattermost-server/v5/model"
-	"github.com/mattermost/mattermost-server/v5/plugin"
+	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost-server/v6/plugin"
 
 	"github.com/pkg/errors"
 )
@@ -45,7 +46,7 @@ func (p *Plugin) OnActivate() error {
 	if siteURL := p.API.GetConfig().ServiceSettings.SiteURL; siteURL != nil {
 		rootURL = strings.TrimSuffix(*siteURL, "/")
 	}
-	p.rootURL = fmt.Sprintf("%s/plugins/%s", rootURL, manifest.Id)
+	p.rootURL = fmt.Sprintf("%s/plugins/%s", rootURL, manifest.Manifest.Id)
 	if err := p.OnConfigurationChange(); err != nil {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}
