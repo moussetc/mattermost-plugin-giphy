@@ -20,7 +20,6 @@ func generateMocksForConfigurationTesting(displayMode string) *Plugin {
 	p := Plugin{}
 	p.errorGenerator = test.MockErrorGenerator()
 	p.SetAPI(api)
-	setMockHelpers(&p)
 	return &p
 }
 
@@ -51,7 +50,6 @@ func TestOnConfigurationChangeGifProviderError(t *testing.T) {
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(pluginConfig))
 	p := Plugin{errorGenerator: test.MockErrorGenerator()}
 	p.SetAPI(api)
-	setMockHelpers(&p)
 	err := p.OnConfigurationChange()
 	assert.NotNil(t, err)
 }
