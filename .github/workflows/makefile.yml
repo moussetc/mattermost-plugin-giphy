@@ -29,6 +29,8 @@ jobs:
 
     - name: Install golangci-lint
       uses: golangci/golangci-lint-action@v2
+      with:
+        skip-go-installation: true
 
     - name: Build
       run: make
