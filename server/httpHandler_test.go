@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
 	"io/ioutil"
@@ -43,22 +45,15 @@ var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
 	},
 }
 
+func generatePostActionIntegrationRequestBody() io.Reader {
+	json, _ := json.Marshal(testPostActionIntegrationRequest)
+	return bytes.NewBuffer(json)
+}
+
 func generateTestIntegrationRequest() *integrationRequest {
 	return &integrationRequest{
 		testGifURL, testKeywords, testCaption, testCursor, testRootID, testPostActionIntegrationRequest,
 	}
-}
-
-func mockPostActionIntegratioRequestFromJSON(body io.Reader) *model.PostActionIntegrationRequest {
-	return &testPostActionIntegrationRequest
-}
-
-func generateMockAPIForHandlers() *plugintest.API {
-	api := &plugintest.API{}
-	api.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
-	api.On("LogWarn", mock.AnythingOfType("string"), nil).Return(nil)
-	api.On("LogWarn", mock.AnythingOfType("string"), mock.AnythingOfType("*model.AppError")).Return(nil)
-	return api
 }
 
 func setupMockPluginWithAuthent() *Plugin {
@@ -67,8 +62,6 @@ func setupMockPluginWithAuthent() *Plugin {
 	p := &Plugin{}
 	p.SetAPI(api)
 	p.httpHandler = &mockHTTPHandler{}
-
-	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 
 	return p
 }
@@ -79,7 +72,7 @@ func TestHandleHTTPRequestShouldReturnOKStatusForAllSupportedRoutes(t *testing.T
 	goodURLs := [3]string{URLCancel, URLShuffle, URLSend}
 	for _, URL := range goodURLs {
 		w := httptest.NewRecorder()
-		r := httptest.NewRequest("POST", URL, nil)
+		r := httptest.NewRequest("POST", URL, generatePostActionIntegrationRequestBody())
 		r.Header.Add("Mattermost-User-Id", testUserID)
 
 		p.handleHTTPRequest(w, r)
@@ -106,7 +99,7 @@ func TestHandleHTTPRequestShouldFailWhenBadMethodIsUsed(t *testing.T) {
 func TestHandleHTTPRequestShouldFailWhenUnsupportedURLIsUsed(t *testing.T) {
 	p := setupMockPluginWithAuthent()
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", "/unexistingURL", nil)
+	r := httptest.NewRequest("POST", "/unexistingURL", generatePostActionIntegrationRequestBody())
 	r.Header.Add("Mattermost-User-Id", testUserID)
 
 	p.handleHTTPRequest(w, r)
@@ -131,7 +124,7 @@ func TestHandleHTTPRequestShouldFailWhenMissingAuthHeader(t *testing.T) {
 func TestHandleHTTPRequestShouldFailWhenAuthHeaderDoesntMatchRequestUser(t *testing.T) {
 	p := setupMockPluginWithAuthent()
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", URLSend, nil)
+	r := httptest.NewRequest("POST", URLSend, generatePostActionIntegrationRequestBody())
 	r.Header.Add("Mattermost-User-Id", "differentUserId")
 
 	p.handleHTTPRequest(w, r)
@@ -152,9 +145,8 @@ func TestHandleHTTPRequestShouldFailWhenUserDontHavePostingPermissionToChannel(t
 	p.SetAPI(api)
 	p.httpHandler = &mockHTTPHandler{}
 
-	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", URLSend, nil)
+	r := httptest.NewRequest("POST", URLSend, generatePostActionIntegrationRequestBody())
 	r.Header.Add("Mattermost-User-Id", testUserID)
 
 	p.handleHTTPRequest(w, r)
@@ -165,10 +157,10 @@ func TestHandleHTTPRequestShouldFailWhenUserDontHavePostingPermissionToChannel(t
 }
 
 func TestParseRequestShouldParseAllValuesFromCorrectRequest(t *testing.T) {
-	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
+	r := httptest.NewRequest("POST", URLSend, generatePostActionIntegrationRequestBody())
 
-	r := httptest.NewRequest("POST", URLSend, nil)
 	request, err := parseRequest(r)
+
 	assert.Nil(t, err)
 	assert.NotNil(t, request)
 	assert.Equal(t, request.ChannelId, testChannelID)
@@ -179,46 +171,57 @@ func TestParseRequestShouldParseAllValuesFromCorrectRequest(t *testing.T) {
 	assert.Equal(t, request.RootID, testRootID)
 }
 
-func TestParseRequestShouldFailIfRequestIsNil(t *testing.T) {
-	postActionIntegrationRequestFromJson = func(body io.Reader) *model.PostActionIntegrationRequest { return nil }
-
+func TestParseRequestShouldFailIfRequestIfBodyCantBeRead(t *testing.T) {
 	r := httptest.NewRequest("POST", URLSend, nil)
 	request, err := parseRequest(r)
 	assert.Nil(t, request)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "cannot be nil")
+}
+
+func TestParseRequestShouldFailIfBodyCantBeParsed(t *testing.T) {
+	body := bytes.NewBuffer([]byte("this is not a valid json"))
+	r := httptest.NewRequest("POST", URLSend, body)
+	request, err := parseRequest(r)
+	assert.Nil(t, request)
+	assert.NotNil(t, err)
 }
 
 func TestParseRequestShouldFailWhenRequiredContextValueIsMissing(t *testing.T) {
-	contextElements := [2]string{contextGifURL, contextKeywords}
-	for i := 0; i < len(contextElements); i++ {
-		testMessage := "testing value: " + contextElements[i]
-		context := map[string]interface{}{}
-		for j := 0; j < len(contextElements); j++ {
-			if j != i {
-				context[contextElements[j]] = contextElements[j]
-			}
-		}
+	incompleteContextRequests := []string{`{
+		"ChannelId": "testChannelId",
+		"UserId":    "testUserId",
+		"PostId":    "testPostId",
+		Context: {
+			"contextKeywords": "testKeywords",
+			"contextCursor":   "testCursor",
+			"contextRootId":   "testRootId",
+		}`,
+		`{
+			"ChannelId": "testChannelId",
+			"UserId":    "testUserId",
+			"PostId":    "testPostId",
+			Context: {
+				"contextGifURL":   "testGifURL",
+				"contextCursor":   "testCursor",
+				"contextRootId":   "testRootId",
+			}`}
 
-		postActionIntegrationRequestFromJson = func(body io.Reader) *model.PostActionIntegrationRequest {
-			return &model.PostActionIntegrationRequest{
-				ChannelId: testChannelId,
-				UserId:    testUserId,
-				PostId:    testPostId,
-				Context:   context,
-			}
-		}
+	for i := 0; i < len(incompleteContextRequests); i++ {
+		body := bytes.NewBuffer([]byte(incompleteContextRequests[i]))
+		r := httptest.NewRequest("POST", URLSend, body)
 
-		r := httptest.NewRequest("POST", URLSend, nil)
 		request, err := parseRequest(r)
-		assert.Nil(t, request, testMessage)
-		assert.NotNil(t, err, testMessage)
+
+		assert.Nil(t, request)
+		assert.NotNil(t, err)
 	}
 }
 
 func TestWriteResponseShouldHandleOKStatus(t *testing.T) {
 	w := httptest.NewRecorder()
+
 	writeResponse(http.StatusOK, w)
+
 	result := w.Result()
 	assert.Equal(t, result.StatusCode, http.StatusOK)
 	bodyBytes, _ := ioutil.ReadAll(result.Body)

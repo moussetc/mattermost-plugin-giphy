@@ -67,9 +67,10 @@ func initMockAPI() (api *plugintest.API, p *Plugin) {
 }
 
 func setMockHelpers(plugin *Plugin) {
-	testHelpers := &plugintest.Helpers{}
-	testHelpers.On("EnsureBot", mock.AnythingOfType("*model.Bot"), mock.AnythingOfType("plugin.EnsureBotOption")).Return("botId42", nil)
-	plugin.SetHelpers(testHelpers)
+	// TODO: how to mock pluginapi functions?
+	// testHelpers := &plugintest.Helpers{}
+	// testHelpers.On("EnsureBot", mock.AnythingOfType("*model.Bot"), mock.AnythingOfType("plugin.EnsureBotOption")).Return("botId42", nil)
+	// plugin.SetHelpers(testHelpers)
 }
 
 func TestOnActivateWithBadConfig(t *testing.T) {
@@ -110,6 +111,7 @@ func TestOnActivateWithoutSiteURL(t *testing.T) {
 func TestOnActivateOK(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
+	api.On("GetServerVersion").Return("42.0.0") // TODO we gotta mock
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)

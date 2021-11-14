@@ -117,7 +117,7 @@ func writeResponse(httpStatus int, w http.ResponseWriter) {
 		response := &model.PostActionIntegrationResponse{}
 		w.Header().Set("Content-Type", "application/json")
 		json, jsonErr := json.Marshal(response)
-		if jsonErr != nil {
+		if jsonErr == nil {
 			_, _ = w.Write(json)
 		}
 	}

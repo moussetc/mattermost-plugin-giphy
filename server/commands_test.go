@@ -54,7 +54,7 @@ func TestExecuteCommandGifShouldReturnInChannelResponseWhenSearchSucceeds(t *tes
 
 	assert.Nil(t, err)
 	assert.NotNil(t, response)
-	assert.Equal(t, model.COMMAND_RESPONSE_TYPE_IN_CHANNEL, response.ResponseType)
+	assert.Equal(t, model.CommandResponseTypeInChannel, response.ResponseType)
 	assert.True(t, strings.Contains(response.Text, testKeywords))
 	assert.True(t, strings.Contains(response.Text, testCaption))
 }
@@ -71,7 +71,6 @@ func TestExecuteCommandGifShouldSendEphemeralPostWhenSearchReturnsNoResult(t *te
 	api.AssertNumberOfCalls(t, "SendEphemeralPost", 1)
 	api.AssertCalled(t, "SendEphemeralPost",
 		mock.MatchedBy(func(uID string) bool {
-			t.Log("expected/gotten : " + testArgs.UserId + "/" + uID)
 			return uID == testArgs.UserId
 		}),
 		mock.MatchedBy(func(post *model.Post) bool {
