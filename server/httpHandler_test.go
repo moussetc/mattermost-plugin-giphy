@@ -255,14 +255,12 @@ func TestHandleCancelShouldDeleteEphemeralPost(t *testing.T) {
 }
 
 func TestHandleShuffleShouldUpdateEphemeralPostWhenSearchSucceeds(t *testing.T) {
-	api := &plugintest.API{}
+	api, p := initMockAPI()
 	api.On("UpdateEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
-	p := Plugin{}
-	p.SetAPI(api)
 	p.gifProvider = newMockGifProvider()
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
-	h.handleShuffle(&p, w, generateTestIntegrationRequest())
+	h.handleShuffle(p, w, generateTestIntegrationRequest())
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t, "UpdateEphemeralPost",
 		mock.MatchedBy(func(s string) bool { return s == testUserID }),
@@ -276,27 +274,24 @@ func TestHandleShuffleShouldUpdateEphemeralPostWhenSearchSucceeds(t *testing.T) 
 }
 
 func TestHandleShuffleShouldNotifyUserWhenSearchReturnsNoResult(t *testing.T) {
-	api := &plugintest.API{}
+	_, p := initMockAPI()
 	notifyUserWasCalled := false
 	notifyUserOfError = func(api plugin.API, botId string, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 		notifyUserWasCalled = true
 		assert.Contains(t, message, "found")
 	}
-	p := Plugin{}
-	p.SetAPI(api)
+
 	p.gifProvider = &mockGifProvider{""}
 	p.botID = "bot"
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
-	h.handleShuffle(&p, w, generateTestIntegrationRequest())
+	h.handleShuffle(p, w, generateTestIntegrationRequest())
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	assert.True(t, notifyUserWasCalled)
 }
 
 func TestHandleShuffleShouldFailWhenSearchFails(t *testing.T) {
-	api := &plugintest.API{}
-	p := Plugin{}
-	p.SetAPI(api)
+	api, p := initMockAPI()
 	p.gifProvider = &mockGifProviderFail{"fakeURL"}
 	h := &defaultHTTPHandler{}
 
@@ -305,21 +300,19 @@ func TestHandleShuffleShouldFailWhenSearchFails(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	h.handleShuffle(&p, w, generateTestIntegrationRequest())
+	h.handleShuffle(p, w, generateTestIntegrationRequest())
 	assert.Equal(t, w.Result().StatusCode, http.StatusServiceUnavailable)
 	api.AssertNumberOfCalls(t, "UpdateEphemeralPost", 0)
 }
 
 func TestHandleSendSHouldDeleteTheEphemeralPostAndCreateANewPostWhenSearchSucceeds(t *testing.T) {
-	api := &plugintest.API{}
+	api, p := initMockAPI()
 	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, nil)
-	p := Plugin{}
-	p.SetAPI(api)
 	p.gifProvider = newMockGifProvider()
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
-	h.handleSend(&p, w, generateTestIntegrationRequest())
+	h.handleSend(p, w, generateTestIntegrationRequest())
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t,
 		"DeleteEphemeralPost",

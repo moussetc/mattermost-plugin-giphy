@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
 type MockHTTPClient struct {
@@ -41,6 +42,7 @@ func newServerResponseOK(body string) *http.Response {
 func newServerResponseKO(statusCode int) *http.Response {
 	return &http.Response{
 		StatusCode: statusCode,
+		Status:     strconv.Itoa(statusCode),
 	}
 }
 

@@ -230,7 +230,7 @@ func TestTenorProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK(defaultTenorResponseBody))
 	p.rendition = "tinygif"
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, url)
 	assert.Equal(t, url, "https://fakeurl/tinygif")
@@ -239,7 +239,7 @@ func TestTenorProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 func TestTenorProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK(""))
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "empty")
 	assert.Empty(t, url)
@@ -248,7 +248,7 @@ func TestTenorProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
 func TestTenorProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK("This is not a valid JSON response"))
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Empty(t, url)
 }
@@ -256,7 +256,7 @@ func TestTenorProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
 func TestTenorProviderGetGifURLShouldReturnEmptyUrlWhenSearchReturnNoResult(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK("{ \"weburl\": \"https://fakeurl/casdfsdfsdfsdfsdfst-gifs\", \"results\": [], \"next\": \"0\" }"))
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.Empty(t, url)
 }
@@ -265,7 +265,7 @@ func TestTenorProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 	p := generateTenorProviderForTest(newServerResponseOK(defaultTenorResponseBody))
 	p.rendition = "NotExistingDisplayStyle"
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "No URL found for display style")
 	assert.Contains(t, err.Error(), p.rendition)
@@ -276,7 +276,7 @@ func TestTenorProviderGetGifURLShouldFailWhenSearchBadStatusWithoutMessage(t *te
 	serverResponse := newServerResponseKO(400)
 	p := generateTenorProviderForTest(serverResponse)
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), serverResponse.Status)
 	assert.Empty(t, url)
@@ -286,7 +286,7 @@ func TestTenorProviderGetGifURLShouldFailWhenSearchBadStatusWithMessage(t *testi
 	serverResponse := newServerResponseKOWithBody(429, "{ \"error\": \"Please use a registered API Key\" }")
 	p := generateTenorProviderForTest(serverResponse)
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), serverResponse.Status)
 	assert.Contains(t, err.Error(), "Please use a registered API Key")
@@ -306,7 +306,7 @@ func TestTenorProviderGetGifURLShouldApplyRatingFilterWhenSet(t *testing.T) {
 		assert.Contains(t, req.URL.RawQuery, "contentfilter=off")
 		return true
 	}
-	_, err := p.GetGifURL("cat", &cursor)
+	_, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.True(t, client.lastRequestPassTest)
 }
@@ -318,7 +318,7 @@ func TestTenorProviderGetGifURLShouldApplyLanguageFilterWhenUnset(t *testing.T) 
 		assert.NotContains(t, req.URL.RawQuery, "locale")
 		return true
 	}
-	_, err := p.GetGifURL("cat", &cursor)
+	_, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.True(t, client.lastRequestPassTest)
 }
@@ -330,7 +330,7 @@ func TestTenorProviderGetGifURLShouldApplyLanguageFilterWhenSet(t *testing.T) {
 		assert.Contains(t, req.URL.RawQuery, "locale="+p.language)
 		return true
 	}
-	_, err := p.GetGifURL("cat", &cursor)
+	_, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.True(t, client.lastRequestPassTest)
 }

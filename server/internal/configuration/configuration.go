@@ -13,6 +13,7 @@ type Configuration struct {
 	RenditionTenor               string
 	APIKey                       string
 	DisablePostingWithoutPreview bool
+	RandomSearch                 bool
 	// Computed fields:
 	CommandTriggerGif            string
 	CommandTriggerGifWithPreview string

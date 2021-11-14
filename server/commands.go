@@ -77,7 +77,7 @@ func parseCommandLine(commandLine, trigger string) (keywords, caption string, er
 // executeCommandGif returns a public post containing a matching GIF
 func (p *Plugin) executeCommandGif(keywords, caption string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
-	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor)
+	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
 	if errGif != nil {
 		p.API.LogWarn("Error while trying to get GIF URL: " + errGif.Error())
 		return nil, errGif
@@ -93,7 +93,7 @@ func (p *Plugin) executeCommandGif(keywords, caption string, args *model.Command
 // executeCommandGifWithPreview returns an ephemeral post with one GIF that can either be posted, shuffled or canceled
 func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
-	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor)
+	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
 	if errGif != nil {
 		p.API.LogWarn("Error while trying to get GIF URL: " + errGif.Error())
 		return nil, errGif

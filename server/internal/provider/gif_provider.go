@@ -11,8 +11,8 @@ import (
 
 // GifProvider exposes methods to get GIF from an API
 type GifProvider interface {
-	// GetGifURL return the URL of a GIF that matches the requested keywords if one is found or else
-	GetGifURL(request string, cursor *string) (string, *model.AppError)
+	// GetGifURL return the URL of a GIF that matches the requested keywords if one is found or else an empty string
+	GetGifURL(request string, cursor *string, random bool) (string, *model.AppError)
 
 	// GetAttributionMessage returns the text that should be displayed near the GIF, as defined by the providers' Terms of Service
 	GetAttributionMessage() string

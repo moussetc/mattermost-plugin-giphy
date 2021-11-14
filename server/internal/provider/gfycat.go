@@ -55,7 +55,7 @@ func (p *gfycat) GetAttributionMessage() string {
 }
 
 // Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
-func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppError) {
+func (p *gfycat) GetGifURL(request string, cursor *string, random bool) (string, *model.AppError) {
 	/**
 	 * Known quirks of the Gfycat API
 	 * - "count" parameter is applied _before_ any filtering (private GIF, etc.) so if you ask

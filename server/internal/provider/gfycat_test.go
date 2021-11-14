@@ -49,7 +49,7 @@ func TestNewGfycatProvider(t *testing.T) {
 func TestGfycatProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, url)
 	assert.Equal(t, "url0", url)
@@ -58,7 +58,7 @@ func TestGfycatProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) 
 func TestGfycatProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
 	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK("")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "empty")
 	assert.Empty(t, url)
@@ -67,7 +67,7 @@ func TestGfycatProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
 func TestGfycatProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
 	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK("Hello world")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Empty(t, url)
 }
@@ -75,7 +75,7 @@ func TestGfycatProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
 func TestGfycatProviderGetGifURLShouldReturnEmptyUrlWhenSearchReturnNoResult(t *testing.T) {
 	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK("{\"data\": [] }")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.Empty(t, url)
 }
@@ -85,7 +85,7 @@ func TestGfycatProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), badRendition)
 
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "No URL found")
 	assert.Contains(t, err.Error(), badRendition)
@@ -96,7 +96,7 @@ func TestGfycatProviderGetGifURLShouldFailWhenSearchBadStatus(t *testing.T) {
 	serverResponse := newServerResponseKO(400)
 	p, _ := NewGfycatProvider(NewMockHTTPClient(serverResponse), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), serverResponse.Status)
 	assert.Empty(t, url)
@@ -118,7 +118,7 @@ func TestGfycatProviderGetGifURLWhenStartingSearch(t *testing.T) {
 		assert.NotContains(t, req.URL.RawQuery, "cursor")
 		return true
 	}
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.True(t, client.lastRequestPassTest)
 	assert.Equal(t, "url0", url)
@@ -135,7 +135,7 @@ func TestGfycatProviderGetGifURLWhenCursorIsInCurrentPage(t *testing.T) {
 		return true
 	}
 
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.True(t, client.lastRequestPassTest)
 	assert.Equal(t, "url1", url)
@@ -146,7 +146,7 @@ func TestGfycatProviderGetGifURLWhenNextCursorIsDifferentPage(t *testing.T) {
 	p, _, _ := generateGfycatProviderForURLBuildingTests(defaultGfycatResponseBody)
 	cursor := "{\"cursorForPage\":\"currentCursor\",\"positionInPage\":2}"
 
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.Equal(t, "url2", url)
 	assert.Equal(t, "{\"cursorForPage\":\"nextCursor\",\"positionInPage\":0}", cursor)
@@ -155,7 +155,7 @@ func TestGfycatProviderGetGifURLWhenNextCursorIsDifferentPage(t *testing.T) {
 func TestGfycatProviderGetGifURLWhenThisIsTheLastGifResult(t *testing.T) {
 	p, _, cursor := generateGfycatProviderForURLBuildingTests("{ \"cursor\": \"\", \"gfycats\" : [ { \"gifUrl\": \"\", \"gif100px\": \"url0\"}] }")
 
-	url, err := p.GetGifURL("cat", &cursor)
+	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.Equal(t, "url0", url)
 	assert.Equal(t, "", cursor)

@@ -344,6 +344,13 @@
         ]
       },
       {
+        "key": "RandomSearch",
+        "type": "bool",
+        "display_name": "Random (GIPHY and Tenor only):",
+        "help_text": "If deactivated (or if Gfycat is the provider), the same search will return the same sequence of GIFs (legacy behaviour)",
+        "default": true
+      },
+      {
         "key": "DisablePostingWithoutPreview",
         "type": "bool",
         "display_name": "Force GIF preview before posting (force /gifs):",

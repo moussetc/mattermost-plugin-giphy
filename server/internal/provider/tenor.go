@@ -65,7 +65,15 @@ func (p *tenor) GetAttributionMessage() string {
 }
 
 // Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
-func (p *tenor) GetGifURL(request string, cursor *string) (string, *model.AppError) {
+func (p *tenor) GetGifURL(request string, cursor *string, random bool) (string, *model.AppError) {
+	if random {
+		return "", p.errorGenerator.FromMessage("TODO NOT YET IMPLEMENTED")
+	}
+	return p.getSearchGifURL(request, cursor)
+}
+
+// Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
+func (p *tenor) getSearchGifURL(request string, cursor *string) (string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLTenor+"/search", nil)
 	if err != nil {
 		return "", p.errorGenerator.FromError("Could not generate URL", err)
