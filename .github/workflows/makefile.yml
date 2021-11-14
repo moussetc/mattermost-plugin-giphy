@@ -27,6 +27,9 @@ jobs:
         # Whether to download only stable versions
         stable: true
 
+    - name: Install golangci-lint
+      uses: golangci/golangci-lint-action@v2
+
     - name: Build
       run: make
 
