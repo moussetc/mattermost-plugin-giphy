@@ -92,6 +92,9 @@ func (p *gfycat) GetGifURL(request string, cursor *string) (string, *model.AppEr
 	if err != nil {
 		return "", p.errorGenerator.FromError("Error calling the GfyCat search API", err)
 	}
+	if r != nil && r.Body != nil {
+		defer r.Body.Close()
+	}
 
 	if r.StatusCode != http.StatusOK {
 		return "", p.errorGenerator.FromMessage(fmt.Sprintf("Error calling the GfyCat search API (HTTP Status: %v)", r.Status))

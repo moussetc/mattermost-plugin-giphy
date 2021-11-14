@@ -95,6 +95,9 @@ func (p *giphy) GetGifURL(request string, cursor *string) (string, *model.AppErr
 	if err != nil {
 		return "", p.errorGenerator.FromError("Error calling the Giphy API", err)
 	}
+	if r != nil && r.Body != nil {
+		defer r.Body.Close()
+	}
 
 	if r.StatusCode != http.StatusOK {
 		explanation := ""
