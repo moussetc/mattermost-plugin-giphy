@@ -145,6 +145,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		notifyUserOfError(p.API, p.botID, "No GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
+	time := model.GetMillis()
 	post := &model.Post{
 		Id:        request.PostId,
 		ChannelId: request.ChannelId,
@@ -152,8 +153,8 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		RootId:    request.RootID,
 		// Only embedded display mode works inside an ephemeral post
 		Message:  generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
-		CreateAt: model.GetMillis(),
-		UpdateAt: model.GetMillis(),
+		CreateAt: time,
+		UpdateAt: time,
 	}
 	post.SetProps(map[string]interface{}{
 		"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootID),
@@ -165,11 +166,14 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 // Post the actual GIF and delete the obsolete ephemeral post
 func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
+	time := model.GetMillis()
 	post := &model.Post{
 		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURL, p.gifProvider.GetAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 		RootId:    request.RootID,
+		CreateAt:  time,
+		UpdateAt:  time,
 	}
 	_, err := p.API.CreatePost(post)
 	if err != nil {
