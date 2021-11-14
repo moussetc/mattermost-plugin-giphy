@@ -1,6 +1,6 @@
 module github.com/moussetc/mattermost-plugin-giphy
 
-go 1.12
+go 1.16
 
 require (
 	github.com/mattermost/mattermost-server/v5 v5.24.0
