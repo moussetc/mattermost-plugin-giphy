@@ -33,7 +33,7 @@ endif
 .PHONY: all
 all: check-style test dist
 
-## Runs eslint
+## Runs eslint and golangci-lint
 .PHONY: check-style
 check-style: webapp/node_modules
 	@echo Checking for style guide compliance
@@ -43,23 +43,37 @@ ifneq ($(HAS_WEBAPP),)
 	cd webapp && npm run check-types
 endif
 
+ifneq ($(HAS_SERVER),)
+	@if ! [ -x "$$(command -v golangci-lint)" ]; then \
+		echo "golangci-lint is not installed. Please see https://github.com/golangci/golangci-lint#install for installation instructions."; \
+		exit 1; \
+	fi; \
+
+	@echo Running golangci-lint
+	golangci-lint run ./...
+endif
+
 ## Builds the server, if it exists, for all supported architectures.
 .PHONY: server
 server:
 ifneq ($(HAS_SERVER),)
 	mkdir -p server/dist;
 ifeq ($(MM_DEBUG),)
-	cd server && env GOOS=linux GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-linux-amd64;
-	cd server && env GOOS=darwin GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-darwin-amd64;
-	cd server && env GOOS=windows GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-windows-amd64.exe;
-	cd server && env GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-freebsd-amd64.exe;
+	cd server && env GOOS=linux GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-linux-amd64;
+	cd server && env GOOS=linux GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-linux-arm64;
+	cd server && env GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-darwin-amd64;
+	cd server && env GOOS=darwin GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-darwin-arm64;
+	cd server && env GOOS=windows GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-windows-amd64.exe;
+	cd server && env GOOS=freebsd GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-freebsd-amd64.exe;
 else
 	$(info DEBUG mode is on; to disable, unset MM_DEBUG)
 
-	cd server && env GOOS=linux GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-linux-amd64;
-	cd server && env GOOS=darwin GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-darwin-amd64;
-	cd server && env GOOS=windows GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-windows-amd64.exe;
-	cd server && env GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-freebsd-amd64.exe;
+	cd server && env GOOS=linux GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-linux-amd64;
+	cd server && env GOOS=linux GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-linux-arm64;
+	cd server && env GOOS=darwin GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-darwin-amd64;
+	cd server && env GOOS=darwin GOARCH=arm64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-darwin-arm64;
+	cd server && env GOOS=windows GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-windows-amd64.exe;
+	cd server && env GOOS=freebsd GOARCH=amd64 $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-freebsd-amd64.exe;
 endif
 endif
 
@@ -252,4 +266,3 @@ endif
 # Help documentation à la https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 help:
 	@cat Makefile build/*.mk | grep -v '\.PHONY' |  grep -v '\help:' | grep -B1 -E '^[a-zA-Z0-9_.-]+:.*' | sed -e "s/:.*//" | sed -e "s/^## //" |  grep -v '\-\-' | sed '1!G;h;$$!d' | awk 'NR%2{printf "\033[36m%-30s\033[0m",$$0;next;}1' | sort
-	
