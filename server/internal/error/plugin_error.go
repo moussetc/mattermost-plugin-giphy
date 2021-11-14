@@ -21,7 +21,7 @@ type pluginError struct {
 	where string
 }
 
-//appError generates a normalized error for this plugin
+// appError generates a normalized error for this plugin
 func (e *pluginError) FromError(message string, err error) *model.AppError {
 	errorMessage := ""
 	if err != nil {
@@ -30,7 +30,7 @@ func (e *pluginError) FromError(message string, err error) *model.AppError {
 	return model.NewAppError(e.where, message, nil, errorMessage, http.StatusBadRequest)
 }
 
-//appError generates a normalized error for this plugin
+// appError generates a normalized error for this plugin
 func (e *pluginError) FromMessage(message string) *model.AppError {
 	return e.FromError(message, nil)
 }

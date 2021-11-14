@@ -6,23 +6,23 @@ import (
 	"net/http"
 )
 
-type MockHttpClient struct {
+type MockHTTPClient struct {
 	response            *http.Response
 	testRequestFunc     func(*http.Request) bool
 	lastRequestPassTest bool
 }
 
-func (c *MockHttpClient) Do(req *http.Request) (*http.Response, error) {
+func (c *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	if c.testRequestFunc != nil {
 		c.lastRequestPassTest = c.testRequestFunc(req)
 	}
 	return c.response, nil
 }
-func (c *MockHttpClient) Get(s string) (*http.Response, error) {
+func (c *MockHTTPClient) Get(s string) (*http.Response, error) {
 	return c.response, nil
 }
-func NewMockHttpClient(res *http.Response) *MockHttpClient {
-	return &MockHttpClient{
+func NewMockHTTPClient(res *http.Response) *MockHTTPClient {
+	return &MockHTTPClient{
 		response:        res,
 		testRequestFunc: nil,
 	}

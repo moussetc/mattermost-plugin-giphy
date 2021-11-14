@@ -29,6 +29,7 @@ type Query struct {
 	Cursor   string
 }
 
+// nolint: structcheck //linter mistakenly thinks all fields are unused but they are used by composition
 type abstractGifProvider struct {
 	httpClient     HTTPClient
 	errorGenerator pluginError.PluginError

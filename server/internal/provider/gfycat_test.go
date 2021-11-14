@@ -15,7 +15,7 @@ const defaultGfycatResponseBody = "{ \"cursor\": \"nextCursor\", \"gfycats\" : [
 const testGfycatRendition = "gif100px"
 
 func TestNewGfycatProvider(t *testing.T) {
-	testtHTTPClient := NewMockHttpClient(newServerResponseOK(defaultGfycatResponseBody))
+	testtHTTPClient := NewMockHTTPClient(newServerResponseOK(defaultGfycatResponseBody))
 	testErrorGenerator := test.MockErrorGenerator()
 	testCases := []struct {
 		testLabel           string
@@ -47,7 +47,7 @@ func TestNewGfycatProvider(t *testing.T) {
 }
 
 func TestGfycatProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
-	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), testGfycatRendition)
+	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.Nil(t, err)
@@ -56,7 +56,7 @@ func TestGfycatProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) 
 }
 
 func TestGfycatProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
-	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("")), test.MockErrorGenerator(), testGfycatRendition)
+	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK("")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.NotNil(t, err)
@@ -65,7 +65,7 @@ func TestGfycatProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
 }
 
 func TestGfycatProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
-	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("Hello world")), test.MockErrorGenerator(), testGfycatRendition)
+	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK("Hello world")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.NotNil(t, err)
@@ -73,7 +73,7 @@ func TestGfycatProviderGetGifURLShouldFailWhenParseError(t *testing.T) {
 }
 
 func TestGfycatProviderGetGifURLShouldReturnEmptyUrlWhenSearchReturnNoResult(t *testing.T) {
-	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK("{\"data\": [] }")), test.MockErrorGenerator(), testGfycatRendition)
+	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK("{\"data\": [] }")), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.Nil(t, err)
@@ -82,7 +82,7 @@ func TestGfycatProviderGetGifURLShouldReturnEmptyUrlWhenSearchReturnNoResult(t *
 
 func TestGfycatProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 	badRendition := "NotExistingDisplayStyle"
-	p, _ := NewGfycatProvider(NewMockHttpClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), badRendition)
+	p, _ := NewGfycatProvider(NewMockHTTPClient(newServerResponseOK(defaultGfycatResponseBody)), test.MockErrorGenerator(), badRendition)
 
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
@@ -94,7 +94,7 @@ func TestGfycatProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 
 func TestGfycatProviderGetGifURLShouldFailWhenSearchBadStatus(t *testing.T) {
 	serverResponse := newServerResponseKO(400)
-	p, _ := NewGfycatProvider(NewMockHttpClient(serverResponse), test.MockErrorGenerator(), testGfycatRendition)
+	p, _ := NewGfycatProvider(NewMockHTTPClient(serverResponse), test.MockErrorGenerator(), testGfycatRendition)
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.NotNil(t, err)
@@ -102,9 +102,9 @@ func TestGfycatProviderGetGifURLShouldFailWhenSearchBadStatus(t *testing.T) {
 	assert.Empty(t, url)
 }
 
-func generateGfycatProviderForURLBuildingTests(respondeBody string) (p GifProvider, client *MockHttpClient, cursor string) {
+func generateGfycatProviderForURLBuildingTests(respondeBody string) (p GifProvider, client *MockHTTPClient, cursor string) {
 	serverResponse := newServerResponseOK(respondeBody)
-	client = NewMockHttpClient(serverResponse)
+	client = NewMockHTTPClient(serverResponse)
 	p, _ = NewGfycatProvider(client, test.MockErrorGenerator(), testGfycatRendition)
 	cursor = ""
 	return p, client, cursor

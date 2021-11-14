@@ -15,14 +15,14 @@ import (
 var testArgs = &model.CommandArgs{
 	RootId:    "42",
 	ChannelId: "43",
-	UserId:    testUserId,
+	UserId:    testUserID,
 }
 
 func TestRegisterCommandsShouldFailWhenRegisterGifCommandFails(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
-	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == config.CommandTriggerGif })).Return(errors.New("Fail mock register command"))
+	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == config.CommandTriggerGif })).Return(errors.New("fail mock register command"))
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == config.CommandTriggerGifWithPreview })).Return(nil)
 	api.On("UnregisterCommand", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	p := Plugin{}
@@ -37,7 +37,7 @@ func TestRegisterCommandsShouldFailWhenRegisterGifPreviewCommandFails(t *testing
 	config := generateMockPluginConfig()
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == config.CommandTriggerGif })).Return(nil)
-	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == config.CommandTriggerGifWithPreview })).Return(errors.New("Fail mock register command"))
+	api.On("RegisterCommand", mock.MatchedBy(func(command *model.Command) bool { return command.Trigger == config.CommandTriggerGifWithPreview })).Return(errors.New("fail mock register command"))
 	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
 	p := Plugin{}
 	p.configuration = &config
@@ -48,7 +48,7 @@ func TestRegisterCommandsShouldFailWhenRegisterGifPreviewCommandFails(t *testing
 
 func TestExecuteCommandGifShouldReturnInChannelResponseWhenSearchSucceeds(t *testing.T) {
 	_, p := initMockAPI()
-	p.gifProvider = NewMockGifProvider()
+	p.gifProvider = newMockGifProvider()
 
 	response, err := p.executeCommandGif(testKeywords, testCaption, testArgs)
 
@@ -77,7 +77,7 @@ func TestExecuteCommandGifShouldSendEphemeralPostWhenSearchReturnsNoResult(t *te
 		mock.MatchedBy(func(post *model.Post) bool {
 			return post != nil &&
 				post.ChannelId == testArgs.ChannelId &&
-				post.UserId == p.botId &&
+				post.UserId == p.botID &&
 				strings.Contains(post.Message, "found") &&
 				strings.Contains(post.Message, testKeywords)
 		}))
@@ -98,7 +98,7 @@ func TestExecuteCommandGifShouldLogAndFailWhenSearchFails(t *testing.T) {
 
 func TestExecuteCommandGifWithPreviewShouldPostAnEphemeralGifPostWhenSearchSucceeds(t *testing.T) {
 	api, p := initMockAPI()
-	p.gifProvider = NewMockGifProvider()
+	p.gifProvider = newMockGifProvider()
 
 	var recordCreationPost *model.Post
 	api.On("SendEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil, nil).Run(func(args mock.Arguments) {
@@ -132,7 +132,7 @@ func TestExecuteCommandGifWithPreviewShouldReturnEphemeralResponseWhenSearchRetu
 		mock.MatchedBy(func(post *model.Post) bool {
 			return post != nil &&
 				post.ChannelId == testArgs.ChannelId &&
-				post.UserId == p.botId &&
+				post.UserId == p.botID &&
 				strings.Contains(post.Message, "found") &&
 				strings.Contains(post.Message, testKeywords)
 		}))
@@ -152,7 +152,7 @@ func TestExecuteCommandGifWithPreviewShouldLogAndFailWhenSearchFails(t *testing.
 }
 
 func TestGenerateShufflePostAttachments(t *testing.T) {
-	attachments := generateShufflePostAttachments(testKeywords, testCaption, testGifURL, testCursor, testRootId)
+	attachments := generateShufflePostAttachments(testKeywords, testCaption, testGifURL, testCursor, testRootID)
 
 	assert.NotNil(t, attachments)
 	assert.Len(t, attachments, 1)
@@ -168,7 +168,7 @@ func TestGenerateShufflePostAttachments(t *testing.T) {
 		assert.Equal(t, context[contextKeywords], testKeywords)
 		assert.Equal(t, context[contextGifURL], testGifURL)
 		assert.Equal(t, context[contextCursor], testCursor)
-		assert.Equal(t, context[contextRootId], testRootId)
+		assert.Equal(t, context[contextRootID], testRootID)
 	}
 }
 

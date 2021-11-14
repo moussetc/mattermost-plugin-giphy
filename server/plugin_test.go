@@ -60,7 +60,7 @@ func initMockAPI() (api *plugintest.API, p *Plugin) {
 	p = &Plugin{}
 	p.configuration = &pluginConfig
 	p.SetAPI(api)
-	p.botId = "botId42"
+	p.botID = "botId42"
 	p.httpHandler = &mockHTTPHandler{}
 	p.errorGenerator = test.MockErrorGenerator()
 	return api, p
@@ -191,7 +191,7 @@ func TestServeHTTP(t *testing.T) {
 	p := setupMockPluginWithAuthent()
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", URLShuffle, nil)
-	r.Header.Add("Mattermost-User-Id", testUserId)
+	r.Header.Add("Mattermost-User-Id", testUserID)
 	p.ServeHTTP(nil, w, r)
 	result := w.Result()
 	assert.NotNil(t, result)
@@ -216,7 +216,7 @@ type mockGifProvider struct {
 	mockURL string
 }
 
-func NewMockGifProvider() *mockGifProvider {
+func newMockGifProvider() *mockGifProvider {
 	return &mockGifProvider{"fakeURL"}
 }
 

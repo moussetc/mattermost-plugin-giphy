@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
+
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mattermost/mattermost-server/v5/model"
@@ -19,32 +20,32 @@ import (
 )
 
 const (
-	testChannelId = "gifs-channel"
+	testChannelID = "gifs-channel"
 	testCaption   = "Message prêt à tout"
-	testUserId    = "gif-user"
-	testPostId    = "skfqsldjhfkljhf"
+	testUserID    = "gif-user"
+	testPostID    = "skfqsldjhfkljhf"
 	testKeywords  = "kitty"
 	testGifURL    = "https://gif.fr/gif/42"
 	testCursor    = "43abc"
-	testRootId    = "4242abc"
+	testRootID    = "4242abc"
 )
 
 var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
-	ChannelId: testChannelId,
-	UserId:    testUserId,
-	PostId:    testPostId,
+	ChannelId: testChannelID,
+	UserId:    testUserID,
+	PostId:    testPostID,
 	Context: map[string]interface{}{
 		contextGifURL:   testGifURL,
 		contextCaption:  testCaption,
 		contextKeywords: testKeywords,
 		contextCursor:   testCursor,
-		contextRootId:   testRootId,
+		contextRootID:   testRootID,
 	},
 }
 
 func generateTestIntegrationRequest() *integrationRequest {
 	return &integrationRequest{
-		testGifURL, testKeywords, testCaption, testCursor, testRootId, testPostActionIntegrationRequest,
+		testGifURL, testKeywords, testCaption, testCursor, testRootID, testPostActionIntegrationRequest,
 	}
 }
 
@@ -79,7 +80,7 @@ func TestHandleHTTPRequestShouldReturnOKStatusForAllSupportedRoutes(t *testing.T
 	for _, URL := range goodURLs {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", URL, nil)
-		r.Header.Add("Mattermost-User-Id", testUserId)
+		r.Header.Add("Mattermost-User-Id", testUserID)
 
 		p.handleHTTPRequest(w, r)
 
@@ -93,7 +94,7 @@ func TestHandleHTTPRequestShouldFailWhenBadMethodIsUsed(t *testing.T) {
 	p := setupMockPluginWithAuthent()
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("GET", URLSend, nil)
-	r.Header.Add("Mattermost-User-Id", testUserId)
+	r.Header.Add("Mattermost-User-Id", testUserID)
 
 	p.handleHTTPRequest(w, r)
 
@@ -106,7 +107,7 @@ func TestHandleHTTPRequestShouldFailWhenUnsupportedURLIsUsed(t *testing.T) {
 	p := setupMockPluginWithAuthent()
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", "/unexistingURL", nil)
-	r.Header.Add("Mattermost-User-Id", testUserId)
+	r.Header.Add("Mattermost-User-Id", testUserID)
 
 	p.handleHTTPRequest(w, r)
 
@@ -154,7 +155,7 @@ func TestHandleHTTPRequestShouldFailWhenUserDontHavePostingPermissionToChannel(t
 	postActionIntegrationRequestFromJson = mockPostActionIntegratioRequestFromJSON
 	w := httptest.NewRecorder()
 	r := httptest.NewRequest("POST", URLSend, nil)
-	r.Header.Add("Mattermost-User-Id", testUserId)
+	r.Header.Add("Mattermost-User-Id", testUserID)
 
 	p.handleHTTPRequest(w, r)
 
@@ -170,12 +171,12 @@ func TestParseRequestShouldParseAllValuesFromCorrectRequest(t *testing.T) {
 	request, err := parseRequest(r)
 	assert.Nil(t, err)
 	assert.NotNil(t, request)
-	assert.Equal(t, request.ChannelId, testChannelId)
-	assert.Equal(t, request.UserId, testUserId)
+	assert.Equal(t, request.ChannelId, testChannelID)
+	assert.Equal(t, request.UserId, testUserID)
 	assert.Equal(t, request.GifURL, testGifURL)
 	assert.Equal(t, request.Keywords, testKeywords)
 	assert.Equal(t, request.Cursor, testCursor)
-	assert.Equal(t, request.RootId, testRootId)
+	assert.Equal(t, request.RootID, testRootID)
 }
 
 func TestParseRequestShouldFailIfRequestIsNil(t *testing.T) {
@@ -246,8 +247,8 @@ func TestHandleCancelShouldDeleteEphemeralPost(t *testing.T) {
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t,
 		"DeleteEphemeralPost",
-		mock.MatchedBy(func(s string) bool { return s == testUserId }),
-		mock.MatchedBy(func(postId string) bool { return postId == testPostId }))
+		mock.MatchedBy(func(s string) bool { return s == testUserID }),
+		mock.MatchedBy(func(postId string) bool { return postId == testPostID }))
 }
 
 func TestHandleShuffleShouldUpdateEphemeralPostWhenSearchSucceeds(t *testing.T) {
@@ -255,19 +256,19 @@ func TestHandleShuffleShouldUpdateEphemeralPostWhenSearchSucceeds(t *testing.T) 
 	api.On("UpdateEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
 	p := Plugin{}
 	p.SetAPI(api)
-	p.gifProvider = NewMockGifProvider()
+	p.gifProvider = newMockGifProvider()
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
 	h.handleShuffle(&p, w, generateTestIntegrationRequest())
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t, "UpdateEphemeralPost",
-		mock.MatchedBy(func(s string) bool { return s == testUserId }),
+		mock.MatchedBy(func(s string) bool { return s == testUserID }),
 		mock.MatchedBy(func(post *model.Post) bool {
-			return post.Id == testPostId &&
+			return post.Id == testPostID &&
 				strings.Contains(post.Message, "fakeURL") &&
-				post.UserId == p.botId &&
-				post.ChannelId == testChannelId &&
-				post.RootId == testRootId
+				post.UserId == p.botID &&
+				post.ChannelId == testChannelID &&
+				post.RootId == testRootID
 		}))
 }
 
@@ -281,7 +282,7 @@ func TestHandleShuffleShouldNotifyUserWhenSearchReturnsNoResult(t *testing.T) {
 	p := Plugin{}
 	p.SetAPI(api)
 	p.gifProvider = &mockGifProvider{""}
-	p.botId = "bot"
+	p.botID = "bot"
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
 	h.handleShuffle(&p, w, generateTestIntegrationRequest())
@@ -312,22 +313,22 @@ func TestHandleSendSHouldDeleteTheEphemeralPostAndCreateANewPostWhenSearchSuccee
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, nil)
 	p := Plugin{}
 	p.SetAPI(api)
-	p.gifProvider = NewMockGifProvider()
+	p.gifProvider = newMockGifProvider()
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
 	h.handleSend(&p, w, generateTestIntegrationRequest())
 	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
 	api.AssertCalled(t,
 		"DeleteEphemeralPost",
-		mock.MatchedBy(func(s string) bool { return s == testUserId }),
-		mock.MatchedBy(func(postId string) bool { return postId == testPostId }))
+		mock.MatchedBy(func(s string) bool { return s == testUserID }),
+		mock.MatchedBy(func(postId string) bool { return postId == testPostID }))
 	api.AssertCalled(t,
 		"CreatePost",
 		mock.MatchedBy(func(p *model.Post) bool {
 			return strings.Contains(p.Message, testGifURL) &&
-				p.UserId == testUserId &&
-				p.ChannelId == testChannelId &&
-				p.RootId == testRootId
+				p.UserId == testUserID &&
+				p.ChannelId == testChannelID &&
+				p.RootId == testRootID
 		}),
 	)
 }
@@ -342,7 +343,7 @@ func TestHandleSendShouldFailWhenCreatePostFails(t *testing.T) {
 
 	p := Plugin{}
 	p.SetAPI(api)
-	p.gifProvider = NewMockGifProvider()
+	p.gifProvider = newMockGifProvider()
 	h := &defaultHTTPHandler{}
 	w := httptest.NewRecorder()
 	h.handleSend(&p, w, generateTestIntegrationRequest())
@@ -357,7 +358,7 @@ func TestDefaultNotifyUserOfErrorCreateAnEphemeralPostAndLogsForTechnicalError(t
 	err := test.MockErrorGenerator().FromError(message, errors.New("strange failure"))
 	channelID := "42"
 	userID := "jane"
-	botId := "bot"
+	botID := "bot"
 	request := &model.PostActionIntegrationRequest{
 		UserId:    userID,
 		ChannelId: channelID,
@@ -366,12 +367,12 @@ func TestDefaultNotifyUserOfErrorCreateAnEphemeralPostAndLogsForTechnicalError(t
 	postCheck := func(post *model.Post) bool {
 		return post != nil &&
 			post.ChannelId == channelID &&
-			post.UserId == botId &&
+			post.UserId == botID &&
 			strings.Contains(post.Message, message) &&
 			(err == nil || strings.Contains(post.Message, err.Message))
 	}
 	// With error
-	defaultNotifyUserOfError(api, botId, message, err, request)
+	defaultNotifyUserOfError(api, botID, message, err, request)
 	api.AssertNumberOfCalls(t, "LogWarn", 1)
 	api.AssertCalled(t, "SendEphemeralPost",
 		mock.MatchedBy(userIDCheck),
@@ -384,7 +385,7 @@ func TestDefaultNotifyUserOfErrorCreateAnEphemeralPostForDomainError(t *testing.
 	message := "oops"
 	channelID := "42"
 	userID := "jane"
-	botId := "bot"
+	botID := "bot"
 	request := &model.PostActionIntegrationRequest{
 		UserId:    userID,
 		ChannelId: channelID,
@@ -393,11 +394,11 @@ func TestDefaultNotifyUserOfErrorCreateAnEphemeralPostForDomainError(t *testing.
 	postCheck := func(post *model.Post) bool {
 		return post != nil &&
 			post.ChannelId == channelID &&
-			post.UserId == botId &&
+			post.UserId == botID &&
 			strings.Contains(post.Message, message)
 	}
 
-	defaultNotifyUserOfError(api, botId, message, nil, request)
+	defaultNotifyUserOfError(api, botID, message, nil, request)
 	api.AssertNumberOfCalls(t, "LogWarn", 0)
 	api.AssertCalled(t, "SendEphemeralPost",
 		mock.MatchedBy(userIDCheck),

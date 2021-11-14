@@ -48,7 +48,7 @@ func (p *Plugin) OnConfigurationChange() error {
 	p.setConfiguration(configuration)
 
 	if configuration.DisplayMode == "" {
-		return errors.New("The Display Mode must be configured")
+		return errors.New("the Display Mode must be configured")
 	}
 
 	gifProvider, err := provider.GifProviderGenerator(*configuration, p.errorGenerator, p.rootURL)
@@ -79,12 +79,12 @@ func (p *Plugin) defineBot(provider string) error {
 		DisplayName: manifest.Name,
 		Description: "Bot for the " + manifest.Name + " plugin.",
 	}
-	botId, ensureBotError := p.Helpers.EnsureBot(&bot, plugin.ProfileImagePath(filepath.Join("assets", "icon.png")))
+	botID, ensureBotError := p.Helpers.EnsureBot(&bot, plugin.ProfileImagePath(filepath.Join("assets", "icon.png")))
 	if ensureBotError != nil {
 		return errors.Wrap(ensureBotError, "failed to ensure GIF bot.")
 	}
 
-	p.botId = botId
+	p.botID = botID
 
 	return nil
 }

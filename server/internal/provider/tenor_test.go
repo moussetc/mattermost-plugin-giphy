@@ -175,7 +175,7 @@ const (
 )
 
 func TestNewTenorProvider(t *testing.T) {
-	testtHTTPClient := NewMockHttpClient(newServerResponseOK(defaultTenorResponseBody))
+	testtHTTPClient := NewMockHTTPClient(newServerResponseOK(defaultTenorResponseBody))
 	testErrorGenerator := test.MockErrorGenerator()
 	testCases := []struct {
 		testLabel           string
@@ -222,7 +222,7 @@ func TestNewTenorProvider(t *testing.T) {
 }
 
 func generateTenorProviderForTest(mockHTTPResponse *http.Response) *tenor {
-	provider, _ := NewTenorProvider(NewMockHttpClient(mockHTTPResponse), test.MockErrorGenerator(), testTenorAPIKey, testTenorLanguage, testTenorRating, testTenorRendition)
+	provider, _ := NewTenorProvider(NewMockHTTPClient(mockHTTPResponse), test.MockErrorGenerator(), testTenorAPIKey, testTenorLanguage, testTenorRating, testTenorRendition)
 	return provider.(*tenor)
 }
 
@@ -293,9 +293,9 @@ func TestTenorProviderGetGifURLShouldFailWhenSearchBadStatusWithMessage(t *testi
 	assert.Empty(t, url)
 }
 
-func generatTenorProviderForURLBuildingTests() (*tenor, *MockHttpClient, string) {
+func generatTenorProviderForURLBuildingTests() (*tenor, *MockHTTPClient, string) {
 	serverResponse := newServerResponseOK(defaultTenorResponseBody)
-	client := NewMockHttpClient(serverResponse)
+	client := NewMockHTTPClient(serverResponse)
 	provider, _ := NewTenorProvider(client, test.MockErrorGenerator(), testTenorAPIKey, testTenorLanguage, testTenorRating, testTenorRendition)
 	return provider.(*tenor), client, ""
 }

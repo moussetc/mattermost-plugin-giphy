@@ -26,20 +26,21 @@ func generateMocksForConfigurationTesting(displayMode string) *Plugin {
 
 func TestOnConfigurationChangeLoadFail(t *testing.T) {
 	api := &plugintest.API{}
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(errors.New("Failed config load"))
+	mockErr := errors.New("failed config load")
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockErr)
 	p := Plugin{}
 	p.SetAPI(api)
 
 	err := p.OnConfigurationChange()
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "Failed config load")
+	assert.Contains(t, err.Error(), mockErr.Error())
 }
 
 func TestOnConfigurationChangeEmptyDisplayMode(t *testing.T) {
 	p := generateMocksForConfigurationTesting("")
 	err := p.OnConfigurationChange()
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "The Display Mode must be configured")
+	assert.Contains(t, err.Error(), "the Display Mode must be configured")
 }
 
 func TestOnConfigurationChangeGifProviderError(t *testing.T) {

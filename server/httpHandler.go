@@ -24,7 +24,7 @@ type integrationRequest struct {
 	Caption  string `mapstructure:"caption"`
 	GifURL   string `mapstructure:"gifURL"`
 	Cursor   string `mapstructure:"cursor"`
-	RootId   string `mapstructure:"rootId"`
+	RootID   string `mapstructure:"rootID"`
 	model.PostActionIntegrationRequest
 }
 
@@ -48,8 +48,8 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Header is set by MM server only if the request was successfully authenticated
-	userId := r.Header.Get("Mattermost-User-Id")
-	if userId == "" {
+	userID := r.Header.Get("Mattermost-User-Id")
+	if userID == "" {
 		http.Error(w, "Authentication failed: user not set in header", http.StatusUnauthorized)
 		return
 	}
@@ -61,7 +61,7 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if userId != request.UserId {
+	if userID != request.UserId {
 		http.Error(w, "The user of the request should match the authenticated user", http.StatusBadRequest)
 		return
 	}
@@ -97,10 +97,10 @@ func parseRequest(r *http.Request) (*integrationRequest, error) {
 	context.PostActionIntegrationRequest = *request
 	err := mapstructure.Decode(request.Context, &context)
 	if context.Keywords == "" {
-		return nil, errors.New("Missing " + contextKeywords + " from action request context")
+		return nil, errors.New("missing " + contextKeywords + " from action request context")
 	}
 	if context.GifURL == "" {
-		return nil, errors.New("Missing " + contextGifURL + " from action request context")
+		return nil, errors.New("missing " + contextGifURL + " from action request context")
 	}
 	return &context, err
 }
@@ -124,31 +124,31 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, requ
 // Replace the GIF in the ephemeral shuffle post by a new one
 func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	if request.Cursor == "" {
-		notifyUserOfError(p.API, p.botId, "No more GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
+		notifyUserOfError(p.API, p.botID, "No more GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
 	shuffledGifURL, err := p.gifProvider.GetGifURL(request.Keywords, &request.Cursor)
 	if err != nil {
-		notifyUserOfError(p.API, p.botId, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
+		notifyUserOfError(p.API, p.botID, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)
 		return
 	}
 	if shuffledGifURL == "" {
-		notifyUserOfError(p.API, p.botId, "No GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
+		notifyUserOfError(p.API, p.botID, "No GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
 	post := &model.Post{
 		Id:        request.PostId,
 		ChannelId: request.ChannelId,
-		UserId:    p.botId,
-		RootId:    request.RootId,
+		UserId:    p.botID,
+		RootId:    request.RootID,
 		// Only embedded display mode works inside an ephemeral post
 		Message:  generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
 		CreateAt: model.GetMillis(),
 		UpdateAt: model.GetMillis(),
 	}
 	post.SetProps(map[string]interface{}{
-		"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootId),
+		"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootID),
 	})
 	p.API.UpdateEphemeralPost(request.UserId, post)
 	writeResponse(http.StatusOK, w)
@@ -161,11 +161,11 @@ func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, reques
 		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURL, p.gifProvider.GetAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
-		RootId:    request.RootId,
+		RootId:    request.RootID,
 	}
 	_, err := p.API.CreatePost(post)
 	if err != nil {
-		notifyUserOfError(p.API, p.botId, "Unable to create post : ", err, &request.PostActionIntegrationRequest)
+		notifyUserOfError(p.API, p.botID, "Unable to create post : ", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusInternalServerError, w)
 		return
 	}
@@ -173,8 +173,8 @@ func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, reques
 	writeResponse(http.StatusOK, w)
 }
 
-// Informs the user of an error (domain error with message, or technical error with err) that occured in a button handler, and logs it if it's technical
-func defaultNotifyUserOfError(api plugin.API, botId string, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
+// Informs the user of an error (domain error with message, or technical error with err) that occurred in a button handler, and logs it if it's technical
+func defaultNotifyUserOfError(api plugin.API, botID string, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
 	fullMessage := message
 	if err != nil {
 		fullMessage = err.Message
@@ -182,7 +182,7 @@ func defaultNotifyUserOfError(api plugin.API, botId string, message string, err 
 	post := &model.Post{
 		Message:   "*" + fullMessage + "*",
 		ChannelId: request.ChannelId,
-		UserId:    botId,
+		UserId:    botID,
 	}
 	post.SetProps(map[string]interface{}{
 		"sent_by_plugin": true,

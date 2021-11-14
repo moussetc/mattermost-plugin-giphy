@@ -21,7 +21,7 @@ const (
 	contextCaption  = "caption"
 	contextGifURL   = "gifURL"
 	contextCursor   = "cursor"
-	contextRootId   = "rootId"
+	contextRootID   = "rootId"
 )
 
 // Plugin is a Mattermost plugin that adds a /gif slash command
@@ -35,7 +35,7 @@ type Plugin struct {
 	errorGenerator pluginError.PluginError
 	gifProvider    provider.GifProvider
 	httpHandler    pluginHTTPHandler
-	botId          string
+	botID          string
 	rootURL        string
 }
 

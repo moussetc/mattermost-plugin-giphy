@@ -61,10 +61,7 @@ func (p *Plugin) RegisterCommands() error {
 }
 
 func parseCommandLine(commandLine, trigger string) (keywords, caption string, err error) {
-	reg, err := regexp.Compile("^\\s*(?P<keywords>(\"([^\\s\"]+\\s*)+\")+|([^\\s\"]+\\s*)+)(?P<caption>\\s+\"(\\s*[^\\s\"]+\\s*)+\")?\\s*$")
-	if err != nil {
-		return "", "", errors.New("Could not compile regexp")
-	}
+	reg := regexp.MustCompile("^\\s*(?P<keywords>(\"([^\\s\"]+\\s*)+\")+|([^\\s\"]+\\s*)+)(?P<caption>\\s+\"(\\s*[^\\s\"]+\\s*)+\")?\\s*$")
 	matchIndexes := reg.FindStringSubmatch(strings.Replace(commandLine, "/"+trigger, "", 1))
 	if matchIndexes == nil {
 		return "", "", errors.New(fmt.Sprintf("Could not read the command, try one of the following syntax: /%s %s", trigger, getHintMessage(trigger)))
@@ -104,7 +101,7 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 		return p.handleNoGifFound(keywords, args)
 	}
 
-	post := p.generateGifPost(p.botId, keywords, caption, gifURL, args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
+	post := p.generateGifPost(p.botID, keywords, caption, gifURL, args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
 	// Only embedded display mode works inside an ephemeral post
 	post.Message = generateGifCaption(pluginConf.DisplayModeEmbedded, keywords, caption, gifURL, p.gifProvider.GetAttributionMessage())
 	post.SetProps(map[string]interface{}{
@@ -119,7 +116,7 @@ func (p *Plugin) handleNoGifFound(keywords string, args *model.CommandArgs) (*mo
 	// Create ephemeral post directly rather than with CommandResponse, so the bot can be the author
 	post := &model.Post{
 		Message:   "No GIFs found for '" + keywords + "'",
-		UserId:    p.botId,
+		UserId:    p.botID,
 		ChannelId: args.ChannelId,
 		RootId:    args.RootId,
 	}
@@ -144,22 +141,22 @@ func generateGifCaption(displayMode, keywords, caption, gifURL, attributionMessa
 	return fmt.Sprintf("%s \n\n*%s* \n\n![GIF for '%s'](%s)", captionOrKeywords, attributionMessage, keywords, gifURL)
 }
 
-func (p *Plugin) generateGifPost(userId, keywords, caption, gifURL, channelId, rootId, attributionMessage string) *model.Post {
+func (p *Plugin) generateGifPost(userID, keywords, caption, gifURL, channelID, rootID, attributionMessage string) *model.Post {
 	return &model.Post{
 		Message:   generateGifCaption(p.getConfiguration().DisplayMode, keywords, caption, gifURL, attributionMessage),
-		UserId:    userId,
-		ChannelId: channelId,
-		RootId:    rootId,
+		UserId:    userID,
+		ChannelId: channelID,
+		RootId:    rootID,
 	}
 }
 
-func generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootId string) []*model.SlackAttachment {
+func generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootID string) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
 		contextKeywords: keywords,
 		contextCaption:  caption,
 		contextGifURL:   gifURL,
 		contextCursor:   cursor,
-		contextRootId:   rootId,
+		contextRootID:   rootID,
 	}
 
 	actions := []*model.PostAction{}

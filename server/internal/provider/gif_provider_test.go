@@ -6,11 +6,11 @@ import (
 
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDefaultGifProviderGenerator(t *testing.T) {
-
 	testCases := []struct {
 		testLabel     string
 		providerType  string

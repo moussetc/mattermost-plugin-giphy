@@ -20,7 +20,7 @@ const (
 )
 
 func TestNewGiphyProvider(t *testing.T) {
-	testtHTTPClient := NewMockHttpClient(newServerResponseOK(defaultGiphyResponseBody))
+	testtHTTPClient := NewMockHTTPClient(newServerResponseOK(defaultGiphyResponseBody))
 	testErrorGenerator := test.MockErrorGenerator()
 	testCases := []struct {
 		testLabel           string
@@ -62,7 +62,7 @@ func TestNewGiphyProvider(t *testing.T) {
 }
 
 func generateGiphyProviderForTest(mockHTTPResponse *http.Response) *giphy {
-	provider, _ := NewGiphyProvider(NewMockHttpClient(mockHTTPResponse), test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition, testRootURL)
+	provider, _ := NewGiphyProvider(NewMockHTTPClient(mockHTTPResponse), test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition, testRootURL)
 	return provider.(*giphy)
 }
 
@@ -132,9 +132,9 @@ func TestGiphyProviderGetGifURLShouldFailWhenSearchTooManyRequestStatus(t *testi
 	assert.Empty(t, url)
 }
 
-func generateGiphyProviderForURLBuildingTests() (*giphy, *MockHttpClient, string) {
+func generateGiphyProviderForURLBuildingTests() (*giphy, *MockHTTPClient, string) {
 	serverResponse := newServerResponseOK(defaultGiphyResponseBody)
-	client := NewMockHttpClient(serverResponse)
+	client := NewMockHTTPClient(serverResponse)
 	provider, _ := NewGiphyProvider(client, test.MockErrorGenerator(), testGiphyAPIKey, testGiphyLanguage, testGiphyRating, testGiphyRendition, testRootURL)
 	return provider.(*giphy), client, ""
 }
@@ -144,8 +144,7 @@ func TestGiphyProviderParameterAPIKey(t *testing.T) {
 
 	// API Key: mandatory
 	client.testRequestFunc = func(req *http.Request) bool {
-		//	assert.Contains(t, req.URL.RawQuery, "api_key")
-		//assert.Contains(t, req.URL.RawQuery, testAPIKey)
+		assert.Contains(t, req.URL.RawQuery, "api_key="+testGiphyAPIKey)
 		return true
 	}
 	_, err := p.GetGifURL("cat", &cursor)
@@ -169,10 +168,10 @@ func TestGiphyProviderGetGifURLWhenCursorIsEmpty(t *testing.T) {
 }
 
 func TestGiphyProviderGetGifURLWhenCursorIsZero(t *testing.T) {
-	p, client, cursor := generateGiphyProviderForURLBuildingTests()
+	p, client, _ := generateGiphyProviderForURLBuildingTests()
 
 	// Initial value : 0
-	cursor = "0"
+	cursor := "0"
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.Contains(t, req.URL.RawQuery, "offset=0")
 		return true
@@ -184,10 +183,10 @@ func TestGiphyProviderGetGifURLWhenCursorIsZero(t *testing.T) {
 }
 
 func TestGiphyProviderGetGifURLWhenCursorIsNotANumber(t *testing.T) {
-	p, client, cursor := generateGiphyProviderForURLBuildingTests()
+	p, client, _ := generateGiphyProviderForURLBuildingTests()
 
 	// Initial value : not a number, that should be ignored
-	cursor = "hahaha"
+	cursor := "hahaha"
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.NotContains(t, "offset", req.URL.RawQuery)
 		return true
