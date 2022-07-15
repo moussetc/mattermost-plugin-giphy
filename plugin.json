@@ -3,7 +3,7 @@
   "name": "GIF commands",
   "description": "Add GIF slash commands from Giphy, Gfycat or Tenor",
   "version": "2.1.2",
-  "min_server_version": "5.24.0",
+  "min_server_version": "6.3.0",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
   "release_notes_url": "https://github.com/moussetc/mattermost-plugin-giphy/releases/v2.1.2",
