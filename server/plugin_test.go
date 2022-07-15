@@ -77,6 +77,30 @@ func TestOnActivateWithBadConfig(t *testing.T) {
 	config := generateMockPluginConfig()
 	config.APIKey = ""
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
+	siteURL := "https://test.com"
+	serverConfig := &model.Config{
+		ServiceSettings: model.ServiceSettings{
+			SiteURL: &siteURL,
+		},
+	}
+	api.On("GetConfig").Return(serverConfig)
+	p := Plugin{}
+	p.SetAPI(api)
+
+	assert.NotNil(t, p.OnActivate())
+}
+
+func TestOnActivateWithoutSiteURL(t *testing.T) {
+	api := &plugintest.API{}
+	config := generateMockPluginConfig()
+	config.APIKey = ""
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
+	serverConfig := &model.Config{
+		ServiceSettings: model.ServiceSettings{
+			SiteURL: nil,
+		},
+	}
+	api.On("GetConfig").Return(serverConfig)
 	p := Plugin{}
 	p.SetAPI(api)
 
@@ -89,6 +113,13 @@ func TestOnActivateOK(t *testing.T) {
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
+	siteURL := "https://test.com"
+	serverConfig := &model.Config{
+		ServiceSettings: model.ServiceSettings{
+			SiteURL: &siteURL,
+		},
+	}
+	api.On("GetConfig").Return(serverConfig)
 	p := Plugin{}
 	p.SetAPI(api)
 	setMockHelpers(&p)

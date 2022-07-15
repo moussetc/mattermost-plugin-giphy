@@ -41,7 +41,11 @@ type Plugin struct {
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
-	p.rootURL = fmt.Sprintf("/plugins/%s", manifest.Id)
+	rootURL := ""
+	if siteURL := p.API.GetConfig().ServiceSettings.SiteURL; siteURL != nil {
+		rootURL = strings.TrimSuffix(*siteURL, "/")
+	}
+	p.rootURL = fmt.Sprintf("%s/plugins/%s", rootURL, manifest.Id)
 	if err := p.OnConfigurationChange(); err != nil {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}
