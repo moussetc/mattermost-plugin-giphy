@@ -10,7 +10,163 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const defaultTenorResponseBody = "{  \"weburl\": \"https://fakeurl/search/stuff\",   \"results\": [   {    \"tags\": [],     \"url\": \"https://fakeurl/fake.gif\",     \"media\": [     {      \"nanomp4\": {       \"url\": \"https://fakeurl/nanomp4\",        \"dims\": [        150,         112       ],        \"duration\": 0.5,        \"preview\": \"https://fakeurl/preview.png\",        \"size\": 7343      },       \"nanowebm\": {       \"url\": \"https://fakeurl/nanowebm\",        \"dims\": [        150,         112       ],        \"preview\": \"https://fakeurl/nanowebm/preview.png\",        \"size\": 9550      },       \"tinygif\": {       \"url\": \"https://fakeurl/tinygif.gif\",        \"dims\": [        220,         164       ],        \"preview\": \"https://fakeurl/tinigif/preview.gif\",        \"size\": 22519      },       \"tinymp4\": {       \"url\": \"https://fakeurl/mp4\",        \"dims\": [        320,         238       ],        \"duration\": 0.5,        \"preview\": \"https://fakeurl/tinymp4/preview.png\",        \"size\": 17732      },       \"tinywebm\": {       \"url\": \"https://fakeurl/tinywebm\",        \"dims\": [        320,         238       ],        \"preview\": \"https://fakeurl/tinywebm/preview.png\",        \"size\": 12311      },       \"webm\": {       \"url\": \"https://fakeurl/webm\",        \"dims\": [        444,         332       ],        \"preview\": \"https://fakeurl/webm/preview.png\",        \"size\": 14924      },       \"gif\": {       \"url\": \"https://fakeurl/gif.gif\",        \"dims\": [        444,         332       ],        \"preview\": \"https://fakeurl/gif/preview.png\",        \"size\": 465547      },       \"mp4\": {       \"url\": \"https://fakeurl/mp4\",        \"dims\": [        444,         332       ],        \"duration\": 0.5,        \"preview\": \"https://fakeurl/mp4/preview.png\",        \"size\": 36818      },       \"loopedmp4\": {       \"url\": \"https://fakeurl/loopedmp4\",        \"dims\": [        444,         332       ],        \"duration\": 1.5,        \"preview\": \"https://fakeurl/loopedmp4/preview.png\",        \"size\": 108909      },       \"mediumgif\": {       \"url\": \"https://fakeurl/mediumgif.gif\",        \"dims\": [        444,         332       ],        \"preview\": \"https://fakeurl/imediumgif/preview.gif\",        \"size\": 127524      },       \"nanogif\": {       \"url\": \"https://fakeurl/nanogif.gif\",        \"dims\": [        120,         90       ],        \"preview\": \"https://fakeurl/nanogif/preview.gif\",        \"size\": 9104      }     }    ],     \"created\": 1476975012.524378,     \"shares\": 1,     \"itemurl\": \"https://fakeurl/view/fakeurl\",     \"composite\": null,     \"hasaudio\": false,     \"title\": \"\",     \"id\": \"6198981\"   }  ],   \"next\": \"1\" }"
+const defaultTenorResponseBody = `{
+	"results": [
+	  {
+		"id": "4242424242",
+		"title": "",
+		"media_formats": {
+		  "tinygifpreview": {
+			"url": "https://fakeurl/tinygifpreview",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  220,
+			  220
+			],
+			"size": 42
+		  },
+		  "mp4": {
+			"url": "https://fakeurl/mp4",
+			"duration": 3.3,
+			"preview": "",
+			"dims": [
+			  640,
+			  640
+			],
+			"size": 42
+		  },
+		  "tinywebm": {
+			"url": "https://fakeurl/tinywebm",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  232,
+			  232
+			],
+			"size": 42
+		  },
+		  "webm": {
+			"url": "https://fakeurl/webm",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  640,
+			  640
+			],
+			"size": 42
+		  },
+		  "tinymp4": {
+			"url": "https://fakeurl/tinymp4",
+			"duration": 3.4,
+			"preview": "",
+			"dims": [
+			  232,
+			  232
+			],
+			"size": 42
+		  },
+		  "nanogif": {
+			"url": "https://fakeurl/nanogif",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  90,
+			  90
+			],
+			"size": 42
+		  },
+		  "gifpreview": {
+			"url": "https://fakeurl/gifpreview",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  640,
+			  640
+			],
+			"size": 42
+		  },
+		  "nanomp4": {
+			"url": "https://fakeurl/nanomp4",
+			"duration": 3.4,
+			"preview": "",
+			"dims": [
+			  120,
+			  120
+			],
+			"size": 42
+		  },
+		  "gif": {
+			"url": "https://fakeurl/gif",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  498,
+			  498
+			],
+			"size": 42
+		  },
+		  "tinygif": {
+			"url": "https://fakeurl/tinygif",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  220,
+			  220
+			],
+			"size": 42
+		  },
+		  "nanogifpreview": {
+			"url": "https://fakeurl/nanogifpreview",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  90,
+			  90
+			],
+			"size": 42
+		  },
+		  "mediumgif": {
+			"url": "https://fakeurl/mediumgif",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  640,
+			  640
+			],
+			"size": 42
+		  },
+		  "loopedmp4": {
+			"url": "https://fakeurl/loopedmp4",
+			"duration": 3.3,
+			"preview": "",
+			"dims": [
+			  640,
+			  640
+			],
+			"size": 42
+		  },
+		  "nanowebm": {
+			"url": "https://fakeurl/nanowebm",
+			"duration": 0,
+			"preview": "",
+			"dims": [
+			  120,
+			  120
+			],
+			"size": 42
+		  }
+		},
+		"content_description": "some content description",
+		"url": "https://fakeurl/fake.gif",
+		"tags": [],
+		"flags": [],
+		"hasaudio": false
+	  }
+	],
+	"next": "some-guid"
+  }`
+
 const (
 	testTenorAPIKey    = "apikey"
 	testTenorLanguage  = "fr"
@@ -77,7 +233,7 @@ func TestTenorProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 	url, err := p.GetGifURL("cat", &cursor)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, url)
-	assert.Equal(t, url, "https://fakeurl/tinygif.gif")
+	assert.Equal(t, url, "https://fakeurl/tinygif")
 }
 
 func TestTenorProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {

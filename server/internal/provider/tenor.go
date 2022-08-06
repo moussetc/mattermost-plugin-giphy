@@ -43,15 +43,15 @@ type tenor struct {
 }
 
 const (
-	baseURLTenor = "https://api.tenor.com/v1"
+	baseURLTenor = "https://tenor.googleapis.com/v2"
 )
 
 type tenorSearchResult struct {
 	Next    string `json:"next"`
 	Results []struct {
-		Media []map[string]struct {
+		Media map[string]struct {
 			URL string `json:"url"`
-		} `json:"media"`
+		} `json:"media_formats"`
 	} `json:"results"`
 }
 
@@ -104,19 +104,21 @@ func (p *tenor) GetGifURL(request string, cursor *string) (string, *model.AppErr
 		errorDetails += ")"
 		return "", p.errorGenerator.FromMessage(errorDetails)
 	}
+
 	var response tenorSearchResult
 	if r.Body == nil {
 		return "", p.errorGenerator.FromMessage("Tenor search response body is empty")
 	}
+
 	decoder := json.NewDecoder(r.Body)
 	if err = decoder.Decode(&response); err != nil {
 		return "", p.errorGenerator.FromError("Could not parse Tenor search response body", err)
 	}
-	if len(response.Results) < 1 || len(response.Results[0].Media) < 1 {
+
+	if len(response.Results) < 1 {
 		return "", nil
 	}
-	gif := response.Results[0].Media[0]
-	url := gif[p.rendition].URL
+	url := response.Results[0].Media[p.rendition].URL
 
 	if len(url) < 1 {
 		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + p.rendition + "\" in the response")
