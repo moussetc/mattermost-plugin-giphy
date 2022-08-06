@@ -1,6 +1,14 @@
 name: Build CI
 
-on: [push, pull_request, release]
+on: 
+  push:
+    branches:
+      - 'main'
+      - 'release/**'
+  pull_request:
+    types: [opened, synchronize, reopened]
+  release:
+    types: [published]
 
 env:
   GO111MODULE: on
@@ -30,7 +38,7 @@ jobs:
       run: make
 
     - name: Publish
-      if: ${{ github.event_name == 'release' && github.event.action == 'published' }}
+      if: ${{ github.event_name == 'release' }}
       uses: softprops/action-gh-release@v1
       with:
         files: dist/*
