@@ -3,13 +3,14 @@ package main
 import (
 	"errors"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
+	pluginapi "github.com/moussetc/mattermost-plugin-giphy/server/internal/pluginapi"
+	mock_pluginapi "github.com/moussetc/mattermost-plugin-giphy/server/internal/pluginapi/mock_pluginapi"
 	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
-
 	"github.com/stretchr/testify/assert"
 
 	"github.com/mattermost/mattermost-server/v6/model"
@@ -105,9 +106,12 @@ func TestOnActivateOK(t *testing.T) {
 	t.Skip("TODO fix this test by mocking pluginapi.Client")
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
+	api.On("GetServerVersion").Return("42.0.0")
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
+	api.On("EnsureBotUser", mock.Anything).Return(model.NewId(), nil)
+	api.On("GetServerVersion").Return("6.3.0")
 	siteURL := "https://test.com"
 	serverConfig := &model.Config{
 		ServiceSettings: model.ServiceSettings{
@@ -118,6 +122,12 @@ func TestOnActivateOK(t *testing.T) {
 	p := Plugin{}
 	p.SetAPI(api)
 	p.errorGenerator = test.MockErrorGenerator()
+
+	mockCtrl := gomock.NewController(t)
+	defer mockCtrl.Finish()
+	mockBot := mock_pluginapi.NewMockBotService(mockCtrl)
+	mockBot.EXPECT().EnsureBot(gomock.Any(), gomock.Any())
+	p.pluginClient = &pluginapi.Client{Bot: mockBot}
 
 	assert.Nil(t, p.OnActivate())
 }
@@ -179,17 +189,6 @@ func TestExecuteUnkownCommand(t *testing.T) {
 	response, err := p.ExecuteCommand(&plugin.Context{}, &command)
 	assert.NotNil(t, err)
 	assert.Nil(t, response)
-}
-
-func TestServeHTTP(t *testing.T) {
-	p := setupMockPluginWithAuthent()
-	w := httptest.NewRecorder()
-	r := httptest.NewRequest("POST", URLShuffle, generatePostActionIntegrationRequestBody())
-	r.Header.Add("Mattermost-User-Id", testUserID)
-	p.ServeHTTP(nil, w, r)
-	result := w.Result()
-	assert.NotNil(t, result)
-	assert.Equal(t, 200, result.StatusCode)
 }
 
 // mockGifProviderFail always fail to provide a GIF URL

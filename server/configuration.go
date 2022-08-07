@@ -9,9 +9,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/mattermost/mattermost-server/v6/model"
-
 	pluginapi "github.com/mattermost/mattermost-plugin-api"
+	"github.com/mattermost/mattermost-server/v6/model"
 )
 
 // getConfiguration retrieves the active configuration under lock, making it safe to use
@@ -76,13 +75,12 @@ func (p *Plugin) OnConfigurationChange() error {
 }
 
 func (p *Plugin) defineBot(provider string) error {
-	client := pluginapi.NewClient(p.API, p.Driver)
 	bot := model.Bot{
 		Username:    "gifcommandsplugin",
 		DisplayName: manifest.Manifest.Name,
 		Description: "Bot for the " + manifest.Manifest.Name + " plugin.",
 	}
-	botID, ensureBotError := client.Bot.EnsureBot(&bot, pluginapi.ProfileImagePath(filepath.Join("assets", "icon.png")))
+	botID, ensureBotError := p.pluginClient.Bot.EnsureBot(&bot, pluginapi.ProfileImagePath(filepath.Join("assets", "icon.png")))
 	if ensureBotError != nil {
 		return errors.Wrap(ensureBotError, "failed to ensure GIF bot.")
 	}

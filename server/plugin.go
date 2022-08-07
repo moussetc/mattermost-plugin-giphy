@@ -9,6 +9,7 @@ import (
 	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
+	pluginapi "github.com/moussetc/mattermost-plugin-giphy/server/internal/pluginapi"
 	provider "github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
 
 	"github.com/mattermost/mattermost-server/v6/model"
@@ -33,6 +34,8 @@ type Plugin struct {
 	configurationLock sync.RWMutex
 	configuration     *pluginConf.Configuration
 
+	pluginClient *pluginapi.Client
+
 	errorGenerator pluginError.PluginError
 	gifProvider    provider.GifProvider
 	httpHandler    pluginHTTPHandler
@@ -42,6 +45,10 @@ type Plugin struct {
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
+	if p.pluginClient == nil {
+		p.pluginClient = pluginapi.NewClient(p.API, p.Driver)
+	}
+
 	rootURL := ""
 	if siteURL := p.API.GetConfig().ServiceSettings.SiteURL; siteURL != nil {
 		rootURL = strings.TrimSuffix(*siteURL, "/")

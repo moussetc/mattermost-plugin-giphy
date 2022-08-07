@@ -3,6 +3,7 @@ module github.com/moussetc/mattermost-plugin-giphy
 go 1.16
 
 require (
+	github.com/golang/mock v1.6.0
 	github.com/mattermost/mattermost-plugin-api v0.0.21
 	github.com/mattermost/mattermost-server/v6 v6.3.9
 	github.com/mitchellh/mapstructure v1.4.1
