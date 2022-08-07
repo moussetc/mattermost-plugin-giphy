@@ -2,7 +2,7 @@
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
-A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands, available on the official Mattermost Plugin MarketPlace.
+A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands, available on the official Mattermost Plugin Marketplace.
 
 ## Usage
 
@@ -55,7 +55,7 @@ Use the following table to find the correct plugin version for each Mattermost s
     - language (not available for Gfycat)
 7. **Activate the plugin** in the `System Console > Plugins Management > Management` page
 
-If you are running Mattermost 5.15 or earlier, or do not have the Plugin Marketplace enabled, follow these steps:
+If you are running Mattermost 5.15 or earlier, do not have the Plugin Marketplace enabled or want to install a release that was not published to the Marketplace, follow these steps:
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
 2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
 3. Go to the `System Console > Plugins > GIF commands` and follow the same configuration steps as for the Marketplace install, displayed from Step 4. on the previous §.
@@ -96,7 +96,7 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
 
 ### I can't upload or activate the plugin 
 - Is your plugin version compatible with your server version? Check the Compatibility section in the README.
-- Make sure you have configured the SiteURL setting correctly in the Mattermost administration panel.
+- Make sure you have configured the `SiteURL` setting correctly in the Mattermost administration panel.
 - Check the Mattermost logs (`yourURL/admin_console/logs`) for more detail on why the activation failed.
 
 ### Error 'Command with a trigger of `/gif` not found'
