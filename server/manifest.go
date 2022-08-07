@@ -77,7 +77,7 @@ const manifestStr = `
         "key": "APIKey",
         "display_name": "GIPHY/Tenor API Key:",
         "type": "text",
-        "help_text": "Configure your own API key (not required for Gfycat). To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://tenor.com/developer/keyregistration).",
+        "help_text": "Configure your own API key (not required for Gfycat). To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://developers.google.com/tenor/guides/quickstart#setup).",
         "placeholder": "",
         "default": null
       },
@@ -211,7 +211,7 @@ const manifestStr = `
         "key": "RenditionTenor",
         "display_name": "Tenor display style:",
         "type": "dropdown",
-        "help_text": "Select the style to display GIFs from Tenor (more info [here](https://tenor.com/gifapi/documentation#responseobjects-gifformat)).",
+        "help_text": "Select the style to display GIFs from Tenor (more info [here](https://developers.google.com/tenor/guides/response-objects-and-errors#content-formats)).",
         "placeholder": "",
         "default": "mediumgif",
         "options": [
