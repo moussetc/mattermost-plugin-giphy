@@ -81,6 +81,7 @@ func (p *tenor) GetGifURL(request string, cursor *string) (string, *model.AppErr
 	}
 	q.Add("limit", "1")
 	q.Add("contentfilter", p.rating)
+	q.Add("media_filter", p.rendition)
 	if len(p.language) > 0 {
 		q.Add("locale", p.language)
 	}
