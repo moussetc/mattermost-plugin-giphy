@@ -50,14 +50,18 @@ ifneq ($(HAS_SERVER),)
 	mkdir -p server/dist;
 ifeq ($(MM_DEBUG),)
 	cd server && env GOOS=linux GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-linux-amd64;
+	cd server && env GOOS=linux GOARCH=arm64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-linux-arm64;
 	cd server && env GOOS=darwin GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-darwin-amd64;
+	cd server && env GOOS=darwin GOARCH=arm64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-darwin-arm64;
 	cd server && env GOOS=windows GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-windows-amd64.exe;
 	cd server && env GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -o dist/plugin-freebsd-amd64.exe;
 else
 	$(info DEBUG mode is on; to disable, unset MM_DEBUG)
 
 	cd server && env GOOS=linux GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-linux-amd64;
+	cd server && env GOOS=linux GOARCH=arm64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-linux-arm64;
 	cd server && env GOOS=darwin GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-darwin-amd64;
+	cd server && env GOOS=darwin GOARCH=arm64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-darwin-arm64;
 	cd server && env GOOS=windows GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-windows-amd64.exe;
 	cd server && env GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0  $(GO) build $(GO_BUILD_FLAGS) -trimpath -gcflags "all=-N -l" -o dist/plugin-freebsd-amd64.exe;
 endif
