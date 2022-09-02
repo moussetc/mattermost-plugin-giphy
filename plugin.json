@@ -2,7 +2,7 @@
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
   "description": "Add GIF slash commands from Giphy, Gfycat or Tenor",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "min_server_version": "6.3.0",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
   "support_url": "https://github.com/moussetc/mattermost-plugin-giphy/issues",
@@ -12,7 +12,9 @@
     "executables": {
       "linux-amd64": "server/dist/plugin-linux-amd64",
       "darwin-amd64": "server/dist/plugin-darwin-amd64",
-      "windows-amd64": "server/dist/plugin-windows-amd64.exe"
+      "windows-amd64": "server/dist/plugin-windows-amd64.exe",
+      "linux-arm64": "server/dist/plugin-linux-arm64",
+      "darwin-arm64": "server/dist/plugin-darwin-arm64"
     },
     "executable": "server/dist/plugin-freebsd-amd64.exe"
   },
