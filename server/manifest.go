@@ -8,7 +8,7 @@ import (
 	"github.com/mattermost/mattermost-server/v5/model"
 )
 
-var manifest *model.Manifest
+var manifestData *model.Manifest
 
 const manifestStr = `
 {
@@ -25,7 +25,9 @@ const manifestStr = `
     "executables": {
       "linux-amd64": "server/dist/plugin-linux-amd64",
       "darwin-amd64": "server/dist/plugin-darwin-amd64",
-      "windows-amd64": "server/dist/plugin-windows-amd64.exe"
+      "windows-amd64": "server/dist/plugin-windows-amd64.exe",
+      "linux-arm64": "server/dist/plugin-linux-arm64",
+      "darwin-arm64": "server/dist/plugin-darwin-arm64"
     },
     "executable": "server/dist/plugin-freebsd-amd64.exe"
   },
@@ -381,5 +383,5 @@ const manifestStr = `
 `
 
 func init() {
-	manifest = model.ManifestFromJson(strings.NewReader(manifestStr))
+	manifestData = model.ManifestFromJson(strings.NewReader(manifestStr))
 }
