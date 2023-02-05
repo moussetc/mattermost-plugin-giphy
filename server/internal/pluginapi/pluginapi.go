@@ -11,7 +11,7 @@ type Client struct {
 	Bot BotService
 }
 
-// System is an interface declaring only the functions from
+// BotService is an interface declaring only the functions from
 // mattermost-plugin-api BotService that are used in this plugin
 type BotService interface {
 	EnsureBot(*model.Bot, ...pluginapi.EnsureBotOption) (retBotID string, retErr error)

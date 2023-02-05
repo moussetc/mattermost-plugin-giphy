@@ -56,6 +56,7 @@ func (p *Plugin) OnConfigurationChange() error {
 	if err != nil {
 		return err
 	}
+
 	p.gifProvider = gifProvider
 	if configuration.DisablePostingWithoutPreview {
 		// Force preview
@@ -66,12 +67,9 @@ func (p *Plugin) OnConfigurationChange() error {
 		configuration.CommandTriggerGif = triggerGif
 		configuration.CommandTriggerGifWithPreview = triggerGifs
 	}
-	errRegister := p.RegisterCommands()
-	if errRegister != nil {
-		return errRegister
-	}
 
-	return p.defineBot(configuration.Provider)
+	// Re-register commands since a configuration change can impact the available commands
+	return p.RegisterCommands()
 }
 
 func (p *Plugin) defineBot(provider string) error {
@@ -82,7 +80,7 @@ func (p *Plugin) defineBot(provider string) error {
 	}
 	botID, ensureBotError := p.pluginClient.Bot.EnsureBot(&bot, pluginapi.ProfileImagePath(filepath.Join("assets", "icon.png")))
 	if ensureBotError != nil {
-		return errors.Wrap(ensureBotError, "failed to ensure GIF bot.")
+		return errors.Wrap(ensureBotError, "failed to ensure GIF bot")
 	}
 
 	p.botID = botID

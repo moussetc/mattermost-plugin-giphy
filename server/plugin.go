@@ -53,12 +53,23 @@ func (p *Plugin) OnActivate() error {
 	if siteURL := p.API.GetConfig().ServiceSettings.SiteURL; siteURL != nil {
 		rootURL = strings.TrimSuffix(*siteURL, "/")
 	}
+
 	p.rootURL = fmt.Sprintf("%s/plugins/%s", rootURL, manifest.Manifest.Id)
 	if err := p.OnConfigurationChange(); err != nil {
 		return errors.Wrap(err, "Could not load plugin configuration")
 	}
+
 	p.httpHandler = &defaultHTTPHandler{}
-	return p.RegisterCommands()
+
+	if err := p.RegisterCommands(); err != nil {
+		return errors.Wrap(err, "Could not define plugin slash commands")
+	}
+
+	if err := p.defineBot(p.configuration.Provider); err != nil {
+		return errors.Wrap(err, "Could not define plugin bot")
+	}
+
+	return nil
 }
 
 // ExecuteCommand dispatch the command based on the trigger word
