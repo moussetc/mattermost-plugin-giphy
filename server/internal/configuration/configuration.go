@@ -1,5 +1,7 @@
 package configuration
 
+import "errors"
+
 // Configuration captures the plugin's external configuration as exposed in the Mattermost server
 // configuration, as well as values computed from the configuration. Any public fields will be
 // deserialized from the Mattermost server configuration in OnConfigurationChange.
@@ -24,6 +26,19 @@ type Configuration struct {
 func (c *Configuration) Clone() *Configuration {
 	var clone = *c
 	return &clone
+}
+
+// Return an error if the configuration is invalid, or nil if it is valid
+func (c *Configuration) IsValid() error {
+	if c.DisplayMode == "" {
+		return errors.New("the Display Mode must be configured")
+	}
+
+	if (c.Provider == "giphy" || c.Provider == "tenor") && len(c.APIKey) == 0 {
+		return errors.New("when the selected Provider is Giphy or Tenor, an API Key must be provided")
+	}
+
+	return nil
 }
 
 const (

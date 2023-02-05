@@ -37,6 +37,9 @@ func TestOnConfigurationChangeLoadFail(t *testing.T) {
 
 func TestOnConfigurationChangeEmptyDisplayMode(t *testing.T) {
 	p := generateMocksForConfigurationTesting("")
+	configuration := p.getConfiguration()
+	configuration.DisplayMode = ""
+	p.setConfiguration(configuration)
 	err := p.OnConfigurationChange()
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "the Display Mode must be configured")

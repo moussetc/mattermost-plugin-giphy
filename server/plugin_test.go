@@ -75,6 +75,7 @@ func TestGeneratedManifestShouldBeValid(t *testing.T) {
 func TestOnActivateWithBadConfig(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
+	config.DisplayMode = ""
 	config.APIKey = ""
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	siteURL := "https://test.com"
@@ -111,7 +112,6 @@ func TestOnActivateOK(t *testing.T) {
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
 	api.On("GetServerVersion").Return("42.0.0")
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
 	api.On("RegisterCommand", mock.Anything).Return(nil)
 	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
 	api.On("EnsureBotUser", mock.Anything).Return(model.NewId(), nil)
@@ -124,6 +124,7 @@ func TestOnActivateOK(t *testing.T) {
 	}
 	api.On("GetConfig").Return(serverConfig)
 	p := Plugin{}
+	p.configuration = &config
 	p.SetAPI(api)
 	p.errorGenerator = test.MockErrorGenerator()
 

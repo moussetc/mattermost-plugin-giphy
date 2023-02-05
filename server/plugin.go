@@ -45,6 +45,10 @@ type Plugin struct {
 
 // OnActivate register the plugin commands
 func (p *Plugin) OnActivate() error {
+	if configurationErr := p.getConfiguration().IsValid(); configurationErr != nil {
+		return errors.Wrap(configurationErr, "Unable to activate the plugin with an invalid configuration")
+	}
+
 	if p.pluginClient == nil {
 		p.pluginClient = pluginapi.NewClient(p.API, p.Driver)
 	}

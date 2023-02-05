@@ -48,8 +48,8 @@ func (p *Plugin) OnConfigurationChange() error {
 	}
 	p.setConfiguration(configuration)
 
-	if configuration.DisplayMode == "" {
-		return errors.New("the Display Mode must be configured")
+	if configurationErr := configuration.IsValid(); configurationErr != nil {
+		return configurationErr
 	}
 
 	gifProvider, err := provider.GifProviderGenerator(*configuration, p.errorGenerator, p.rootURL)
