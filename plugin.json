@@ -71,7 +71,7 @@
         "options": [
           {
             "display_name": "No rating (no content filtering)",
-            "value": ""
+            "value": "none"
           },
           {
             "display_name": "G",

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginapi "github.com/moussetc/mattermost-plugin-giphy/server/internal/pluginapi"
 	mock_pluginapi "github.com/moussetc/mattermost-plugin-giphy/server/internal/pluginapi/mock_pluginapi"
@@ -24,7 +25,7 @@ func generateMockPluginConfig() pluginConf.Configuration {
 		DisplayMode:                  pluginConf.DisplayModeEmbedded,
 		Provider:                     "giphy",
 		Language:                     "fr",
-		Rating:                       "",
+		Rating:                       "none",
 		Rendition:                    "fixed_height_small",
 		RenditionTenor:               "tinygif",
 		RenditionGfycat:              "gif100Px",
@@ -65,6 +66,10 @@ func initMockAPI() (api *plugintest.API, p *Plugin) {
 	p.httpHandler = &mockHTTPHandler{}
 	p.errorGenerator = test.MockErrorGenerator()
 	return api, p
+}
+
+func TestGeneratedManifestShouldBeValid(t *testing.T) {
+	assert.Nil(t, manifest.Manifest.IsValid())
 }
 
 func TestOnActivateWithBadConfig(t *testing.T) {

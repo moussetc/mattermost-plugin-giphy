@@ -150,7 +150,7 @@ func (p *giphy) callGiphyEndpoint(endpoint string, customParameters map[string]s
 	q := req.URL.Query()
 
 	q.Add("api_key", p.apiKey)
-	if len(p.rating) > 0 {
+	if p.rating != "none" && len(p.rating) > 0 {
 		q.Add("rating", p.rating)
 	}
 	for key, value := range customParameters {

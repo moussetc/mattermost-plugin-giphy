@@ -77,7 +77,7 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
                 "provider": "<giphy or gfycat or tenor>",
                 "apikey": "<your API key from Step 4. above, if you've choosen Giphy or Tenor as your GIF provider>", 
                 "language": "en",
-                "rating": "",
+                "rating": "none",
                 "rendition": "fixed_height_small",
                 "renditiongfycat": "100pxGif",
                 "renditiontenor": "mediumgif",
