@@ -294,7 +294,7 @@ func TestTenorProviderGetGifURLShouldFailWhenSearchBadStatusWithMessage(t *testi
 	assert.Empty(t, url)
 }
 
-func generatTenorProviderForURLBuildingTests() (*tenor, *MockHTTPClient, string) {
+func generateTenorProviderForURLBuildingTests() (*tenor, *MockHTTPClient, string) {
 	serverResponse := newServerResponseOK(defaultTenorResponseBody)
 	client := NewMockHTTPClient(serverResponse)
 	provider, _ := NewTenorProvider(client, test.MockErrorGenerator(), testTenorAPIKey, testTenorLanguage, testTenorRating, testTenorRendition)
@@ -302,7 +302,7 @@ func generatTenorProviderForURLBuildingTests() (*tenor, *MockHTTPClient, string)
 }
 
 func TestTenorProviderGetGifURLShouldApplyRatingFilterWhenSet(t *testing.T) {
-	p, client, cursor := generatTenorProviderForURLBuildingTests()
+	p, client, cursor := generateTenorProviderForURLBuildingTests()
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.Contains(t, req.URL.RawQuery, "contentfilter=off")
 		return true
@@ -313,7 +313,7 @@ func TestTenorProviderGetGifURLShouldApplyRatingFilterWhenSet(t *testing.T) {
 }
 
 func TestTenorProviderGetGifURLShouldApplyLanguageFilterWhenUnset(t *testing.T) {
-	p, client, cursor := generatTenorProviderForURLBuildingTests()
+	p, client, cursor := generateTenorProviderForURLBuildingTests()
 	p.language = ""
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.NotContains(t, req.URL.RawQuery, "locale")
@@ -325,13 +325,24 @@ func TestTenorProviderGetGifURLShouldApplyLanguageFilterWhenUnset(t *testing.T) 
 }
 
 func TestTenorProviderGetGifURLShouldApplyLanguageFilterWhenSet(t *testing.T) {
-	p, client, cursor := generatTenorProviderForURLBuildingTests()
+	p, client, cursor := generateTenorProviderForURLBuildingTests()
 	p.language = "Moldovalaque"
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.Contains(t, req.URL.RawQuery, "locale="+p.language)
 		return true
 	}
 	_, err := p.GetGifURL("cat", &cursor, false)
+	assert.Nil(t, err)
+	assert.True(t, client.lastRequestPassTest)
+}
+
+func TestTenorProviderGetGifURLShouldAddRandomOptionWhenRequired(t *testing.T) {
+	p, client, cursor := generateTenorProviderForURLBuildingTests()
+	client.testRequestFunc = func(req *http.Request) bool {
+		assert.Contains(t, req.URL.RawQuery, "random=true")
+		return true
+	}
+	_, err := p.GetGifURL("cat", &cursor, true)
 	assert.Nil(t, err)
 	assert.True(t, client.lastRequestPassTest)
 }
