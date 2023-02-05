@@ -55,10 +55,6 @@ func (p *Plugin) OnActivate() error {
 	}
 
 	p.rootURL = fmt.Sprintf("%s/plugins/%s", rootURL, manifest.Manifest.Id)
-	if err := p.OnConfigurationChange(); err != nil {
-		return errors.Wrap(err, "Could not load plugin configuration")
-	}
-
 	p.httpHandler = &defaultHTTPHandler{}
 
 	if err := p.RegisterCommands(); err != nil {
