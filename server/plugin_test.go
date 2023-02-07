@@ -103,7 +103,6 @@ func TestOnActivateWithoutSiteURL(t *testing.T) {
 }
 
 func TestOnActivateOK(t *testing.T) {
-	t.Skip("TODO fix this test by mocking pluginapi.Client")
 	api := &plugintest.API{}
 	config := generateMockPluginConfig()
 	api.On("GetServerVersion").Return("42.0.0")
