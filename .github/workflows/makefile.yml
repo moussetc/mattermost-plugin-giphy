@@ -3,7 +3,7 @@ name: Build CI
 on: 
   push:
     branches:
-      - 'main'
+      - 'master'
       - 'release/**'
   pull_request:
     types: [opened, synchronize, reopened]
