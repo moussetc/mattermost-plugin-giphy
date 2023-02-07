@@ -19,10 +19,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     
     - name: Setup Go environment
-      uses: actions/setup-go@v2.1.4
+      uses: actions/setup-go@v3
       with:
         # The Go version to download (if necessary) and use. Supports semver spec and ranges.
         go-version: 1.16.7
@@ -30,9 +30,7 @@ jobs:
         stable: true
 
     - name: Install golangci-lint
-      uses: golangci/golangci-lint-action@v2
-      with:
-        skip-go-installation: true
+      uses: golangci/golangci-lint-action@v3
 
     - name: Build
       run: make
