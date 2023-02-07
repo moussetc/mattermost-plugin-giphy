@@ -65,7 +65,7 @@ func parseCommandLine(commandLine, trigger string) (keywords, caption string, er
 	reg := regexp.MustCompile("^\\s*(?P<keywords>(\"([^\\s\"]+\\s*)+\")+|([^\\s\"]+\\s*)+)(?P<caption>\\s+\"(\\s*[^\\s\"]+\\s*)+\")?\\s*$")
 	matchIndexes := reg.FindStringSubmatch(strings.Replace(commandLine, "/"+trigger, "", 1))
 	if matchIndexes == nil {
-		return "", "", errors.New(fmt.Sprintf("Could not read the command, try one of the following syntax: /%s %s", trigger, getHintMessage(trigger)))
+		return "", "", fmt.Errorf("could not read the command, try one of the following syntax: /%s %s", trigger, getHintMessage(trigger))
 	}
 	results := make(map[string]string)
 	for i, name := range reg.SubexpNames() {
