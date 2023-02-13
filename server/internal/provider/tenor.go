@@ -79,7 +79,12 @@ func (p *tenor) GetGifURL(request string, cursor *string, random bool) (string, 
 	if cursor != nil && *cursor != "" {
 		q.Add("pos", *cursor)
 	}
-	q.Add("limit", "1")
+
+	// if random, we need to have several results because tenor applies tne random=true parameter only to the result list of this query
+	if !random {
+		q.Add("limit", "1")
+	}
+
 	q.Add("contentfilter", p.rating)
 	q.Add("media_filter", p.rendition)
 	if len(p.language) > 0 {

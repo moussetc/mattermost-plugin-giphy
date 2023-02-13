@@ -340,6 +340,7 @@ func TestTenorProviderGetGifURLShouldAddRandomOptionWhenRequired(t *testing.T) {
 	p, client, cursor := generateTenorProviderForURLBuildingTests()
 	client.testRequestFunc = func(req *http.Request) bool {
 		assert.Contains(t, req.URL.RawQuery, "random=true")
+		assert.NotContains(t, req.URL.RawQuery, "limit=1")
 		return true
 	}
 	_, err := p.GetGifURL("cat", &cursor, true)
