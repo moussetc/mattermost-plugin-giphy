@@ -19,11 +19,12 @@ import (
 )
 
 const (
-	contextKeywords = "keywords"
-	contextCaption  = "caption"
-	contextGifURL   = "gifURL"
-	contextCursor   = "cursor"
-	contextRootID   = "rootId"
+	contextKeywords     = "keywords"
+	contextCaption      = "caption"
+	contextGifURLs      = "gifURLs"
+	contextCurrentIndex = "currentGifIndex"
+	contextAPICursor    = "searchCursor"
+	contextRootID       = "rootId"
 )
 
 // Plugin is a Mattermost plugin that adds a /gif slash command

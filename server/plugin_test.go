@@ -50,6 +50,9 @@ func (h *mockHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, request
 func (h *mockHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
+func (h *mockHTTPHandler) handlePrevious(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+	w.WriteHeader(http.StatusOK)
+}
 func (h *mockHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }

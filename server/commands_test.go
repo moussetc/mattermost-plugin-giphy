@@ -150,8 +150,9 @@ func TestExecuteCommandGifWithPreviewShouldLogAndFailWhenSearchFails(t *testing.
 	api.AssertNumberOfCalls(t, "LogWarn", 1)
 }
 
-func TestGenerateShufflePostAttachments(t *testing.T) {
-	attachments := generateShufflePostAttachments(testKeywords, testCaption, testGifURL, testCursor, testRootID)
+func TestGeneratePreviewPostAttachments(t *testing.T) {
+	gifURLs := []string{testGifURLPrevious, testGifURL}
+	attachments := generatePreviewPostAttachments(testKeywords, testCaption, testCursor, testRootID, gifURLs, 0)
 
 	assert.NotNil(t, attachments)
 	assert.Len(t, attachments, 1)
@@ -164,10 +165,10 @@ func TestGenerateShufflePostAttachments(t *testing.T) {
 		assert.NotNil(t, actions[i].Integration)
 		context := actions[i].Integration.Context
 		assert.NotNil(t, context)
-		assert.Equal(t, context[contextKeywords], testKeywords)
-		assert.Equal(t, context[contextGifURL], testGifURL)
-		assert.Equal(t, context[contextCursor], testCursor)
-		assert.Equal(t, context[contextRootID], testRootID)
+		assert.Equal(t, testKeywords, context[contextKeywords])
+		assert.Equal(t, gifURLs, context[contextGifURLs])
+		assert.Equal(t, testCursor, context[contextAPICursor])
+		assert.Equal(t, testRootID, context[contextRootID])
 	}
 }
 

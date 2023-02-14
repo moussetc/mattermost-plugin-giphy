@@ -21,6 +21,12 @@ const (
 	triggerGifs = "gifs"
 )
 
+type GifPage struct {
+	Gifs         []string
+	currentIndex int
+	PageCursor   string
+}
+
 func (p *Plugin) RegisterCommands() error {
 	unregisterErr := p.API.UnregisterCommand("", triggerGif)
 	if unregisterErr != nil {
@@ -93,7 +99,10 @@ func (p *Plugin) executeCommandGif(keywords, caption string, args *model.Command
 // executeCommandGifWithPreview returns an ephemeral post with one GIF that can either be posted, shuffled or canceled
 func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
+	// Load a first page of GIFs
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
+	// TODO actually load several
+	gifURLs := []string{gifURL}
 	if errGif != nil {
 		p.API.LogWarn("Error while trying to get GIF URL", "error", errGif.Error())
 		return nil, errGif
@@ -106,7 +115,7 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 	// Only embedded display mode works inside an ephemeral post
 	post.Message = generateGifCaption(pluginConf.DisplayModeEmbedded, keywords, caption, gifURL, p.gifProvider.GetAttributionMessage())
 	post.SetProps(map[string]interface{}{
-		"attachments": generateShufflePostAttachments(keywords, caption, gifURL, cursor, args.RootId),
+		"attachments": generatePreviewPostAttachments(keywords, caption, cursor, args.RootId, gifURLs, 0),
 	})
 	p.API.SendEphemeralPost(args.UserId, post)
 
@@ -151,17 +160,21 @@ func (p *Plugin) generateGifPost(userID, keywords, caption, gifURL, channelID, r
 	}
 }
 
-func generateShufflePostAttachments(keywords, caption, gifURL, cursor, rootID string) []*model.SlackAttachment {
+func generatePreviewPostAttachments(keywords, caption, searchCursor, rootID string, gifURLs []string, currentGifIndex int) []*model.SlackAttachment {
 	actionContext := map[string]interface{}{
-		contextKeywords: keywords,
-		contextCaption:  caption,
-		contextGifURL:   gifURL,
-		contextCursor:   cursor,
-		contextRootID:   rootID,
+		contextRootID:       rootID,
+		contextKeywords:     keywords,
+		contextCaption:      caption,
+		contextAPICursor:    searchCursor,
+		contextGifURLs:      gifURLs,
+		contextCurrentIndex: currentGifIndex,
 	}
 
 	actions := []*model.PostAction{}
 	actions = append(actions, generateButton("Cancel", URLCancel, "default", actionContext))
+	if currentGifIndex > 0 {
+		actions = append(actions, generateButton("Previous", URLPrevious, "default", actionContext))
+	}
 	actions = append(actions, generateButton("Shuffle", URLShuffle, "primary", actionContext))
 	actions = append(actions, generateButton("Send", URLSend, "good", actionContext))
 

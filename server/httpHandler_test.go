@@ -22,14 +22,16 @@ import (
 )
 
 const (
-	testChannelID = "gifs-channel"
-	testCaption   = "Message prêt à tout"
-	testUserID    = "gif-user"
-	testPostID    = "skfqsldjhfkljhf"
-	testKeywords  = "kitty"
-	testGifURL    = "https://gif.fr/gif/42"
-	testCursor    = "43abc"
-	testRootID    = "4242abc"
+	testChannelID      = "gifs-channel"
+	testCaption        = "Message prêt à tout"
+	testUserID         = "gif-user"
+	testPostID         = "skfqsldjhfkljhf"
+	testKeywords       = "kitty"
+	testGifURLPrevious = "https://gif.fr/gif/41"
+	testGifURL         = "https://gif.fr/gif/42"
+	testGifURLNext     = "https://gif.fr/gif/43"
+	testCursor         = "43abc"
+	testRootID         = "4242abc"
 )
 
 var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
@@ -37,11 +39,12 @@ var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
 	UserId:    testUserID,
 	PostId:    testPostID,
 	Context: map[string]interface{}{
-		contextGifURL:   testGifURL,
-		contextCaption:  testCaption,
-		contextKeywords: testKeywords,
-		contextCursor:   testCursor,
-		contextRootID:   testRootID,
+		contextGifURLs:      []string{testGifURLPrevious, testGifURL, testGifURLNext},
+		contextCurrentIndex: 1,
+		contextCaption:      testCaption,
+		contextKeywords:     testKeywords,
+		contextAPICursor:    testCursor,
+		contextRootID:       testRootID,
 	},
 }
 
@@ -52,7 +55,7 @@ func generatePostActionIntegrationRequestBody() io.Reader {
 
 func generateTestIntegrationRequest() *integrationRequest {
 	return &integrationRequest{
-		testGifURL, testKeywords, testCaption, testCursor, testRootID, testPostActionIntegrationRequest,
+		testKeywords, testCaption, []string{testGifURLPrevious, testGifURL, testGifURLNext}, 1, testCursor, testRootID, testPostActionIntegrationRequest,
 	}
 }
 
@@ -69,7 +72,7 @@ func setupMockPluginWithAuthent() *Plugin {
 func TestHandleHTTPRequestShouldReturnOKStatusForAllSupportedRoutes(t *testing.T) {
 	p := setupMockPluginWithAuthent()
 
-	goodURLs := [3]string{URLCancel, URLShuffle, URLSend}
+	goodURLs := [4]string{URLCancel, URLShuffle, URLPrevious, URLSend}
 	for _, URL := range goodURLs {
 		w := httptest.NewRecorder()
 		r := httptest.NewRequest("POST", URL, generatePostActionIntegrationRequestBody())
@@ -165,9 +168,10 @@ func TestParseRequestShouldParseAllValuesFromCorrectRequest(t *testing.T) {
 	assert.NotNil(t, request)
 	assert.Equal(t, request.ChannelId, testChannelID)
 	assert.Equal(t, request.UserId, testUserID)
-	assert.Equal(t, request.GifURL, testGifURL)
+	assert.Equal(t, request.GifURLs, []string{testGifURLPrevious, testGifURL, testGifURLNext})
+	assert.Equal(t, request.CurrentGifIndex, 1)
 	assert.Equal(t, request.Keywords, testKeywords)
-	assert.Equal(t, request.Cursor, testCursor)
+	assert.Equal(t, request.SearchCursor, testCursor)
 	assert.Equal(t, request.RootID, testRootID)
 }
 
@@ -303,6 +307,25 @@ func TestHandleShuffleShouldFailWhenSearchFails(t *testing.T) {
 	h.handleShuffle(p, w, generateTestIntegrationRequest())
 	assert.Equal(t, w.Result().StatusCode, http.StatusServiceUnavailable)
 	api.AssertNumberOfCalls(t, "UpdateEphemeralPost", 0)
+}
+
+func TestHandlePreviousShouldUpdateEphemeralPostWithPreviousGifFromContext(t *testing.T) {
+	api, p := initMockAPI()
+	api.On("UpdateEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("*model.Post")).Return(nil)
+	p.gifProvider = newMockGifProvider()
+	h := &defaultHTTPHandler{}
+	w := httptest.NewRecorder()
+	h.handlePrevious(p, w, generateTestIntegrationRequest())
+	assert.Equal(t, w.Result().StatusCode, http.StatusOK)
+	api.AssertCalled(t, "UpdateEphemeralPost",
+		mock.MatchedBy(func(s string) bool { return s == testUserID }),
+		mock.MatchedBy(func(post *model.Post) bool {
+			return post.Id == testPostID &&
+				strings.Contains(post.Message, testGifURLPrevious) &&
+				post.UserId == p.botID &&
+				post.ChannelId == testChannelID &&
+				post.RootId == testRootID
+		}))
 }
 
 func TestHandleSendSHouldDeleteTheEphemeralPostAndCreateANewPostWhenSearchSucceeds(t *testing.T) {

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 
@@ -16,17 +17,19 @@ import (
 // Contains what's related to handling HTTP requests directed to the plugin
 
 const (
-	URLShuffle = "/shuffle"
-	URLCancel  = "/cancel"
-	URLSend    = "/send"
+	URLShuffle  = "/shuffle"
+	URLCancel   = "/cancel"
+	URLPrevious = "/previous"
+	URLSend     = "/send"
 )
 
 type integrationRequest struct {
-	Keywords string `mapstructure:"keywords"`
-	Caption  string `mapstructure:"caption"`
-	GifURL   string `mapstructure:"gifURL"`
-	Cursor   string `mapstructure:"cursor"`
-	RootID   string `mapstructure:"rootID"`
+	Keywords        string   `mapstructure:"keywords"`
+	Caption         string   `mapstructure:"caption"`
+	GifURLs         []string `mapstructure:"gifURLs"`
+	CurrentGifIndex int      `mapstructure:"currentGifIndex"`
+	SearchCursor    string   `mapstructure:"searchCursor"`
+	RootID          string   `mapstructure:"rootID"`
 	model.PostActionIntegrationRequest
 }
 
@@ -34,6 +37,7 @@ type (
 	pluginHTTPHandler interface {
 		handleCancel(p *Plugin, w http.ResponseWriter, request *integrationRequest)
 		handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest)
+		handlePrevious(p *Plugin, w http.ResponseWriter, request *integrationRequest)
 		handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest)
 	}
 	defaultHTTPHandler struct{}
@@ -77,6 +81,8 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case URLShuffle:
 		p.httpHandler.handleShuffle(p, w, request)
+	case URLPrevious:
+		p.httpHandler.handlePrevious(p, w, request)
 	case URLSend:
 		p.httpHandler.handleSend(p, w, request)
 	case URLCancel:
@@ -104,8 +110,8 @@ func parseRequest(r *http.Request) (*integrationRequest, error) {
 	if context.Keywords == "" {
 		return nil, errors.New("missing " + contextKeywords + " from action request context")
 	}
-	if context.GifURL == "" {
-		return nil, errors.New("missing " + contextGifURL + " from action request context")
+	if len(context.GifURLs) == 0 {
+		return nil, errors.New("missing " + contextGifURLs + " from action request context")
 	}
 	return &context, err
 }
@@ -123,7 +129,7 @@ func writeResponse(httpStatus int, w http.ResponseWriter) {
 	}
 }
 
-// Delete the ephemeral shuffle post
+// Delete the ephemeral preview post
 func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
 	writeResponse(http.StatusOK, w)
@@ -132,11 +138,11 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, requ
 // Replace the GIF in the ephemeral shuffle post by a new one
 func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	random := p.configuration.RandomSearch
-	if !random && request.Cursor == "" {
+	if !random && request.SearchCursor == "" {
 		notifyUserOfError(p.API, p.botID, "No more GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
-	shuffledGifURL, err := p.gifProvider.GetGifURL(request.Keywords, &request.Cursor, random)
+	shuffledGifURL, err := p.gifProvider.GetGifURL(request.Keywords, &request.SearchCursor, random)
 	if err != nil {
 		notifyUserOfError(p.API, p.botID, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)
@@ -146,6 +152,25 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		notifyUserOfError(p.API, p.botID, "No GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
+
+	gifURLs := append(request.GifURLs, shuffledGifURL)
+	h.sendPreviewPost(p, w, request, gifURLs, len(gifURLs)-1)
+}
+
+// Replace the GIF in the ephemeral shuffle post by one that was already shuffled
+func (h *defaultHTTPHandler) handlePrevious(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+	previousIndex := request.CurrentGifIndex - 1
+	if previousIndex < 0 {
+		notifyUserOfError(p.API, p.botID, "There is no previous URL", nil, &request.PostActionIntegrationRequest)
+		writeResponse(http.StatusBadRequest, w)
+		return
+	}
+
+	h.sendPreviewPost(p, w, request, request.GifURLs, previousIndex)
+}
+
+// Create and send an ephemeral for a gif preview message
+func (h *defaultHTTPHandler) sendPreviewPost(p *Plugin, w http.ResponseWriter, request *integrationRequest, gifURLs []string, currentGifIndex int) {
 	time := model.GetMillis()
 	post := &model.Post{
 		Id:        request.PostId,
@@ -153,12 +178,12 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 		UserId:    p.botID,
 		RootId:    request.RootID,
 		// Only embedded display mode works inside an ephemeral post
-		Message:  generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, shuffledGifURL, p.gifProvider.GetAttributionMessage()),
+		Message:  generateGifCaption(pluginConf.DisplayModeEmbedded, request.Keywords, request.Caption, gifURLs[currentGifIndex], p.gifProvider.GetAttributionMessage()),
 		CreateAt: time,
 		UpdateAt: time,
 	}
 	post.SetProps(map[string]interface{}{
-		"attachments": generateShufflePostAttachments(request.Keywords, request.Caption, shuffledGifURL, request.Cursor, request.RootID),
+		"attachments": generatePreviewPostAttachments(request.Keywords, request.Caption, request.SearchCursor, request.RootID, gifURLs, currentGifIndex),
 	})
 	p.API.UpdateEphemeralPost(request.UserId, post)
 	writeResponse(http.StatusOK, w)
@@ -167,9 +192,14 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 // Post the actual GIF and delete the obsolete ephemeral post
 func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
 	p.API.DeleteEphemeralPost(request.UserId, request.PostId)
+	if request.CurrentGifIndex < 0 || request.CurrentGifIndex >= len(request.GifURLs) {
+		notifyUserOfError(p.API, p.botID, "Unable to create post : index "+strconv.Itoa(request.CurrentGifIndex)+"is out of bounds [0,"+strconv.Itoa(len(request.GifURLs))+"]", nil, &request.PostActionIntegrationRequest)
+		writeResponse(http.StatusInternalServerError, w)
+		return
+	}
 	time := model.GetMillis()
 	post := &model.Post{
-		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURL, p.gifProvider.GetAttributionMessage()),
+		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURLs[request.CurrentGifIndex], p.gifProvider.GetAttributionMessage()),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 		RootId:    request.RootID,
