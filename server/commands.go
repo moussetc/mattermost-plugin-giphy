@@ -83,16 +83,16 @@ func parseCommandLine(commandLine, trigger string) (keywords, caption string, er
 // executeCommandGif returns a public post containing a matching GIF
 func (p *Plugin) executeCommandGif(keywords, caption string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
-	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
+	gifURLs, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
 	if errGif != nil {
 		p.API.LogWarn("Error while trying to get GIF URL", "error", errGif.Error())
 		return nil, errGif
 	}
-	if gifURL == "" {
+	if len(gifURLs) < 1 {
 		return p.handleNoGifFound(keywords, args)
 	}
 
-	text := generateGifCaption(p.getConfiguration().DisplayMode, keywords, caption, gifURL, p.gifProvider.GetAttributionMessage())
+	text := generateGifCaption(p.getConfiguration().DisplayMode, keywords, caption, gifURLs[0], p.gifProvider.GetAttributionMessage())
 	return &model.CommandResponse{ResponseType: model.CommandResponseTypeInChannel, Text: text}, nil
 }
 
@@ -100,20 +100,18 @@ func (p *Plugin) executeCommandGif(keywords, caption string, args *model.Command
 func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	cursor := ""
 	// Load a first page of GIFs
-	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
-	// TODO actually load several
-	gifURLs := []string{gifURL}
+	gifURLs, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
 	if errGif != nil {
 		p.API.LogWarn("Error while trying to get GIF URL", "error", errGif.Error())
 		return nil, errGif
 	}
-	if gifURL == "" {
+	if len(gifURLs) < 1 {
 		return p.handleNoGifFound(keywords, args)
 	}
 
-	post := p.generateGifPost(p.botID, keywords, caption, gifURL, args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
+	post := p.generateGifPost(p.botID, keywords, caption, gifURLs[0], args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
 	// Only embedded display mode works inside an ephemeral post
-	post.Message = generateGifCaption(pluginConf.DisplayModeEmbedded, keywords, caption, gifURL, p.gifProvider.GetAttributionMessage())
+	post.Message = generateGifCaption(pluginConf.DisplayModeEmbedded, keywords, caption, gifURLs[0], p.gifProvider.GetAttributionMessage())
 	post.SetProps(map[string]interface{}{
 		"attachments": generatePreviewPostAttachments(keywords, caption, cursor, args.RootId, gifURLs, 0),
 	})

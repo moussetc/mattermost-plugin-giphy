@@ -115,7 +115,7 @@ func TestGiphyProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 		url, err := p.GetGifURL("cat", &cursor, testCase.random)
 		assert.Nil(t, err, testCase.label)
 		assert.NotEmpty(t, url, testCase.label)
-		assert.Equal(t, "url", url, testCase.label)
+		assert.Equal(t, []string{"url"}, url, testCase.label)
 	}
 }
 
@@ -137,7 +137,11 @@ func TestGiphyProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 		p.rendition = "unknown_rendition_style"
 		url, err := p.GetGifURL("cat", &cursor, testCase.random)
 		assert.NotNil(t, err, testCase.label)
-		assert.Contains(t, err.Error(), "No URL found for display style", testCase.label)
+		if testCase.random {
+			assert.Contains(t, err.Error(), "No URL found for display style", testCase.label)
+		} else {
+			assert.Contains(t, err.Error(), "No gifs found for display style", testCase.label)
+		}
 		assert.Contains(t, err.Error(), p.rendition, testCase.label)
 		assert.Empty(t, url, testCase.label)
 	}

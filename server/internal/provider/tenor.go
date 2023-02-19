@@ -65,10 +65,10 @@ func (p *tenor) GetAttributionMessage() string {
 }
 
 // Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
-func (p *tenor) GetGifURL(request string, cursor *string, random bool) (string, *model.AppError) {
+func (p *tenor) GetGifURL(request string, cursor *string, random bool) ([]string, *model.AppError) {
 	req, err := http.NewRequest("GET", baseURLTenor+"/search", nil)
 	if err != nil {
-		return "", p.errorGenerator.FromError("Could not generate URL", err)
+		return []string{}, p.errorGenerator.FromError("Could not generate URL", err)
 	}
 
 	q := req.URL.Query()
@@ -81,10 +81,6 @@ func (p *tenor) GetGifURL(request string, cursor *string, random bool) (string, 
 	}
 
 	// if random, we need to have several results because tenor applies tne random=true parameter only to the result list of this query
-	if !random {
-		q.Add("limit", "1")
-	}
-
 	q.Add("contentfilter", p.rating)
 	q.Add("media_filter", p.rendition)
 	if len(p.language) > 0 {
@@ -98,7 +94,7 @@ func (p *tenor) GetGifURL(request string, cursor *string, random bool) (string, 
 
 	r, err := p.httpClient.Do(req)
 	if err != nil {
-		return "", p.errorGenerator.FromError("Error calling the Tenor API", err)
+		return []string{}, p.errorGenerator.FromError("Error calling the Tenor API", err)
 	}
 	if r != nil && r.Body != nil {
 		defer r.Body.Close()
@@ -114,29 +110,38 @@ func (p *tenor) GetGifURL(request string, cursor *string, random bool) (string, 
 			}
 		}
 		errorDetails += ")"
-		return "", p.errorGenerator.FromMessage(errorDetails)
+		return []string{}, p.errorGenerator.FromMessage(errorDetails)
 	}
 
 	var response tenorSearchResult
 	if r.Body == nil {
-		return "", p.errorGenerator.FromMessage("Tenor search response body is empty")
+		return []string{}, p.errorGenerator.FromMessage("Tenor search response body is empty")
 	}
 
 	decoder := json.NewDecoder(r.Body)
 	if err = decoder.Decode(&response); err != nil {
-		return "", p.errorGenerator.FromError("Could not parse Tenor search response body", err)
+		return []string{}, p.errorGenerator.FromError("Could not parse Tenor search response body", err)
 	}
 
 	if len(response.Results) < 1 {
-		return "", nil
+		return []string{}, nil
 	}
-	url := response.Results[0].Media[p.rendition].URL
 
-	if len(url) < 1 {
-		return "", p.errorGenerator.FromMessage("No URL found for display style \"" + p.rendition + "\" in the response")
+	urls := []string{}
+	for i := range response.Results {
+		url := response.Results[i].Media[p.rendition].URL
+		if len(url) > 0 {
+			urls = append(urls, url)
+		}
 	}
+
+	if len(urls) < 1 {
+		return []string{}, p.errorGenerator.FromMessage("No gifs found for display style \"" + p.rendition + "\" in the response")
+	}
+
 	*cursor = response.Next
-	return url, nil
+
+	return urls, nil
 }
 
 func convertRatingToContentFilter(rating string) string {

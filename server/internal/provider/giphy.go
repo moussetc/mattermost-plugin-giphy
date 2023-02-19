@@ -79,7 +79,7 @@ func (p *giphy) GetAttributionMessage() string {
 }
 
 // Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
-func (p *giphy) GetGifURL(request string, cursor *string, random bool) (string, *model.AppError) {
+func (p *giphy) GetGifURL(request string, cursor *string, random bool) ([]string, *model.AppError) {
 	if random {
 		return p.getRandomGifURL(request)
 	}
@@ -87,8 +87,8 @@ func (p *giphy) GetGifURL(request string, cursor *string, random bool) (string, 
 }
 
 // Return the URL of a GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
-func (p *giphy) getSearchGifURL(request string, cursor *string) (string, *model.AppError) {
-	parameters := map[string]string{"q": request, "limit": "1"}
+func (p *giphy) getSearchGifURL(request string, cursor *string) ([]string, *model.AppError) {
+	parameters := map[string]string{"q": request}
 	if counter, err2 := strconv.Atoi(*cursor); err2 == nil {
 		parameters["offset"] = fmt.Sprintf("%d", counter)
 	}
@@ -98,33 +98,39 @@ func (p *giphy) getSearchGifURL(request string, cursor *string) (string, *model.
 
 	body, err := p.callGiphyEndpoint("search", parameters)
 	if err != nil {
-		return "", err
+		return []string{}, err
 	}
 
 	var response GiphySearchResult
 	if decodeErr := json.Unmarshal(body, &response); decodeErr != nil {
-		return "", p.errorGenerator.FromError("Could not parse Giphy response body", decodeErr)
+		return []string{}, p.errorGenerator.FromError("Could not parse Giphy response body", decodeErr)
 	}
 
 	if len(response.Data) < 1 {
-		return "", nil
+		return []string{}, nil
 	}
 
-	url, err := p.getURL(response.Data[0])
-	if err != nil {
-		return "", err
+	urls := []string{}
+	for i := range response.Data {
+		if url, err := p.getURL(response.Data[i]); err == nil {
+			urls = append(urls, url)
+		}
+	}
+
+	if len(urls) < 1 {
+		return []string{}, p.errorGenerator.FromMessage("No gifs found for display style \"" + p.rendition + "\" in the response")
 	}
 
 	*cursor = fmt.Sprintf("%d", response.Pagination.Offset+1)
 
-	return url, nil
+	return urls, nil
 }
 
 // Return the URL of a random GIF that matches the query, or an empty string if no GIF matches the query, or an error if the search failed
-func (p *giphy) getRandomGifURL(request string) (string, *model.AppError) {
+func (p *giphy) getRandomGifURL(request string) ([]string, *model.AppError) {
 	body, err := p.callGiphyEndpoint("random", map[string]string{"tag": request})
 	if err != nil {
-		return "", err
+		return []string{}, err
 	}
 
 	var response GiphyRandomResult
@@ -133,12 +139,16 @@ func (p *giphy) getRandomGifURL(request string) (string, *model.AppError) {
 		var emptyResponse GiphyRandomEmptyResult
 		if err = json.Unmarshal(body, &emptyResponse); err == nil {
 			// No GIF found
-			return "", nil
+			return []string{}, nil
 		}
-		return "", p.errorGenerator.FromError("Could not parse Giphy response body", err)
+		return []string{}, p.errorGenerator.FromError("Could not parse Giphy response body", err)
 	}
 
-	return p.getURL(response.Data)
+	url, err := p.getURL(response.Data)
+	if err != nil {
+		return []string{}, err
+	}
+	return []string{url}, nil
 }
 
 func (p *giphy) callGiphyEndpoint(endpoint string, customParameters map[string]string) ([]byte, *model.AppError) {

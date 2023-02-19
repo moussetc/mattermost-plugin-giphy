@@ -61,7 +61,7 @@ func TestExecuteCommandGifShouldReturnInChannelResponseWhenSearchSucceeds(t *tes
 
 func TestExecuteCommandGifShouldSendEphemeralPostWhenSearchReturnsNoResult(t *testing.T) {
 	api, p := initMockAPI()
-	p.gifProvider = &mockGifProvider{""}
+	p.gifProvider = &emptyGifProvider{}
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
 
 	response, err := p.executeCommandGif(testKeywords, testCaption, testArgs)
@@ -118,7 +118,7 @@ func TestExecuteCommandGifWithPreviewShouldPostAnEphemeralGifPostWhenSearchSucce
 
 func TestExecuteCommandGifWithPreviewShouldReturnEphemeralResponseWhenSearchReturnsNoResult(t *testing.T) {
 	api, p := initMockAPI()
-	p.gifProvider = &mockGifProvider{""}
+	p.gifProvider = &emptyGifProvider{}
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
 
 	response, err := p.executeCommandGifWithPreview(testKeywords, testCaption, testArgs)

@@ -137,24 +137,45 @@ func (h *defaultHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, requ
 
 // Replace the GIF in the ephemeral shuffle post by a new one
 func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+	if request.CurrentGifIndex+1 < len(request.GifURLs) {
+		h.sendPreviewPost(p, w, request, request.GifURLs, request.CurrentGifIndex+1)
+		return
+	}
+
 	random := p.configuration.RandomSearch
 	if !random && request.SearchCursor == "" {
 		notifyUserOfError(p.API, p.botID, "No more GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
-	shuffledGifURL, err := p.gifProvider.GetGifURL(request.Keywords, &request.SearchCursor, random)
+
+	newGifURLs, err := p.gifProvider.GetGifURL(request.Keywords, &request.SearchCursor, random)
 	if err != nil {
 		notifyUserOfError(p.API, p.botID, "Unable to fetch a new Gif for shuffling", err, &request.PostActionIntegrationRequest)
 		writeResponse(http.StatusServiceUnavailable, w)
 		return
 	}
-	if shuffledGifURL == "" {
+
+	if len(newGifURLs) < 1 {
 		notifyUserOfError(p.API, p.botID, "No GIFs found for '"+request.Keywords+"'", nil, &request.PostActionIntegrationRequest)
 		return
 	}
 
-	gifURLs := append(request.GifURLs, shuffledGifURL)
-	h.sendPreviewPost(p, w, request, gifURLs, len(gifURLs)-1)
+	currentIndex := len(request.GifURLs)
+	// only add URLs that were not already seen (as we make successive API calls, the same URL can popup twice)
+	for _, newURL := range newGifURLs {
+		alreadyExist := false
+		for _, usedURL := range request.GifURLs {
+			if newURL == usedURL {
+				alreadyExist = true
+				break
+			}
+		}
+		if !alreadyExist {
+			request.GifURLs = append(request.GifURLs, newURL)
+		}
+	}
+
+	h.sendPreviewPost(p, w, request, request.GifURLs, currentIndex)
 }
 
 // Replace the GIF in the ephemeral shuffle post by one that was already shuffled

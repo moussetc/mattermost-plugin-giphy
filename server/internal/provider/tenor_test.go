@@ -234,7 +234,7 @@ func TestTenorProviderGetGifURLShouldReturnUrlWhenSearchSucceeds(t *testing.T) {
 	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.Nil(t, err)
 	assert.NotEmpty(t, url)
-	assert.Equal(t, url, "https://fakeurl/tinygif")
+	assert.Equal(t, url, []string{"https://fakeurl/tinygif"})
 }
 
 func TestTenorProviderGetGifURLShouldFailIfSearchBodyIsEmpty(t *testing.T) {
@@ -268,7 +268,7 @@ func TestTenorProviderGetGifURLShouldFailWhenNoURLForRendition(t *testing.T) {
 	cursor := ""
 	url, err := p.GetGifURL("cat", &cursor, false)
 	assert.NotNil(t, err)
-	assert.Contains(t, err.Error(), "No URL found for display style")
+	assert.Contains(t, err.Error(), "No gifs found for display style")
 	assert.Contains(t, err.Error(), p.rendition)
 	assert.Empty(t, url)
 }
