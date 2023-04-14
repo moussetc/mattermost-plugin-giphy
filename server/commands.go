@@ -24,11 +24,11 @@ const (
 func (p *Plugin) RegisterCommands() error {
 	unregisterErr := p.API.UnregisterCommand("", triggerGif)
 	if unregisterErr != nil {
-		p.API.LogWarn("Unable to unregister the " + triggerGif + " command" + unregisterErr.Error())
+		p.API.LogWarn("Unable to unregister the command", "trigger", triggerGif, "error", unregisterErr.Error())
 	}
 	unregisterErr = p.API.UnregisterCommand("", triggerGifs)
 	if unregisterErr != nil {
-		p.API.LogWarn("Unable to unregister the " + triggerGifs + " command" + unregisterErr.Error())
+		p.API.LogWarn("Unable to unregister the command", "trigger", triggerGifs, "error", unregisterErr.Error())
 	}
 
 	config := p.getConfiguration()
@@ -79,7 +79,7 @@ func (p *Plugin) executeCommandGif(keywords, caption string, args *model.Command
 	cursor := ""
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
 	if errGif != nil {
-		p.API.LogWarn("Error while trying to get GIF URL: " + errGif.Error())
+		p.API.LogWarn("Error while trying to get GIF URL", "error", errGif.Error())
 		return nil, errGif
 	}
 	if gifURL == "" {
@@ -95,7 +95,7 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 	cursor := ""
 	gifURL, errGif := p.gifProvider.GetGifURL(keywords, &cursor, p.configuration.RandomSearch)
 	if errGif != nil {
-		p.API.LogWarn("Error while trying to get GIF URL: " + errGif.Error())
+		p.API.LogWarn("Error while trying to get GIF URL", "error", errGif.Error())
 		return nil, errGif
 	}
 	if gifURL == "" {

@@ -56,7 +56,7 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 
 	request, err := parseRequest(r)
 	if err != nil {
-		p.API.LogWarn("Could not parse PostActionIntegrationRequest: "+err.Error(), nil)
+		p.API.LogWarn("Could not parse PostActionIntegrationRequest", "error", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -204,6 +204,6 @@ func defaultNotifyUserOfError(api plugin.API, botID string, message string, err 
 
 	// Only log technical errors
 	if err != nil {
-		api.LogWarn(message, err)
+		api.LogWarn(message, "error", err)
 	}
 }
