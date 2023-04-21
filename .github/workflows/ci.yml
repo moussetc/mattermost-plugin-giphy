@@ -22,7 +22,7 @@ jobs:
     - uses: actions/checkout@v3
     
     - name: Setup Go environment
-      uses: actions/setup-go@v3
+      uses: actions/setup-go@v4
       with:
         # The Go version to download (if necessary) and use. Supports semver spec and ranges.
         go-version: 1.16.7
