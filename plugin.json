@@ -346,8 +346,8 @@
       {
         "key": "RandomSearch",
         "type": "bool",
-        "display_name": "Random (GIPHY and Tenor only):",
-        "help_text": "If deactivated (or if Gfycat is the provider), the same search will return the same sequence of GIFs (legacy behaviour)",
+        "display_name": "Random:",
+        "help_text": "If deactivated, the same search will return the same sequence of GIFs. Note: only pseudo-randomization is available for Tenor and Gfycat",
         "default": true
       },
       {
