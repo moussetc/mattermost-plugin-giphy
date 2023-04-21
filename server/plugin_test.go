@@ -175,7 +175,7 @@ func TestExecuteShuffleCommandToReturnCommandResponse(t *testing.T) {
 
 func TestExecuteCommandFailWhenCommandHandlerFails(t *testing.T) {
 	api, p := initMockAPI()
-	api.On("LogWarn", mock.AnythingOfType("string")).Return(nil)
+	api.On("LogWarn", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.Anything).Return(nil)
 
 	errorMessage := "ARGHHHH"
 	p.gifProvider = &mockGifProviderFail{errorMessage}

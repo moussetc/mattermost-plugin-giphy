@@ -391,7 +391,7 @@ func TestHandleSendShouldFailWhenCreatePostFails(t *testing.T) {
 func TestDefaultNotifyUserOfErrorCreateAnEphemeralPostAndLogsForTechnicalError(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("SendEphemeralPost", mock.Anything, mock.Anything).Return(nil)
-	api.On("LogWarn", mock.Anything, mock.Anything).Return(nil)
+	api.On("LogWarn", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.Anything).Return(nil)
 	message := "oops"
 	err := test.MockErrorGenerator().FromError(message, errors.New("strange failure"))
 	channelID := "42"

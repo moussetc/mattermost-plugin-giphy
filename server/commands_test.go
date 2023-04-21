@@ -86,7 +86,7 @@ func TestExecuteCommandGifShouldLogAndFailWhenSearchFails(t *testing.T) {
 	api, p := initMockAPI()
 	errorMessage := "ARGHHHH"
 	p.gifProvider = &mockGifProviderFail{errorMessage}
-	api.On("LogWarn", mock.AnythingOfType("string")).Return(nil)
+	api.On("LogWarn", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 
 	response, err := p.executeCommandGif("mayhem", "guy", testArgs)
 	assert.NotNil(t, err)
@@ -140,7 +140,7 @@ func TestExecuteCommandGifWithPreviewShouldReturnEphemeralResponseWhenSearchRetu
 func TestExecuteCommandGifWithPreviewShouldLogAndFailWhenSearchFails(t *testing.T) {
 	api, p := initMockAPI()
 	p.gifProvider = &mockGifProviderFail{"mockError"}
-	api.On("LogWarn", mock.AnythingOfType("string")).Return(nil)
+	api.On("LogWarn", mock.AnythingOfType("string"), mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 
 	response, err := p.executeCommandGifWithPreview("hello", "", nil)
 
