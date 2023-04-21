@@ -66,7 +66,7 @@ func (p *Plugin) OnActivate() error {
 		return errors.Wrap(err, "Could not define plugin slash commands")
 	}
 
-	if err := p.defineBot(p.configuration.Provider); err != nil {
+	if err := p.defineBot(); err != nil {
 		return errors.Wrap(err, "Could not define plugin bot")
 	}
 
@@ -74,7 +74,7 @@ func (p *Plugin) OnActivate() error {
 }
 
 // ExecuteCommand dispatch the command based on the trigger word
-func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
+func (p *Plugin) ExecuteCommand(_ *plugin.Context, args *model.CommandArgs) (*model.CommandResponse, *model.AppError) {
 	config := p.getConfiguration()
 
 	if strings.HasPrefix(args.Command, "/"+config.CommandTriggerGifWithPreview) {
@@ -96,6 +96,6 @@ func (p *Plugin) ExecuteCommand(c *plugin.Context, args *model.CommandArgs) (*mo
 }
 
 // ServeHTTP serve the post actions for the shuffle command
-func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) ServeHTTP(_ *plugin.Context, w http.ResponseWriter, r *http.Request) {
 	p.handleHTTPRequest(w, r)
 }

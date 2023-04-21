@@ -135,7 +135,7 @@ func (p *gfycat) GetGifURL(request string, cursor *string, random bool) ([]strin
 	// As the API does not provide a random endpoint of option, we return a randomized page as best effort
 	if random {
 		for i := len(urls) - 1; i > 0; i-- {
-			j := rand.Intn(i + 1)
+			j := rand.Intn(i + 1) //nolint:gosec
 			urls[i], urls[j] = urls[j], urls[i]
 		}
 	}

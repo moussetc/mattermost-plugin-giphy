@@ -44,16 +44,16 @@ func mockLoadConfig(conf pluginConf.Configuration) func(dest interface{}) error 
 
 type mockHTTPHandler struct{}
 
-func (h *mockHTTPHandler) handleCancel(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+func (h *mockHTTPHandler) handleCancel(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
-func (h *mockHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+func (h *mockHTTPHandler) handleShuffle(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
-func (h *mockHTTPHandler) handlePrevious(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+func (h *mockHTTPHandler) handlePrevious(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
-func (h *mockHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, request *integrationRequest) {
+func (h *mockHTTPHandler) handleSend(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -204,7 +204,7 @@ type mockGifProviderFail struct {
 	errorMessage string
 }
 
-func (m *mockGifProviderFail) GetGifURL(request string, cursor *string, random bool) ([]string, *model.AppError) {
+func (m *mockGifProviderFail) GetGifURL(_ string, _ *string, _ bool) ([]string, *model.AppError) {
 	return []string{""}, (test.MockErrorGenerator()).FromError(m.errorMessage, errors.New(m.errorMessage))
 }
 
@@ -216,7 +216,7 @@ func (m *mockGifProviderFail) GetAttributionMessage() string {
 type emptyGifProvider struct {
 }
 
-func (m *emptyGifProvider) GetGifURL(request string, cursor *string, random bool) ([]string, *model.AppError) {
+func (m *emptyGifProvider) GetGifURL(_ string, _ *string, _ bool) ([]string, *model.AppError) {
 	return []string{}, nil
 }
 
@@ -233,7 +233,7 @@ func newMockGifProvider() *mockGifProvider {
 	return &mockGifProvider{"fakeURL"}
 }
 
-func (m *mockGifProvider) GetGifURL(request string, cursor *string, random bool) ([]string, *model.AppError) {
+func (m *mockGifProvider) GetGifURL(_ string, _ *string, _ bool) ([]string, *model.AppError) {
 	return []string{m.mockURL}, nil
 }
 

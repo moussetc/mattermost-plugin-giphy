@@ -21,12 +21,6 @@ const (
 	triggerGifs = "gifs"
 )
 
-type GifPage struct {
-	Gifs         []string
-	currentIndex int
-	PageCursor   string
-}
-
 func (p *Plugin) RegisterCommands() error {
 	unregisterErr := p.API.UnregisterCommand("", triggerGif)
 	if unregisterErr != nil {

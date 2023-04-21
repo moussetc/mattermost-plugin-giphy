@@ -72,7 +72,7 @@ func (p *Plugin) OnConfigurationChange() error {
 	return p.RegisterCommands()
 }
 
-func (p *Plugin) defineBot(provider string) error {
+func (p *Plugin) defineBot() error {
 	bot := model.Bot{
 		Username:    "gifcommandsplugin",
 		DisplayName: manifest.Manifest.Name,

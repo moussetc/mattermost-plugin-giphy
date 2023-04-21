@@ -19,9 +19,11 @@ func (c *MockHTTPClient) Do(req *http.Request) (*http.Response, error) {
 	}
 	return c.response, nil
 }
-func (c *MockHTTPClient) Get(s string) (*http.Response, error) {
+
+func (c *MockHTTPClient) Get(_ string) (*http.Response, error) {
 	return c.response, nil
 }
+
 func NewMockHTTPClient(res *http.Response) *MockHTTPClient {
 	return &MockHTTPClient{
 		response:        res,
