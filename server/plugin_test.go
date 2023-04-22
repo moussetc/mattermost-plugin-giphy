@@ -81,13 +81,6 @@ func TestOnActivateWithBadConfig(t *testing.T) {
 	config.DisplayMode = ""
 	config.APIKey = ""
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
-	siteURL := "https://test.com"
-	serverConfig := &model.Config{
-		ServiceSettings: model.ServiceSettings{
-			SiteURL: &siteURL,
-		},
-	}
-	api.On("GetConfig").Return(serverConfig)
 	p := Plugin{}
 	p.SetAPI(api)
 
@@ -99,12 +92,6 @@ func TestOnActivateWithoutSiteURL(t *testing.T) {
 	config := generateMockPluginConfig()
 	config.APIKey = ""
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(config))
-	serverConfig := &model.Config{
-		ServiceSettings: model.ServiceSettings{
-			SiteURL: nil,
-		},
-	}
-	api.On("GetConfig").Return(serverConfig)
 	p := Plugin{}
 	p.SetAPI(api)
 
@@ -119,13 +106,6 @@ func TestOnActivateOK(t *testing.T) {
 	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
 	api.On("EnsureBotUser", mock.Anything).Return(model.NewId(), nil)
 	api.On("GetServerVersion").Return("6.3.0")
-	siteURL := "https://test.com"
-	serverConfig := &model.Config{
-		ServiceSettings: model.ServiceSettings{
-			SiteURL: &siteURL,
-		},
-	}
-	api.On("GetConfig").Return(serverConfig)
 	p := Plugin{}
 	p.configuration = &config
 	p.SetAPI(api)

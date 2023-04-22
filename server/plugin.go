@@ -1,12 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	"sync"
 
-	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 	pluginapi "github.com/moussetc/mattermost-plugin-giphy/server/internal/pluginapi"
@@ -54,12 +52,6 @@ func (p *Plugin) OnActivate() error {
 		p.pluginClient = pluginapi.NewClient(p.API, p.Driver)
 	}
 
-	rootURL := ""
-	if siteURL := p.API.GetConfig().ServiceSettings.SiteURL; siteURL != nil {
-		rootURL = strings.TrimSuffix(*siteURL, "/")
-	}
-
-	p.rootURL = fmt.Sprintf("%s/plugins/%s", rootURL, manifest.Manifest.Id)
 	p.httpHandler = &defaultHTTPHandler{}
 
 	if err := p.RegisterCommands(); err != nil {

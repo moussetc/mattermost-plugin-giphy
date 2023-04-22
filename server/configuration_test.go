@@ -4,23 +4,47 @@ import (
 	"errors"
 	"testing"
 
+	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 	"github.com/moussetc/mattermost-plugin-giphy/server/internal/test"
 
+	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin/plugintest"
 	"github.com/mattermost/mattermost-server/v6/plugin/plugintest/mock"
 	"github.com/stretchr/testify/assert"
 )
 
-func generateMocksForConfigurationTesting(displayMode string) *Plugin {
+func generateMocksForConfigurationTesting(pluginConfig *pluginConf.Configuration) *Plugin {
 	api := &plugintest.API{}
-	pluginConfig := generateMockPluginConfig()
-	pluginConfig.DisplayMode = displayMode
-	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(pluginConfig))
+	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(*pluginConfig))
+	api.On("RegisterCommand", mock.Anything).Return(nil)
+	api.On("UnregisterCommand", mock.Anything, mock.Anything).Return(nil)
+
+	siteURL := "https://test.com"
+	serverConfig := &model.Config{
+		ServiceSettings: model.ServiceSettings{
+			SiteURL: &siteURL,
+		},
+	}
+
+	api.On("GetConfig").Return(serverConfig)
 	p := Plugin{}
 	p.errorGenerator = test.MockErrorGenerator()
 	p.SetAPI(api)
+	p.setConfiguration(pluginConfig)
 	return &p
+}
+
+func TestOnConfigurationChangeOK(t *testing.T) {
+	configuration := generateMockPluginConfig()
+	configuration.DisplayMode = pluginConf.DisplayModeEmbedded
+	configuration.Provider = "gfycat"
+	p := generateMocksForConfigurationTesting(&configuration)
+
+	err := p.OnConfigurationChange()
+
+	assert.Nil(t, err)
+	assert.Equal(t, "https://test.com/plugins/"+manifest.Manifest.Id, p.rootURL)
 }
 
 func TestOnConfigurationChangeLoadFail(t *testing.T) {
@@ -31,16 +55,18 @@ func TestOnConfigurationChangeLoadFail(t *testing.T) {
 	p.SetAPI(api)
 
 	err := p.OnConfigurationChange()
+
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), mockErr.Error())
 }
 
 func TestOnConfigurationChangeEmptyDisplayMode(t *testing.T) {
-	p := generateMocksForConfigurationTesting("")
-	configuration := p.getConfiguration()
+	configuration := generateMockPluginConfig()
 	configuration.DisplayMode = ""
-	p.setConfiguration(configuration)
+	p := generateMocksForConfigurationTesting(&configuration)
+
 	err := p.OnConfigurationChange()
+
 	assert.NotNil(t, err)
 	assert.Contains(t, err.Error(), "the Display Mode must be configured")
 }
@@ -51,6 +77,7 @@ func TestOnConfigurationChangeGifProviderError(t *testing.T) {
 	pluginConfig.DisplayMode = pluginConf.DisplayModeEmbedded
 	pluginConfig.APIKey = ""
 	api.On("LoadPluginConfiguration", mock.AnythingOfType("*configuration.Configuration")).Return(mockLoadConfig(pluginConfig))
+
 	p := Plugin{errorGenerator: test.MockErrorGenerator()}
 	p.SetAPI(api)
 	err := p.OnConfigurationChange()

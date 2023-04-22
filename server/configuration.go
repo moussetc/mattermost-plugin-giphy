@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"path/filepath"
+	"strings"
 
 	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
@@ -47,10 +49,15 @@ func (p *Plugin) OnConfigurationChange() error {
 		return errors.Wrap(err, "Failed to load plugin configuration")
 	}
 	p.setConfiguration(configuration)
-
 	if configurationErr := configuration.IsValid(); configurationErr != nil {
 		return configurationErr
 	}
+
+	rootURL := ""
+	if siteURL := p.API.GetConfig().ServiceSettings.SiteURL; siteURL != nil {
+		rootURL = strings.TrimSuffix(*siteURL, "/")
+	}
+	p.rootURL = fmt.Sprintf("%s/plugins/%s", rootURL, manifest.Manifest.Id)
 
 	gifProvider, err := provider.GifProviderGenerator(*configuration, p.errorGenerator, p.rootURL)
 	if err != nil {
