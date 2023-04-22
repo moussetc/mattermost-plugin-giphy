@@ -207,9 +207,9 @@
         ]
       },
       {
-        "key": "Language (GIPHY&Tenor only)",
+        "key": "Language",
         "type": "dropdown",
-        "display_name": "Language:",
+        "display_name": "Language (GIPHY and Tenor only):",
         "help_text": "Select the language used to search GIFs (more info [here](https://developers.giphy.com/docs/optional-settings/#language-support)).",
         "default": "en",
         "options": [
