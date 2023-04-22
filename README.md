@@ -7,33 +7,29 @@ A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash comm
 ## Usage
 
 ### Plugin v2.0.0 & higher
+
 Use the command `/gif "<keywords>" "<custom caption>"` to search for a GIF and shuffle through GIFs until you find one you like. You can also use `/gif <keywords>` if you don't want to add a custom caption.
 
 Example: first choose a GIF with `/gif "waving cat" "Hello!"` and use the Shuffle button to browse others GIFs:
 
 ![demo](assets/demo_preview.png)
 
-Then post the GIF you want using the Send button: 
+You can use the Previous button to go back to previous results:
+![demo](assets/demo_preview_with_previous.png)
+
+When you found the perfect GIF, use the Send button to post it: 
 
 ![demo](assets/demo_post.png).
 
 *If you prefer having both the `/gif` (post GIF without previewing!) AND `/gifs` (preview and choose GIF before posting) as in the previous versions of the plugin, you can disable the 'Force GIF preview before posting' in the plugin configuration.*
-
-### Older versions
-
-- Send a GIF directly with `/gif <keywords>`: 
-
-![demo](assets/demo_gif.png)
-- Choose a GIF privately before sending with `/gifs <keywords>`: 
-
-![demo](assets/demo_gifs.png)
 
 ## Compatibility
 Use the following table to find the correct plugin version for each Mattermost server version:
 
 | Mattermost server | Plugin release | Incompatibility |
 | --- | --- | --- |
-| 6.0 and higher | v2.0.x and higher | breaking plugin API changes |
+| 6.5 and higher | v3.0.x and higher | - |
+| 6.0 to 6.4 | v2.0.x and higher | breaking plugin API changes |
 | 5.20 to 5.39 | v1.2.x and higher | breaking plugin manifest change |
 | 5.12 to 5.19 | v1.1.x | breaking plugin API change |
 | 5.10 to 5.11 | v1.0.x | buttons on ephemeral posts |
@@ -53,7 +49,8 @@ Use the following table to find the correct plugin version for each Mattermost s
     - display style (non-collapsable embedded image or collapsable full URL preview)
     - rendition style (GIF size, quality, etc.)
     - rating (not available for Gfycat)
-    - language (not available for Gfycat)
+    - language (not available for Gfycat, nor for Giphy if random is activated)
+    - random (true random is only available for Giphy (but); for Tenor and Gfycat, the random only applies to the current page of results, meaning you'll need to use Shuffle until a new page of results is loaded in order to see new results even in random mode)
 7. **Activate the plugin** in the `System Console > Plugins Management > Management` page
 
 If you are running Mattermost 5.15 or earlier, do not have the Plugin Marketplace enabled or want to install a release that was not published to the Marketplace, follow these steps:
@@ -81,6 +78,7 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
                 "rendition": "fixed_height_small",
                 "renditiongfycat": "100pxGif",
                 "renditiontenor": "mediumgif",
+                "randomsearch": true,
                 "disablepostingwithoutpreview": true
             },
         },
