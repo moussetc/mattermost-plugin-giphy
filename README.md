@@ -1,4 +1,6 @@
-# Mattermost GIF commands plugin (ex-'GIPHY plugin') ![Build Status](https://github.com/moussetc/mattermost-plugin-giphy/actions/workflows/makefile.yml/badge.svg)
+# Mattermost GIF commands plugin (ex-'GIPHY plugin')
+
+[![Build Status](https://github.com/moussetc/mattermost-plugin-giphy/actions/workflows/ci.yml/badge.svg)](https://github.com/moussetc/mattermost-plugin-giphy/actions/workflows/ci.yml/badge.svg)
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
