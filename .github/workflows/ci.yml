@@ -24,12 +24,9 @@ jobs:
     - name: Setup Go environment
       uses: actions/setup-go@v4
       with:
-        # The Go version to download (if necessary) and use. Supports semver spec and ranges.
-        go-version: 1.16.7
-        # Whether to download only stable versions
-        stable: true
+        go-version: '1.16.7'
 
-    - name: Install golangci-lint
+    - name: Golangci-lint
       uses: golangci/golangci-lint-action@v3
 
     - name: Build
