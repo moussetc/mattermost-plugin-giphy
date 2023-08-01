@@ -137,10 +137,15 @@ func generateGifCaption(displayMode, keywords, caption, gifURL, attributionMessa
 	if caption == "" {
 		captionOrKeywords = fmt.Sprintf("**/gif [%s](%s)**", keywords, gifURL)
 	}
-	if displayMode == pluginConf.DisplayModeFullURL {
-		return fmt.Sprintf("%s \n*%s*\n%s", captionOrKeywords, gifURL, attributionMessage)
+	formattedAttributionMessage := ""
+	if attributionMessage != "" {
+		formattedAttributionMessage = "*" + attributionMessage + "*\n"
 	}
-	return fmt.Sprintf("%s \n*%s* \n![GIF for '%s'](%s)", captionOrKeywords, attributionMessage, keywords, gifURL)
+	if displayMode == pluginConf.DisplayModeFullURL {
+		return fmt.Sprintf("%s \n%s%s", captionOrKeywords, gifURL, formattedAttributionMessage)
+	}
+
+	return fmt.Sprintf("%s \n%s![GIF for '%s'](%s)", captionOrKeywords, formattedAttributionMessage, keywords, gifURL)
 }
 
 func (p *Plugin) generateGifPost(userID, keywords, caption, gifURL, channelID, rootID, attributionMessage string) *model.Post {

@@ -220,7 +220,7 @@ func (h *defaultHTTPHandler) handleSend(p *Plugin, w http.ResponseWriter, reques
 	}
 	time := model.GetMillis()
 	post := &model.Post{
-		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURLs[request.CurrentGifIndex], p.gifProvider.GetAttributionMessage()),
+		Message:   generateGifCaption(p.getConfiguration().DisplayMode, request.Keywords, request.Caption, request.GifURLs[request.CurrentGifIndex], ""),
 		UserId:    request.UserId,
 		ChannelId: request.ChannelId,
 		RootId:    request.RootID,
