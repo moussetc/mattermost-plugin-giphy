@@ -20,17 +20,15 @@ func TestDefaultGifProviderGenerator(t *testing.T) {
 		{testLabel: "Empty provider", providerType: "", expectedError: true, expectedType: nil},
 		{testLabel: "Giphyprovider", providerType: "giphy", expectedError: false, expectedType: &giphy{}},
 		{testLabel: "Tenor provider", providerType: "tenor", expectedError: false, expectedType: tenor{}},
-		{testLabel: "Gfycat provider", providerType: "gfycat", expectedError: false, expectedType: gfycat{}},
 	}
 
 	for _, testCase := range testCases {
 		testConfig := pluginConf.Configuration{Provider: testCase.providerType,
-			APIKey:          testGiphyAPIKey,
-			Language:        testGiphyLanguage,
-			Rating:          testGiphyRating,
-			Rendition:       testGiphyRendition,
-			RenditionGfycat: testGfycatRendition,
-			RenditionTenor:  testTenorRendition,
+			APIKey:         testGiphyAPIKey,
+			Language:       testGiphyLanguage,
+			Rating:         testGiphyRating,
+			Rendition:      testGiphyRendition,
+			RenditionTenor: testTenorRendition,
 		}
 		provider, err := defaultGifProviderGenerator(testConfig, test.MockErrorGenerator(), "/test")
 		if testCase.expectedError {

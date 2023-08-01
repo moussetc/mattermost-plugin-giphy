@@ -2,7 +2,7 @@
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
-A Mattermost plugin to post GIFs from **Gfycat, Giphy or Tenor** with slash commands, available on the official Mattermost Plugin Marketplace.
+A Mattermost plugin to post GIFs from **Giphy or Tenor** with slash commands, available on the official Mattermost Plugin Marketplace.
 
 ## Usage
 
@@ -43,14 +43,14 @@ Use the following table to find the correct plugin version for each Mattermost s
 1. In Mattermost, go to **Main Menu > Plugin Marketplace**.
 2. Search for the "GIF Commands" plugin, then click **Install** to install it.
 3. Once the installation is completed, click **Configure**. This will take you to System Console to configure the plugin.
-4. Choose if you want to use Gfycat (default), GIPHY or Tenor (both of which requires an API key, see below).
-5. **If you've chosen Giphy or Tenor, configure the API key** as explained on the configuration page.
+4. Choose if you want to use GIPHY (default) or Tenor (both of which requires an API key, see below).
+5. **Configure the Giphy or Tenor API key** as explained on the configuration page.
 6. You can also configure the following settings :
     - display style (non-collapsable embedded image or collapsable full URL preview)
     - rendition style (GIF size, quality, etc.)
-    - rating (not available for Gfycat)
-    - language (not available for Gfycat, nor for Giphy if random is activated)
-    - random (true random is only available for Giphy (but); for Tenor and Gfycat, the random only applies to the current page of results, meaning you'll need to use Shuffle until a new page of results is loaded in order to see new results even in random mode)
+    - rating
+    - language (not available for Giphy if random is activated)
+    - random (true random is only available for Giphy; for Tenor, the random only applies to the current page of results, meaning you'll need to use Shuffle until a new page of results is loaded in order to see new results even in random mode)
 7. **Activate the plugin** in the `System Console > Plugins Management > Management` page
 
 If you are running Mattermost 5.15 or earlier, do not have the Plugin Marketplace enabled or want to install a release that was not published to the Marketplace, follow these steps:
@@ -71,12 +71,11 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
         "Plugins": {
             "com.github.moussetc.mattermost.plugin.giphy": {
                 "displaymode": "embedded",
-                "provider": "<giphy or gfycat or tenor>",
+                "provider": "<giphy or tenor>",
                 "apikey": "<your API key from Step 4. above, if you've choosen Giphy or Tenor as your GIF provider>", 
                 "language": "en",
                 "rating": "none",
                 "rendition": "fixed_height_small",
-                "renditiongfycat": "100pxGif",
                 "renditiontenor": "mediumgif",
                 "randomsearch": true,
                 "disablepostingwithoutpreview": true
@@ -105,11 +104,11 @@ This happens when the plugin is not activated, see above section.
 Start by checking the Mattermost logs (`yourURL/admin_console/logs`) for more detail. Usual causes include:
 - Using GIPHY as provider and using the public beta Giphy. The log will looks like: `{"level":"error", ... ,"msg":"Unable to get GIF URL", ... ,"method":"POST","err_where":"Giphy Plugin","http_code":400,"err_details":"Error HTTP status 429: 429 Unknown Error"}`. Solution: get your own GIPHY API key as the default one shouldn't be used in production.
 - If your Mattermost server is behind a proxy:
-  - If the proxy blocks Giphy, Tenor and Gfycat: there's no solution besides convincing your security department that accessing Giphy is business-critical.
-  - If the proxy allows Giphy, Tenor and Gfycat: configure your Mattermost server to use your [outbound proxy](https://docs.mattermost.com/install/outbound-proxy.html).
+  - If the proxy blocks Giphy and Tenor: there's no solution besides convincing your security department that accessing Giphy is business-critical.
+  - If the proxy allows Giphy and Tenor: configure your Mattermost server to use your [outbound proxy](https://docs.mattermost.com/install/outbound-proxy.html).
 
 ### The picture doesn't load
-- Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY, Tenor or Gfycat. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
+- Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY or Tenor. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
 - If the Display Mode configured is "Collapsable Image Preview", then the link previews option must be configured in the System Console (> Posts > Enable Link Previews). Do note that user can also change this option in their Account Settings. 
 
 ### There are no buttons on the shuffle message

@@ -28,7 +28,6 @@ func generateMockPluginConfig() pluginConf.Configuration {
 		Rating:                       "none",
 		Rendition:                    "fixed_height_small",
 		RenditionTenor:               "tinygif",
-		RenditionGfycat:              "gif100Px",
 		APIKey:                       "defaultAPIKey",
 		CommandTriggerGif:            triggerGif,
 		CommandTriggerGifWithPreview: triggerGifs,

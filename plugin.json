@@ -1,7 +1,7 @@
 {
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
-  "description": "Add GIF slash commands from Giphy, Gfycat or Tenor",
+  "description": "Add GIF slash commands from Giphy or Tenor",
   "version": "3.0.0",
   "min_server_version": "6.5.0",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
@@ -41,18 +41,14 @@
         "key": "Provider",
         "type": "radio",
         "display_name": "GIF Provider:",
-        "default": "gfycat",
+        "default": "giphy",
         "options": [
           {
-            "display_name": "Gfycat (No API Key required)",
-            "value": "gfycat"
-          },
-          {
-            "display_name": "GIPHY (API Key required below)",
+            "display_name": "GIPHY",
             "value": "giphy"
           },
           {
-            "display_name": "Tenor (API Key required below)",
+            "display_name": "Tenor",
             "value": "tenor"
           }
         ]
@@ -60,13 +56,13 @@
       {
         "key": "APIKey",
         "type": "text",
-        "display_name": "GIPHY/Tenor API Key:",
-        "help_text": "Configure your own API key (not required for Gfycat). To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://developers.google.com/tenor/guides/quickstart#setup)."
+        "display_name": "GIPHY or Tenor API Key:",
+        "help_text": "Configure your own API key. To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://developers.google.com/tenor/guides/quickstart#setup)."
       },
       {
         "key": "Rating",
         "type": "dropdown",
-        "display_name": "Content Rating (GIPHY and Tenor only):",
+        "display_name": "Content Rating:",
         "help_text": "Choose a MPAA-style rating",
         "options": [
           {
@@ -88,35 +84,6 @@
           {
             "display_name": "R",
             "value": "r"
-          }
-        ]
-      },
-      {
-        "key": "RenditionGfycat",
-        "type": "dropdown",
-        "display_name": "Gfycat display style:",
-        "help_text": "Select the style to display GIFs from Gfycat (more info [here](https://developers.gfycat.com/api/#best-format-to-use)).",
-        "default": "gif100px",
-        "options": [
-          {
-            "display_name": "Height set to 100px.",
-            "value": "gif100px"
-          },
-          {
-            "display_name": "Weight <= 1mb.",
-            "value": "max1mbGif"
-          },
-          {
-            "display_name": "Weight <= 2mb.",
-            "value": "max2mbGif"
-          },
-          {
-            "display_name": "Weight <= 5mb.",
-            "value": "max5mbGif"
-          },
-          {
-            "display_name": "Static preview image.",
-            "value": "posterUrl"
           }
         ]
       },
@@ -209,7 +176,7 @@
       {
         "key": "Language",
         "type": "dropdown",
-        "display_name": "Language (GIPHY and Tenor only):",
+        "display_name": "Language:",
         "help_text": "Select the language used to search GIFs (more info [here](https://developers.giphy.com/docs/optional-settings/#language-support)).",
         "default": "en",
         "options": [
@@ -347,7 +314,7 @@
         "key": "RandomSearch",
         "type": "bool",
         "display_name": "Random:",
-        "help_text": "If deactivated, the same search will return the same sequence of GIFs. Note: only pseudo-randomization is available for Tenor and Gfycat",
+        "help_text": "If deactivated, the same search will return the same sequence of GIFs. Note: only pseudo-randomization is available for Tenor",
         "default": true
       },
       {
@@ -358,6 +325,6 @@
         "default": true
       }
     ],
-    "footer": "Powered by GIPHY, Tenor ,and Gfycat.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
+    "footer": "Powered by GIPHY and Tenor.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
   }
 }

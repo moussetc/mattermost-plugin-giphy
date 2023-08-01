@@ -11,7 +11,6 @@ type Configuration struct {
 	Rating                       string
 	Language                     string
 	Rendition                    string
-	RenditionGfycat              string
 	RenditionTenor               string
 	APIKey                       string
 	DisablePostingWithoutPreview bool

@@ -38,7 +38,7 @@ func generateMocksForConfigurationTesting(pluginConfig *pluginConf.Configuration
 func TestOnConfigurationChangeOK(t *testing.T) {
 	configuration := generateMockPluginConfig()
 	configuration.DisplayMode = pluginConf.DisplayModeEmbedded
-	configuration.Provider = "gfycat"
+	configuration.Provider = "giphy"
 	p := generateMocksForConfigurationTesting(&configuration)
 
 	err := p.OnConfigurationChange()
