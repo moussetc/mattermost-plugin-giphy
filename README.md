@@ -4,7 +4,7 @@
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
-A Mattermost plugin to post GIFs from **Giphy or Tenor** with slash commands, available on the official Mattermost Plugin Marketplace.
+A Mattermost plugin to post GIFs from **Giphy or Tenor** with slash commands.
 
 ## Usage
 
@@ -41,10 +41,12 @@ Use the following table to find the correct plugin version for each Mattermost s
 
 ## Installation and configuration
 
-**In Mattermost 5.16 and later:**
-1. In Mattermost, go to **Main Menu > Plugin Marketplace**.
-2. Search for the "GIF Commands" plugin, then click **Install** to install it.
-3. Once the installation is completed, click **Configure**. This will take you to System Console to configure the plugin.
+> [!TIP]
+> This plugin was for a few years available in the official Mattermost marketplace, however the Mattermost team [decided to stop hosting community plugins in the marketplace](https://mattermost.atlassian.net/browse/MM-53030) in September 2023, so however you installed your current version, you will need to follow the manual installation steps below.
+
+1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
+2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
+3. Go to the `System Console > Plugins > GIF commands`
 4. Choose if you want to use GIPHY (default) or Tenor (both of which requires an API key, see below).
 5. **Configure the Giphy or Tenor API key** as explained on the configuration page.
 6. You can also configure the following settings :
@@ -54,11 +56,6 @@ Use the following table to find the correct plugin version for each Mattermost s
     - language (not available for Giphy if random is activated)
     - random (true random is only available for Giphy; for Tenor, the random only applies to the current page of results, meaning you'll need to use Shuffle until a new page of results is loaded in order to see new results even in random mode)
 7. **Activate the plugin** in the `System Console > Plugins Management > Management` page
-
-If you are running Mattermost 5.15 or earlier, do not have the Plugin Marketplace enabled or want to install a release that was not published to the Marketplace, follow these steps:
-1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
-2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
-3. Go to the `System Console > Plugins > GIF commands` and follow the same configuration steps as for the Marketplace install, displayed from Step 4. on the previous §.
 
 ### Configuration Notes in HA
 
@@ -126,7 +123,8 @@ To avoid having to manually install your plugin, build and deploy your plugin us
         "EnableUploads" : true
     }
 ```
-T### Deploying with Local Mode
+
+### Deploying with Local Mode
 
 If your Mattermost server is running locally, you can enable [local mode](https://docs.mattermost.com/administration/mmctl-cli-tool.html#local-mode) to streamline deploying your plugin. Edit your server configuration as follows:
 
