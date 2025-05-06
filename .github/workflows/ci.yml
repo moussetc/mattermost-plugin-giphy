@@ -28,7 +28,7 @@ jobs:
         go-version-file: 'go.mod'
 
     - name: Install golangci-lint
-      uses: golangci/golangci-lint-action@v7
+      uses: golangci/golangci-lint-action@v8
 
     - name: Build
       run: make
