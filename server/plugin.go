@@ -10,8 +10,8 @@ import (
 	pluginapi "github.com/moussetc/mattermost-plugin-giphy/server/internal/pluginapi"
 	provider "github.com/moussetc/mattermost-plugin-giphy/server/internal/provider"
 
-	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
 
 	"github.com/pkg/errors"
 )
