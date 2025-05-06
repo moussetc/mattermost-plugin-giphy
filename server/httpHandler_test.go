@@ -299,7 +299,7 @@ func TestHandleShuffleShouldLoadNewGifsIfNeededToUpdateEphemeralPostWhenSearchSu
 func TestHandleShuffleShouldNotifyUserWhenSearchReturnsNoResult(t *testing.T) {
 	_, p := initMockAPI()
 	notifyUserWasCalled := false
-	notifyUserOfError = func(api plugin.API, botId string, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
+	notifyUserOfError = func(_ plugin.API, _ string, message string, _ *model.AppError, _ *model.PostActionIntegrationRequest) {
 		notifyUserWasCalled = true
 		assert.Contains(t, message, "found")
 	}
@@ -318,7 +318,7 @@ func TestHandleShuffleShouldFailWhenSearchFails(t *testing.T) {
 	p.gifProvider = &mockGifProviderFail{"fakeURL"}
 	h := &defaultHTTPHandler{}
 
-	notifyUserOfError = func(api plugin.API, botId string, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
+	notifyUserOfError = func(_ plugin.API, _ string, message string, _ *model.AppError, _ *model.PostActionIntegrationRequest) {
 		assert.Contains(t, message, "Gif")
 	}
 
@@ -375,7 +375,7 @@ func TestHandleSendShouldFailWhenCreatePostFails(t *testing.T) {
 	api := &plugintest.API{}
 	api.On("DeleteEphemeralPost", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil)
 	api.On("CreatePost", mock.AnythingOfType("*model.Post")).Return(nil, model.NewAppError("test", "id42", nil, "errorMessage", 42))
-	notifyUserOfError = func(api plugin.API, botId string, message string, err *model.AppError, request *model.PostActionIntegrationRequest) {
+	notifyUserOfError = func(_ plugin.API, _ string, message string, _ *model.AppError, _ *model.PostActionIntegrationRequest) {
 		assert.Contains(t, message, "create")
 	}
 
