@@ -8,7 +8,7 @@ import (
 	manifest "github.com/moussetc/mattermost-plugin-giphy"
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 
 	"github.com/pkg/errors"
 )

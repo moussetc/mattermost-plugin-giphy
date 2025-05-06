@@ -9,7 +9,7 @@ import (
 
 	pluginError "github.com/moussetc/mattermost-plugin-giphy/server/internal/error"
 
-	"github.com/mattermost/mattermost-server/v6/model"
+	"github.com/mattermost/mattermost/server/public/model"
 )
 
 // giphy find GIFs using the giphy API

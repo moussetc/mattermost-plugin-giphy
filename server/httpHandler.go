@@ -3,14 +3,14 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
 
-	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
+	"github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -94,7 +94,7 @@ func (p *Plugin) handleHTTPRequest(w http.ResponseWriter, r *http.Request) {
 
 func parseRequest(r *http.Request) (*integrationRequest, error) {
 	// Read data added by default for a button action
-	body, readErr := ioutil.ReadAll(r.Body)
+	body, readErr := io.ReadAll(r.Body)
 	if readErr != nil {
 		return nil, readErr
 	}

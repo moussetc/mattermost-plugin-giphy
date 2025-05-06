@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,10 +14,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/mattermost/mattermost-server/v6/model"
-	"github.com/mattermost/mattermost-server/v6/plugin"
-	"github.com/mattermost/mattermost-server/v6/plugin/plugintest"
-	"github.com/mattermost/mattermost-server/v6/plugin/plugintest/mock"
+	"github.com/mattermost/mattermost/server/public/model"
+	"github.com/mattermost/mattermost/server/public/plugin"
+	"github.com/mattermost/mattermost/server/public/plugin/plugintest"
+	"github.com/mattermost/mattermost/server/public/plugin/plugintest/mock"
 )
 
 const (
@@ -228,7 +227,7 @@ func TestWriteResponseShouldHandleOKStatus(t *testing.T) {
 
 	result := w.Result()
 	assert.Equal(t, result.StatusCode, http.StatusOK)
-	bodyBytes, _ := ioutil.ReadAll(result.Body)
+	bodyBytes, _ := io.ReadAll(result.Body)
 	assert.Contains(t, string(bodyBytes), "update")
 }
 
@@ -237,7 +236,7 @@ func TestWriteResponseShouldHandleOtherStatus(t *testing.T) {
 	writeResponse(http.StatusTeapot, w)
 	result := w.Result()
 	assert.Equal(t, result.StatusCode, http.StatusTeapot)
-	bodyBytes, _ := ioutil.ReadAll(result.Body)
+	bodyBytes, _ := io.ReadAll(result.Body)
 	assert.NotContains(t, string(bodyBytes), "update")
 }
 

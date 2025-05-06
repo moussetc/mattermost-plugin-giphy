@@ -2,7 +2,7 @@ package provider
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -36,7 +36,7 @@ func newServerResponseOK(body string) *http.Response {
 		StatusCode: 200,
 	}
 	if body != "" {
-		r.Body = ioutil.NopCloser(bytes.NewBufferString(body))
+		r.Body = io.NopCloser(bytes.NewBufferString(body))
 	}
 	return r
 }
@@ -51,6 +51,6 @@ func newServerResponseKO(statusCode int) *http.Response {
 func newServerResponseKOWithBody(statusCode int, body string) *http.Response {
 	return &http.Response{
 		StatusCode: statusCode,
-		Body:       ioutil.NopCloser(bytes.NewBufferString(body)),
+		Body:       io.NopCloser(bytes.NewBufferString(body)),
 	}
 }
