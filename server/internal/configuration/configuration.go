@@ -33,8 +33,8 @@ func (c *Configuration) IsValid() error {
 		return errors.New("the Display Mode must be configured")
 	}
 
-	if (c.Provider == "giphy" || c.Provider == "tenor") && len(c.APIKey) == 0 {
-		return errors.New("when the selected Provider is Giphy or Tenor, an API Key must be provided")
+	if (c.Provider == "giphy" || c.Provider == "tenor" || c.Provider == "klipy") && len(c.APIKey) == 0 {
+		return errors.New("when the selected Provider is Giphy, Tenor, or Klipy, an API Key must be provided")
 	}
 
 	return nil
