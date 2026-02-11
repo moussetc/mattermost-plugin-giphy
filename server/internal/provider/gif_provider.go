@@ -47,6 +47,8 @@ func defaultGifProviderGenerator(configuration pluginConf.Configuration, errorGe
 		gifProvider, err = NewGiphyProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.Rendition, rootURL)
 	case "tenor":
 		gifProvider, err = NewTenorProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.RenditionTenor)
+	case "klipy":
+		gifProvider, err = NewKlipyProvider(http.DefaultClient, errorGenerator, configuration.APIKey, configuration.Language, configuration.Rating, configuration.RenditionTenor)
 	}
 	return gifProvider, err
 }

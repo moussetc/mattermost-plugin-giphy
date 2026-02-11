@@ -8,6 +8,7 @@ mattermost-plugin-giphy.tar.gz
 vendor/
 dist/
 .vscode/
+.idea/
 coverage.txt
 TODO.txt
 Debug.txt
