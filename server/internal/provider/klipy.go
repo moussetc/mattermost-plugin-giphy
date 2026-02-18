@@ -11,7 +11,7 @@ import (
 )
 
 // NewKlipyProvider creates an instance of a GIF provider that uses the KLIPY API
-func NewKlipyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition string) (GifProvider, *model.AppError) {
+func NewKlipyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition string, rootURL string) (GifProvider, *model.AppError) {
 	if errorGenerator == nil {
 		return nil, model.NewAppError("NewKlipyProvider", "errorGenerator cannot be nil for KLIPY Provider", nil, "", http.StatusInternalServerError)
 	}
@@ -26,6 +26,7 @@ func NewKlipyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 	}
 
 	klipyProvider := klipy{}
+	klipyProvider.rootURL = rootURL
 	klipyProvider.httpClient = httpClient
 	klipyProvider.errorGenerator = errorGenerator
 	klipyProvider.apiKey = apiKey
@@ -39,7 +40,8 @@ func NewKlipyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginEr
 // klipy finds GIFs using the KLIPY API (Tenor-v2 compatible base URL swap)
 type klipy struct {
 	abstractGifProvider
-	apiKey string
+	apiKey  string
+	rootURL string
 }
 
 const (
@@ -61,7 +63,7 @@ type klipySearchError struct {
 }
 
 func (p *klipy) GetAttributionMessage() string {
-	return "Via KLIPY"
+	return fmt.Sprintf("![KLIPY](%s/public/powered-by-klipy.png)", p.rootURL)
 }
 
 // Return URLs of GIFs that match the query, or empty slice if none, or an error if the search failed
