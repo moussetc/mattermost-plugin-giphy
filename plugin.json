@@ -1,7 +1,7 @@
 {
   "id": "com.github.moussetc.mattermost.plugin.giphy",
   "name": "GIF commands",
-  "description": "Add GIF slash commands from Giphy or Tenor or Klipy",
+  "description": "Add GIF slash commands from Giphy, Tenor, or KLIPY",
   "version": "4.0.0",
   "min_server_version": "6.5.0",
   "homepage_url": "https://github.com/moussetc/mattermost-plugin-giphy/",
@@ -52,7 +52,7 @@
             "value": "tenor"
           },
           {
-            "display_name": "Klipy",
+            "display_name": "KLIPY",
             "value": "klipy"
           }
         ]
@@ -60,8 +60,8 @@
       {
         "key": "APIKey",
         "type": "text",
-        "display_name": "GIPHY or Tenor or Klipy API Key:",
-        "help_text": "Configure your own API key. To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide) or [these for Tenor](https://developers.google.com/tenor/guides/quickstart#setup) or [these for Klipy](https://docs.klipy.com/getting-started)."
+        "display_name": "GIPHY, Tenor, or KLIPY API Key:",
+        "help_text": "Configure your own API key. To get your own API key, follow [these instructions for Giphy](https://developers.giphy.com/docs/api#quick-start-guide), [these for Tenor](https://developers.google.com/tenor/guides/quickstart#setup), or [these for KLIPY](https://docs.klipy.com/getting-started)."
       },
       {
         "key": "Rating",
@@ -159,8 +159,8 @@
       {
         "key": "RenditionTenor",
         "type": "dropdown",
-        "display_name": "Tenor/Klipy display style:",
-        "help_text": "Select the style to display GIFs from Tenor (more info [here](https://developers.google.com/tenor/guides/response-objects-and-errors#content-formats)).",
+        "display_name": "Tenor/KLIPY display style:",
+        "help_text": "Select the style to display GIFs from Tenor/KLIPY (more info [here](https://developers.google.com/tenor/guides/response-objects-and-errors#content-formats)).",
         "default": "mediumgif",
         "options": [
           {
@@ -329,6 +329,6 @@
         "default": true
       }
     ],
-    "footer": "Powered by GIPHY and Tenor.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
+    "footer": "Powered by GIPHY, Tenor and KLIPY.\n\n * To report an issue, make a suggestion or a contribution, or fork your own version of the plugin, [check the repository](https://github.com/moussetc/mattermost-plugin-giphy).\n"
   }
 }

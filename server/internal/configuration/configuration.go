@@ -34,7 +34,7 @@ func (c *Configuration) IsValid() error {
 	}
 
 	if (c.Provider == "giphy" || c.Provider == "tenor" || c.Provider == "klipy") && len(c.APIKey) == 0 {
-		return errors.New("when the selected Provider is Giphy, Tenor, or Klipy, an API Key must be provided")
+		return errors.New("when the selected Provider is Giphy, Tenor, or KLIPY, an API Key must be provided")
 	}
 
 	return nil

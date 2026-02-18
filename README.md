@@ -4,7 +4,7 @@
 
 **Maintainer:** [@moussetc](https://github.com/moussetc)
 
-A Mattermost plugin to post GIFs from **Giphy or Tenor or Klipy** with slash commands.
+A Mattermost plugin to post GIFs from **Giphy, Tenor, or Klipy** with slash commands.
 
 ## Usage
 
@@ -47,8 +47,8 @@ Use the following table to find the correct plugin version for each Mattermost s
 1. Go to the [Releases page](https://github.com/moussetc/mattermost-plugin-giphy/releases) and download the `.tar.gz` package. Supported platforms are: Linux x64, Windows x64, Darwin x64, FreeBSD x64.
 2. Use the Mattermost `System Console > Plugins Management > Management` page to upload the `.tar.gz` package
 3. Go to the `System Console > Plugins > GIF commands`
-4. Choose if you want to use GIPHY (default) or Tenor / Klipy (both of which requires an API key, see below).
-5. **Configure the Giphy or Tenor or Klipy API key** as explained on the configuration page.
+4. Choose if you want to use GIPHY (default), Tenor, or Klipy (all of which require an API key, see below).
+5. **Configure the Giphy Tenor, or Klipy API key** as explained on the configuration page.
 6. You can also configure the following settings :
     - display style (non-collapsable embedded image or collapsable full URL preview)
     - rendition style (GIF size, quality, etc.)
@@ -70,8 +70,8 @@ If you are running Mattermost v5.11 or earlier in [High Availability mode](https
         "Plugins": {
             "com.github.moussetc.mattermost.plugin.giphy": {
                 "displaymode": "embedded",
-                "provider": "<giphy or tenor or Klipy>",
-                "apikey": "<your API key from Step 4. above, if you've choosen Giphy or Tenor or Klipy as your GIF provider>", 
+                "provider": "<giphy, tenor or klipy>",
+                "apikey": "<your API key from Step 4. above, if you've choosen Giphy, Tenor, or Klipy as your GIF provider>", 
                 "language": "en",
                 "rating": "none",
                 "rendition": "fixed_height_small",
@@ -103,11 +103,11 @@ This happens when the plugin is not activated, see above section.
 Start by checking the Mattermost logs (`yourURL/admin_console/logs`) for more detail. Usual causes include:
 - Using GIPHY as provider and using the public beta Giphy. The log will looks like: `{"level":"error", ... ,"msg":"Unable to get GIF URL", ... ,"method":"POST","err_where":"Giphy Plugin","http_code":400,"err_details":"Error HTTP status 429: 429 Unknown Error"}`. Solution: get your own GIPHY API key as the default one shouldn't be used in production.
 - If your Mattermost server is behind a proxy:
-  - If the proxy blocks Giphy and Tenor and Klipy: there's no solution besides convincing your security department that accessing Giphy is business-critical.
-  - If the proxy allows Giphy and Tenor and Klipy: configure your Mattermost server to use your [outbound proxy](https://docs.mattermost.com/install/outbound-proxy.html).
+  - If the proxy blocks Giphy / Tenor / Klipy: there's no solution besides convincing your security department that accessing Giphy is business-critical.
+  - If the proxy allows access to your GIFs provider: configure your Mattermost server to use your [outbound proxy](https://docs.mattermost.com/install/outbound-proxy.html).
 
 ### The picture doesn't load
-- Your client (web client, desktop client, etc.) might be behind a proxy that blocks GIPHY or Tenor or Klipy. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
+- Your client (web client, desktop client, etc.) might be behind a proxy that blocks your GIFs provider. Solution: activate the Mattermost [image proxy](https://docs.mattermost.com/administration/image-proxy.html).
 - If the Display Mode configured is "Collapsable Image Preview", then the link previews option must be configured in the System Console (> Posts > Enable Link Previews). Do note that user can also change this option in their Account Settings. 
 
 ### There are no buttons on the shuffle message

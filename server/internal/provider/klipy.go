@@ -13,16 +13,16 @@ import (
 // NewKlipyProvider creates an instance of a GIF provider that uses the KLIPY API
 func NewKlipyProvider(httpClient HTTPClient, errorGenerator pluginError.PluginError, apiKey, language, rating, rendition string) (GifProvider, *model.AppError) {
 	if errorGenerator == nil {
-		return nil, model.NewAppError("NewKlipyProvider", "errorGenerator cannot be nil for Klipy Provider", nil, "", http.StatusInternalServerError)
+		return nil, model.NewAppError("NewKlipyProvider", "errorGenerator cannot be nil for KLIPY Provider", nil, "", http.StatusInternalServerError)
 	}
 	if httpClient == nil {
-		return nil, errorGenerator.FromMessage("httpClient cannot be nil for Klipy Provider")
+		return nil, errorGenerator.FromMessage("httpClient cannot be nil for KLIPY Provider")
 	}
 	if apiKey == "" {
-		return nil, errorGenerator.FromMessage("apiKey cannot be empty for Klipy Provider")
+		return nil, errorGenerator.FromMessage("apiKey cannot be empty for KLIPY Provider")
 	}
 	if rendition == "" {
-		return nil, errorGenerator.FromMessage("rendition cannot be empty for Klipy Provider")
+		return nil, errorGenerator.FromMessage("rendition cannot be empty for KLIPY Provider")
 	}
 
 	klipyProvider := klipy{}
