@@ -185,6 +185,7 @@ const (
 	testKlipyLanguage  = "fr"
 	testKlipyRating    = "R"
 	testKlipyRendition = "mediumgif"
+	testKlipyRootURL   = "/test"
 )
 
 func TestNewKlipyProvider(t *testing.T) {
@@ -200,7 +201,6 @@ func TestNewKlipyProvider(t *testing.T) {
 		paramRendition      string
 		expectedError       bool
 		expectedRating      string
-		rootURL             string
 	}{
 		{testLabel: "OK", paramHTTPClient: testtHTTPClient, paramErrorGenerator: testErrorGenerator, paramAPIKey: testKlipyAPIKey, paramLanguage: testKlipyLanguage, paramRating: testKlipyRating, paramRendition: testKlipyRendition, expectedError: false, expectedRating: "off"},
 		{testLabel: "KO missing rendition", paramHTTPClient: testtHTTPClient, paramErrorGenerator: testErrorGenerator, paramAPIKey: testKlipyAPIKey, paramLanguage: testKlipyLanguage, paramRating: testKlipyRating, paramRendition: "", expectedError: true},
@@ -218,7 +218,7 @@ func TestNewKlipyProvider(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		provider, err := NewKlipyProvider(testCase.paramHTTPClient, testCase.paramErrorGenerator, testCase.paramAPIKey, testCase.paramLanguage, testCase.paramRating, testCase.paramRendition, testCase.rootURL)
+		provider, err := NewKlipyProvider(testCase.paramHTTPClient, testCase.paramErrorGenerator, testCase.paramAPIKey, testCase.paramLanguage, testCase.paramRating, testCase.paramRendition, testKlipyRootURL)
 		if testCase.expectedError {
 			assert.NotNil(t, err, testCase.testLabel)
 			assert.Nil(t, provider, testCase.testLabel)
@@ -237,7 +237,7 @@ func TestNewKlipyProvider(t *testing.T) {
 }
 
 func generateKlipyProviderForTest(mockHTTPResponse *http.Response) *klipy {
-	provider, _ := NewKlipyProvider(NewMockHTTPClient(mockHTTPResponse), test.MockErrorGenerator(), testKlipyAPIKey, testKlipyLanguage, testKlipyRating, testKlipyRendition, testRootURL)
+	provider, _ := NewKlipyProvider(NewMockHTTPClient(mockHTTPResponse), test.MockErrorGenerator(), testKlipyAPIKey, testKlipyLanguage, testKlipyRating, testKlipyRendition, testKlipyRootURL)
 	return provider.(*klipy)
 }
 
@@ -311,7 +311,7 @@ func TestKlipyProviderGetGifURLShouldFailWhenSearchBadStatusWithMessage(t *testi
 func generateKlipyProviderForURLBuildingTests() (*klipy, *MockHTTPClient, string) {
 	serverResponse := newServerResponseOK(defaultKlipyResponseBody)
 	client := NewMockHTTPClient(serverResponse)
-	provider, _ := NewKlipyProvider(client, test.MockErrorGenerator(), testKlipyAPIKey, testKlipyLanguage, testKlipyRating, testKlipyRendition, testRootURL)
+	provider, _ := NewKlipyProvider(client, test.MockErrorGenerator(), testKlipyAPIKey, testKlipyLanguage, testKlipyRating, testKlipyRendition, testKlipyRootURL)
 	return provider.(*klipy), client, ""
 }
 
