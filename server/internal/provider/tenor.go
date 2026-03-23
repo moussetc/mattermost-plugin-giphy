@@ -97,7 +97,7 @@ func (p *tenor) GetGifURL(request string, cursor *string, random bool) ([]string
 		return []string{}, p.errorGenerator.FromError("Error calling the Tenor API", err)
 	}
 	if r != nil && r.Body != nil {
-		defer r.Body.Close()
+		defer func() { _ = r.Body.Close() }()
 	}
 
 	if r.StatusCode != http.StatusOK {

@@ -10,8 +10,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const defaultGiphyResponseBodyForSearch = "{\"data\" : [ { \"images\": { \"fixed_height_small\": {\"url\": \"url\"}}} ] }"
-const defaultGiphyResponseBodyForRandom = "{\"data\" : { \"images\": { \"fixed_height_small\": {\"url\": \"url\"}}} }"
+const (
+	defaultGiphyResponseBodyForSearch = "{\"data\" : [ { \"images\": { \"fixed_height_small\": {\"url\": \"url\"}}} ] }"
+	defaultGiphyResponseBodyForRandom = "{\"data\" : { \"images\": { \"fixed_height_small\": {\"url\": \"url\"}}} }"
+)
+
 const (
 	testGiphyAPIKey    = "apikey"
 	testGiphyLanguage  = "fr"
@@ -96,7 +99,8 @@ func generateSearchAndRandomTestCases(apiResponseForSearch string, apiResponseFo
 	random       bool
 	httpResponse *http.Response
 	label        string
-}) {
+},
+) {
 	testCases = []struct {
 		random       bool
 		httpResponse *http.Response
