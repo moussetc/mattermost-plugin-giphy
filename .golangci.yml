@@ -1,61 +1,62 @@
 version: "2"
+
 run:
+  timeout: 5m
   modules-download-mode: readonly
+
 linters:
   default: none
   enable:
+    - bidichk
     - bodyclose
     - errcheck
     - gocritic
     - gosec
     - govet
     - ineffassign
+    - makezero
     - misspell
+    - modernize
     - nakedret
     - revive
     - staticcheck
     - unconvert
+    - unqueryvet
     - unused
     - whitespace
   settings:
     govet:
+      enable-all: true
       disable:
         - fieldalignment
-      enable-all: true
-    misspell:
-      locale: US
+    revive:
+      rules:
+        - name: exported
+          disabled: true
+        - name: unused-parameter
+          disabled: true
+    unqueryvet:
+      check-sql-builders: true
   exclusions:
-    generated: lax
-    presets:
-      - comments
-      - common-false-positives
-      - legacy
-      - std-error-handling
     rules:
-      - linters:
+      - path: server/configuration.go
+        linters:
           - unused
-        path: server/configuration.go
-      - linters:
+      - path: _test\.go
+        linters:
           - bodyclose
-          - scopelint
-        path: _test\.go
-    paths:
-      - third_party$
-      - builtin$
-      - examples$
+
 formatters:
   enable:
     - gofmt
+    - gofumpt
     - goimports
   settings:
     gofmt:
       simplify: true
+      rewrite-rules:
+        - pattern: interface{}
+          replacement: any
     goimports:
       local-prefixes:
         - github.com/mattermost/mattermost-starter-template
-  exclusions:
-    generated: lax
-    paths:
-      - third_party$
-      - builtin$
-      - examples$

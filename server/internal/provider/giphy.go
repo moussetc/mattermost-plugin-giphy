@@ -174,7 +174,7 @@ func (p *giphy) callGiphyEndpoint(endpoint string, customParameters map[string]s
 		return nil, p.errorGenerator.FromError("Error calling the Giphy API "+req.URL.RawQuery, err)
 	}
 	if r.Body != nil {
-		defer r.Body.Close()
+		defer func() { _ = r.Body.Close() }()
 	}
 
 	if r.StatusCode != http.StatusOK {

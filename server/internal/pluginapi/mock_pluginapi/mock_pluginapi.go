@@ -8,8 +8,8 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	mattermost_plugin_api "github.com/mattermost/mattermost/server/public/pluginapi"
 	model "github.com/mattermost/mattermost/server/public/model"
+	mattermost_plugin_api "github.com/mattermost/mattermost/server/public/pluginapi"
 )
 
 // MockBotService is a mock of BotService interface.

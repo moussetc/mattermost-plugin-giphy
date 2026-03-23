@@ -106,7 +106,7 @@ func (p *Plugin) executeCommandGifWithPreview(keywords, caption string, args *mo
 	post := p.generateGifPost(p.botID, keywords, caption, gifURLs[0], args.ChannelId, args.RootId, p.gifProvider.GetAttributionMessage())
 	// Only embedded display mode works inside an ephemeral post
 	post.Message = generateGifCaption(pluginConf.DisplayModeEmbedded, keywords, caption, gifURLs[0], p.gifProvider.GetAttributionMessage())
-	post.SetProps(map[string]interface{}{
+	post.SetProps(map[string]any{
 		"attachments": generatePreviewPostAttachments(keywords, caption, cursor, args.RootId, gifURLs, 0),
 	})
 	p.API.SendEphemeralPost(args.UserId, post)
@@ -158,7 +158,7 @@ func (p *Plugin) generateGifPost(userID, keywords, caption, gifURL, channelID, r
 }
 
 func generatePreviewPostAttachments(keywords, caption, searchCursor, rootID string, gifURLs []string, currentGifIndex int) []*model.SlackAttachment {
-	actionContext := map[string]interface{}{
+	actionContext := map[string]any{
 		contextRootID:       rootID,
 		contextKeywords:     keywords,
 		contextCaption:      caption,
@@ -184,7 +184,7 @@ func generatePreviewPostAttachments(keywords, caption, searchCursor, rootID stri
 }
 
 // Generate an attachment for an action Button that will point to a plugin HTTP handler
-func generateButton(name string, urlAction string, style string, context map[string]interface{}) *model.PostAction {
+func generateButton(name string, urlAction string, style string, context map[string]any) *model.PostAction {
 	return &model.PostAction{
 		Name:  name,
 		Type:  model.PostActionTypeButton,

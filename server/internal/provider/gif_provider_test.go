@@ -15,7 +15,7 @@ func TestDefaultGifProviderGenerator(t *testing.T) {
 		testLabel     string
 		providerType  string
 		expectedError bool
-		expectedType  interface{}
+		expectedType  any
 	}{
 		{testLabel: "Empty provider", providerType: "", expectedError: true, expectedType: nil},
 		{testLabel: "Giphyprovider", providerType: "giphy", expectedError: false, expectedType: &giphy{}},
@@ -23,7 +23,8 @@ func TestDefaultGifProviderGenerator(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		testConfig := pluginConf.Configuration{Provider: testCase.providerType,
+		testConfig := pluginConf.Configuration{
+			Provider:       testCase.providerType,
 			APIKey:         testGiphyAPIKey,
 			Language:       testGiphyLanguage,
 			Rating:         testGiphyRating,

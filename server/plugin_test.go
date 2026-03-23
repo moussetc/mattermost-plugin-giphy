@@ -34,8 +34,8 @@ func generateMockPluginConfig() pluginConf.Configuration {
 	}
 }
 
-func mockLoadConfig(conf pluginConf.Configuration) func(dest interface{}) error {
-	return func(dest interface{}) error {
+func mockLoadConfig(conf pluginConf.Configuration) func(dest any) error {
+	return func(dest any) error {
 		*dest.(*pluginConf.Configuration) = conf
 		return nil
 	}
@@ -46,12 +46,15 @@ type mockHTTPHandler struct{}
 func (h *mockHTTPHandler) handleCancel(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
+
 func (h *mockHTTPHandler) handleShuffle(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
+
 func (h *mockHTTPHandler) handlePrevious(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
+
 func (h *mockHTTPHandler) handleSend(_ *Plugin, w http.ResponseWriter, _ *integrationRequest) {
 	w.WriteHeader(http.StatusOK)
 }
@@ -192,8 +195,7 @@ func (m *mockGifProviderFail) GetAttributionMessage() string {
 }
 
 // mockGifProvider always provides the same fake GIF URL
-type emptyGifProvider struct {
-}
+type emptyGifProvider struct{}
 
 func (m *emptyGifProvider) GetGifURL(_ string, _ *string, _ bool) ([]string, *model.AppError) {
 	return []string{}, nil

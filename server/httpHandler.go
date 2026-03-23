@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"slices"
 	"strconv"
 
 	pluginConf "github.com/moussetc/mattermost-plugin-giphy/server/internal/configuration"
@@ -163,13 +164,7 @@ func (h *defaultHTTPHandler) handleShuffle(p *Plugin, w http.ResponseWriter, req
 	currentIndex := len(request.GifURLs)
 	// only add URLs that were not already seen (as we make successive API calls, the same URL can popup twice)
 	for _, newURL := range newGifURLs {
-		alreadyExist := false
-		for _, usedURL := range request.GifURLs {
-			if newURL == usedURL {
-				alreadyExist = true
-				break
-			}
-		}
+		alreadyExist := slices.Contains(request.GifURLs, newURL)
 		if !alreadyExist {
 			request.GifURLs = append(request.GifURLs, newURL)
 		}
@@ -203,7 +198,7 @@ func (h *defaultHTTPHandler) sendPreviewPost(p *Plugin, w http.ResponseWriter, r
 		CreateAt: time,
 		UpdateAt: time,
 	}
-	post.SetProps(map[string]interface{}{
+	post.SetProps(map[string]any{
 		"attachments": generatePreviewPostAttachments(request.Keywords, request.Caption, request.SearchCursor, request.RootID, gifURLs, currentGifIndex),
 	})
 	p.API.UpdateEphemeralPost(request.UserId, post)
@@ -248,7 +243,7 @@ func defaultNotifyUserOfError(api plugin.API, botID string, message string, err 
 		ChannelId: request.ChannelId,
 		UserId:    botID,
 	}
-	post.SetProps(map[string]interface{}{
+	post.SetProps(map[string]any{
 		"sent_by_plugin": true,
 	})
 	api.SendEphemeralPost(request.UserId, post)

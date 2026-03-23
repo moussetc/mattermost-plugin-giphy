@@ -37,7 +37,7 @@ var testPostActionIntegrationRequest = model.PostActionIntegrationRequest{
 	ChannelId: testChannelID,
 	UserId:    testUserID,
 	PostId:    testPostID,
-	Context: map[string]interface{}{
+	Context: map[string]any{
 		contextGifURLs:      []string{testGifURLPrevious, testGifURL, testGifURLNext},
 		contextCurrentIndex: 1,
 		contextCaption:      testCaption,
@@ -190,7 +190,8 @@ func TestParseRequestShouldFailIfBodyCantBeParsed(t *testing.T) {
 }
 
 func TestParseRequestShouldFailWhenRequiredContextValueIsMissing(t *testing.T) {
-	incompleteContextRequests := []string{`{
+	incompleteContextRequests := []string{
+		`{
 		"ChannelId": "testChannelId",
 		"UserId":    "testUserId",
 		"PostId":    "testPostId",
@@ -207,9 +208,10 @@ func TestParseRequestShouldFailWhenRequiredContextValueIsMissing(t *testing.T) {
 				"contextGifURL":   "testGifURL",
 				"contextCursor":   "testCursor",
 				"contextRootId":   "testRootId",
-			}`}
+			}`,
+	}
 
-	for i := 0; i < len(incompleteContextRequests); i++ {
+	for i := range incompleteContextRequests {
 		body := bytes.NewBuffer([]byte(incompleteContextRequests[i]))
 		r := httptest.NewRequest("POST", URLSend, body)
 

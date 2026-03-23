@@ -43,7 +43,7 @@ func (p *Plugin) setConfiguration(configuration *pluginConf.Configuration) {
 
 // OnConfigurationChange is invoked when configuration changes may have been made.
 func (p *Plugin) OnConfigurationChange() error {
-	var configuration = new(pluginConf.Configuration)
+	configuration := new(pluginConf.Configuration)
 	// Load the public configuration fields from the Mattermost server configuration.
 	if err := p.API.LoadPluginConfiguration(configuration); err != nil {
 		return errors.Wrap(err, "Failed to load plugin configuration")
